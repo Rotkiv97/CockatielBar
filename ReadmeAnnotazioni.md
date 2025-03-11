@@ -11,6 +11,10 @@ New-Item -Path . -Name "Dockerfile" -ItemType "File"
 New-Item -Path . -Name "docker-compose.yml" -ItemType "File"
 ```
 
+### Vantaggi nell'uso dei docker
+- Ambienti uniformi, si lavora con la stessa configurazione
+- Facilità di setup tramite il docker-compose.yml
+- E' possibile eseguire l'app in ogni ambinte
 
 ## TOODOO build sql Server .Net core e angular
 
