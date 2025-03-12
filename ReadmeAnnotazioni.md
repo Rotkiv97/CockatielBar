@@ -18,3 +18,11 @@ New-Item -Path . -Name "docker-compose.yml" -ItemType "File"
 
 ## TOODOO build sql Server .Net core e angular
 
+###
+
+1) struttura database
+2) Dokerizzare il sever e il forntend
+3) Home page
+4) login (Recupero dati in caso di rimbambimento)
+5) registazione login
+6) logout
