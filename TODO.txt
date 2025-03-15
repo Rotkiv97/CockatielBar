@@ -1,0 +1,9 @@
+VIC:
+
+crea funzione di aggiunta utente backend (per sql server tramite .netCORE)
+guarda come chiamare le API di https://www.thecocktaildb.com/api.php tramite backend 
+
+
+MATTIA:
+
+crea home page e login/signup (con bottoni a chiamata) e guarda come si chiamano le API di https://www.thecocktaildb.com/api.php
