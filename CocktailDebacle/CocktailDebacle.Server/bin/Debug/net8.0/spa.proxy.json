@@ -3,7 +3,7 @@
 "ServerUrl": "https://localhost:4200",
 "RedirectUrl": "",
 "LaunchCommand": "npm start",
-"WorkingDirectory": "C:\\Users\\EURONICS\\Desktop\\CocktailDebacle\\CocktailDebacle.Server\\..\\cocktaildebacle.client",
+"WorkingDirectory": "C:\\Users\\EURONICS\\Documents\\GitHub\\SfidaTerranova\\CocktailDebacle\\CocktailDebacle.Server\\..\\cocktaildebacle.client",
 "MaxTimeoutInSeconds": "120",
 "KeepRunning": "false"
 }
