@@ -1,0 +1,24 @@
+{
+  "Version": 1,
+  "Hash": "KafCZ508BAcI3S4Gv+mi+UBY8vHKdglK1XsfNrrKM5c=",
+  "Source": "CocktailDebacle.Server",
+  "BasePath": "_content/CocktailDebacle.Server",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [
+    {
+      "Identity": "C:\\Users\\EURONICS\\Desktop\\CocktailDebacle\\cocktaildebacle.client\\cocktaildebacle.client.esproj",
+      "Version": 2,
+      "Source": "cocktaildebacle.client",
+      "GetPublishAssetsTargets": "GetCurrentProjectPublishStaticWebAssetItems",
+      "AdditionalPublishProperties": "",
+      "AdditionalPublishPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained",
+      "GetBuildAssetsTargets": "GetCurrentProjectBuildStaticWebAssetItems",
+      "AdditionalBuildProperties": "",
+      "AdditionalBuildPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained"
+    }
+  ],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}
