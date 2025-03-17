@@ -24,11 +24,11 @@ namespace CocktailDebacle.Server.Controllers
 
         // GET: api/Users
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        public async Task<ActionResult<IEnumerable<Users>>> GetUsers()
         {
             var users = await Task.Run(() =>
             {
-                List<User> result = new List<User>();
+                List<Users> result = new List<Users>();
                 foreach (var user in _context.Users)
                 {
                     if (user != null)
@@ -60,12 +60,12 @@ namespace CocktailDebacle.Server.Controllers
         [HttpPost("register")]
         public async Task<ActionResult<User>> Register(User user)
         {
-            if (await _context.Users.AnyAsync(u => u.Email == user.Email)) {
+            if (await _context.UserList.AnyAsync(u => u.Email == user.Email)) {
                 return BadRequest("Questa Email è gia in uso");
             }
 
             user.Password = HashPassword(user.Password);
-            _context.Users.Add(user);
+            _context.UserList.Add(user);
             await _context.SaveChangesAsync();
             // gli Id vengono gestiti automaticamente da Entity Framework Core
             return CreatedAtAction(nameof(GetUser), new { id = user.Id }, new
@@ -92,7 +92,7 @@ namespace CocktailDebacle.Server.Controllers
         [HttpPost]
         public async Task<ActionResult<User>> PostUser(User user)
         {
-            _context.Users.Add(user);
+            _context.UserList.Add(user);
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
@@ -104,7 +104,7 @@ namespace CocktailDebacle.Server.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutUser(int id, User Upuser)
         {
-           var user = await _context.Users.FindAsync(id);
+           var user = await _context.UserList.FindAsync(id);
 
             // salviamo le modifiche nel database
             await _context.SaveChangesAsync();

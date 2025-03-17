@@ -6,46 +6,50 @@ namespace CocktailDebacle.Server.Service
     public class AppDbContext : DbContext
     {
         // Usa nomi chiari e coerenti per i DbSet
-        public DbSet<User> Users { get; set; }
+        public DbSet<Users> Users { get; set; }
+        public DbSet<User> UserList { get; set; }
         public DbSet<Cocktail> Cocktails { get; set; }
         public DbSet<RecommenderSystems> RecommenderSystems { get; set; }
-
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Configurazione per l'entità User
+            // Configurazione per l'entità Users
+            // modelBuilder.Entity<Users>(entity =>
+            // {
+            //     // Configurazione della relazione uno-a-molti tra Users e User
+            //     entity.HasMany(u => u.UserList)
+            //           .WithMany()
+            //           .UsingEntity(j => j.ToTable("Users"));
+            //         //   .OnDelete(DeleteBehavior.Cascade);
+            //         //Configurazione per l'entità User
+            // });
+
             modelBuilder.Entity<User>(entity =>
             {
-                // Chiave primaria
                 entity.HasKey(u => u.Id);
 
-                // Relazione uno-a-molti: User -> CocktailsLike
                 entity.HasMany(u => u.CocktailsLike)
-                      .WithMany() // Se non c'è una navigazione inversa
-                      .UsingEntity(j => j.ToTable("UserCocktailsLike")); // Tabella di join
+                    .WithMany()
+                    .UsingEntity(j => j.ToTable("UserCocktailsLike"));
 
-                // Relazione uno-a-molti: User -> CocktailsCreate
                 entity.HasMany(u => u.CocktailsCreate)
-                      .WithMany() // Se non c'è una navigazione inversa
-                      .UsingEntity(j => j.ToTable("UserCocktailsCreate")); // Tabella di join
+                    .WithMany()
+                    .UsingEntity(j => j.ToTable("UserCocktailsCreate"));
 
-                // Relazione uno-a-uno: User -> RecommenderSystems
                 entity.HasOne(u => u.RecommenderSystems)
-                      .WithOne() // Se non c'è una navigazione inversa
-                      .HasForeignKey<RecommenderSystems>(r => r.UserId); // Chiave esterna
+                    .WithOne()
+                    .HasForeignKey<RecommenderSystems>(r => r.UserId);
             });
 
-            // Configurazione per l'entità Cocktail
             modelBuilder.Entity<Cocktail>(entity =>
             {
-                entity.HasKey(c => c.Id); // Chiave primaria
+                entity.HasKey(c => c.Id);
             });
 
-            // Configurazione per l'entità RecommenderSystems
             modelBuilder.Entity<RecommenderSystems>(entity =>
             {
-                entity.HasKey(r => r.Id); // Chiave primaria
+                entity.HasKey(r => r.Id);
             });
         }
     }

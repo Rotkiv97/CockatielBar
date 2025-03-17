@@ -73,31 +73,26 @@ namespace CocktailDebacle.Server.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("EmailConfirmed")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("ImgProfile")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LastName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Leanguage")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Password")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PasswordConfirmed")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -109,7 +104,11 @@ namespace CocktailDebacle.Server.Migrations
 
                     b.Property<string>("UserName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int?>("UsersId")
+                        .HasColumnType("int");
 
                     b.Property<bool>("online")
                         .HasColumnType("bit");
@@ -117,6 +116,21 @@ namespace CocktailDebacle.Server.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("UserId");
+
+                    b.HasIndex("UsersId");
+
+                    b.ToTable("UserList");
+                });
+
+            modelBuilder.Entity("CocktailDebacle.Server.Models.Users", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.HasKey("Id");
 
                     b.ToTable("Users");
                 });
@@ -165,6 +179,10 @@ namespace CocktailDebacle.Server.Migrations
                     b.HasOne("CocktailDebacle.Server.Models.User", null)
                         .WithMany("Friends")
                         .HasForeignKey("UserId");
+
+                    b.HasOne("CocktailDebacle.Server.Models.Users", null)
+                        .WithMany("UserList")
+                        .HasForeignKey("UsersId");
                 });
 
             modelBuilder.Entity("CocktailUser", b =>
@@ -201,8 +219,12 @@ namespace CocktailDebacle.Server.Migrations
                 {
                     b.Navigation("Friends");
 
-                    b.Navigation("RecommenderSystems")
-                        .IsRequired();
+                    b.Navigation("RecommenderSystems");
+                });
+
+            modelBuilder.Entity("CocktailDebacle.Server.Models.Users", b =>
+                {
+                    b.Navigation("UserList");
                 });
 #pragma warning restore 612, 618
         }
