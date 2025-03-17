@@ -36,7 +36,7 @@ namespace CocktailDebacle.Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Cocktails");
+                    b.ToTable("DbCocktails");
                 });
 
             modelBuilder.Entity("CocktailDebacle.Server.Models.RecommenderSystems", b =>
@@ -55,7 +55,7 @@ namespace CocktailDebacle.Server.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("RecommenderSystems");
+                    b.ToTable("DbRecommenderSystems");
                 });
 
             modelBuilder.Entity("CocktailDebacle.Server.Models.User", b =>
@@ -92,6 +92,9 @@ namespace CocktailDebacle.Server.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<bool>("Online")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -107,11 +110,8 @@ namespace CocktailDebacle.Server.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<int?>("UsersId")
+                    b.Property<int>("UsersId")
                         .HasColumnType("int");
-
-                    b.Property<bool>("online")
-                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 
@@ -119,7 +119,7 @@ namespace CocktailDebacle.Server.Migrations
 
                     b.HasIndex("UsersId");
 
-                    b.ToTable("UserList");
+                    b.ToTable("DbUser");
                 });
 
             modelBuilder.Entity("CocktailDebacle.Server.Models.Users", b =>
@@ -132,7 +132,7 @@ namespace CocktailDebacle.Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("DbUsers");
                 });
 
             modelBuilder.Entity("CocktailUser", b =>
@@ -180,9 +180,13 @@ namespace CocktailDebacle.Server.Migrations
                         .WithMany("Friends")
                         .HasForeignKey("UserId");
 
-                    b.HasOne("CocktailDebacle.Server.Models.Users", null)
+                    b.HasOne("CocktailDebacle.Server.Models.Users", "Users")
                         .WithMany("UserList")
-                        .HasForeignKey("UsersId");
+                        .HasForeignKey("UsersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("CocktailUser", b =>

@@ -26,58 +26,109 @@ namespace CocktailDebacle.Server.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Users>>> GetUsers()
         {
-            var users = await Task.Run(() =>
-            {
-                List<Users> result = new List<Users>();
-                foreach (var user in _context.Users)
-                {
-                    if (user != null)
-                    {
-                        result.Add(user);
-                    }
-                }
-                return result;
-            });
-
-            return users;
+            return await _context.DbUsers.Include(u => u.UserList).ToListAsync();
         }
 
         // GET: api/Users/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUser(int id)
+        public async Task<ActionResult<Users>> GetUsersById(int id)
         {
-            var user = await _context.Users.FindAsync(id);
+            var users = await _context.DbUsers
+                                      .Include(u => u.UserList)
+                                      .FirstOrDefaultAsync(u => u.Id == id);
 
+            if (users == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(users);
+        }
+
+        // POST: api/Users/register - Aggiunge un nuovo utente a Users
+        [HttpPost("register/{usersId}")]
+        public async Task<ActionResult<User>> Register(int usersId, User user)
+        {
+            var users = await _context.DbUsers.FindAsync(usersId);
+            if (users == null)
+            {
+                return NotFound("Users non trovato.");
+            }
+
+            if (await _context.DbUser.AnyAsync(u => u.Email == user.Email))
+            {
+                return BadRequest("Questa Email è già in uso");
+            }
+
+            user.Password = HashPassword(user.Password);
+            user.UsersId = usersId; // Assegna l'utente a questo Users
+
+            _context.DbUser.Add(user);
+            users.UserList.Add(user);
+
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetUsersById), new { id = users.Id }, user);
+        }
+
+    // PUT: api/Users/{id} - Modifica un utente esistente
+    [HttpPut("{id}")]
+    public async Task<IActionResult> PutUser(int id, User updatedUser)
+    {
+        // Trova l'utente nel database
+        var user = await _context.DbUser.FindAsync(id);
+        if (user == null)
+        {
+            return NotFound("Utente non trovato.");
+        }
+
+        // Aggiorna solo i campi modificabili
+        user.UserName = updatedUser.UserName;
+        user.Name = updatedUser.Name;
+        user.LastName = updatedUser.LastName;
+        user.Email = updatedUser.Email;
+        user.PersonalizedExperience = updatedUser.PersonalizedExperience;
+        user.AcceptCookis = updatedUser.AcceptCookis;
+        user.Online = updatedUser.Online;
+        user.Leanguage = updatedUser.Leanguage;
+        user.ImgProfile = updatedUser.ImgProfile;
+
+        // Se la password viene cambiata, aggiorna l'hash
+        if (!string.IsNullOrEmpty(updatedUser.Password) && updatedUser.Password != user.Password)
+        {
+            user.Password = HashPassword(updatedUser.Password);
+        }
+
+        try
+        {
+            await _context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return StatusCode(500, "Errore durante l'aggiornamento dell'utente.");
+        }
+
+        return NoContent();
+    }
+
+
+        // DELETE: api/Users/5
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteUser(int id)
+        {
+            var user = await _context.DbUser.FindAsync(id);
             if (user == null)
             {
                 return NotFound();
             }
 
-            return Ok(user);
-        }
-
-        //registrazione 
-        [HttpPost("register")]
-        public async Task<ActionResult<User>> Register(User user)
-        {
-            if (await _context.UserList.AnyAsync(u => u.Email == user.Email)) {
-                return BadRequest("Questa Email è gia in uso");
-            }
-
-            user.Password = HashPassword(user.Password);
-            _context.UserList.Add(user);
+            _context.DbUser.Remove(user);
             await _context.SaveChangesAsync();
-            // gli Id vengono gestiti automaticamente da Entity Framework Core
-            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, new
-            {
-                user.Id,
-                user.Name,
-                user.LastName,
-                user.Email,
-                user.Password
-            });
+
+            return NoContent();
         }
 
+        // Metodo per l'hashing della password
         private string HashPassword(string password)
         {
             using (var sha256 = SHA256.Create())
@@ -85,58 +136,6 @@ namespace CocktailDebacle.Server.Controllers
                 byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
                 return Convert.ToBase64String(bytes);
             }
-        }
-
-
-        // POST: api/Users
-        [HttpPost]
-        public async Task<ActionResult<User>> PostUser(User user)
-        {
-            _context.UserList.Add(user);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
-        }
-
-        // PUT: api/Users/5 // aggiornamento dell'user
-        // Questa funzione è un endpoint API in ASP.NET Core che gestisce la modifica (aggiornamento)
-        // di un utente esistente nel database
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser(int id, User Upuser)
-        {
-           var user = await _context.UserList.FindAsync(id);
-
-            // salviamo le modifiche nel database
-            await _context.SaveChangesAsync();
-            // Aggiorna solo i campi modificabili
-            user.Name = Upuser.Name;
-            user.LastName = Upuser.LastName;
-            user.Email = Upuser.Email;
-            user.PersonalizedExperience = Upuser.PersonalizedExperience;
-            user.AcceptCookis = Upuser.AcceptCookis;
-            user.Leanguage = Upuser.Leanguage;
-            user.ImgProfile = Upuser.ImgProfile;
-            if (!string.IsNullOrEmpty(Upuser.Password) && Upuser.Password != user.Password)
-            {
-                user.Password = HashPassword(Upuser.Password);
-            }
-            return NoContent();
-        }
-
-        // DELETE: api/Users/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(int id)
-        {
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
-            {
-                return NotFound();
-            }
-
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
         }
     }
 }

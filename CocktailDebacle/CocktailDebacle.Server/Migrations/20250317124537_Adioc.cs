@@ -11,7 +11,7 @@ namespace CocktailDebacle.Server.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Cocktails",
+                name: "DbCocktails",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -20,11 +20,11 @@ namespace CocktailDebacle.Server.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Cocktails", x => x.Id);
+                    table.PrimaryKey("PK_DbCocktails", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Users",
+                name: "DbUsers",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -32,11 +32,11 @@ namespace CocktailDebacle.Server.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Users", x => x.Id);
+                    table.PrimaryKey("PK_DbUsers", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserList",
+                name: "DbUser",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -46,31 +46,32 @@ namespace CocktailDebacle.Server.Migrations
                     LastName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UsersId = table.Column<int>(type: "int", nullable: false),
                     PersonalizedExperience = table.Column<bool>(type: "bit", nullable: false),
                     AcceptCookis = table.Column<bool>(type: "bit", nullable: false),
-                    online = table.Column<bool>(type: "bit", nullable: false),
+                    Online = table.Column<bool>(type: "bit", nullable: false),
                     Leanguage = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: false),
                     ImgProfile = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserId = table.Column<int>(type: "int", nullable: true),
-                    UsersId = table.Column<int>(type: "int", nullable: true)
+                    UserId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserList", x => x.Id);
+                    table.PrimaryKey("PK_DbUser", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_UserList_UserList_UserId",
+                        name: "FK_DbUser_DbUser_UserId",
                         column: x => x.UserId,
-                        principalTable: "UserList",
+                        principalTable: "DbUser",
                         principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_UserList_Users_UsersId",
+                        name: "FK_DbUser_DbUsers_UsersId",
                         column: x => x.UsersId,
-                        principalTable: "Users",
-                        principalColumn: "Id");
+                        principalTable: "DbUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "RecommenderSystems",
+                name: "DbRecommenderSystems",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -79,11 +80,11 @@ namespace CocktailDebacle.Server.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_RecommenderSystems", x => x.Id);
+                    table.PrimaryKey("PK_DbRecommenderSystems", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_RecommenderSystems_UserList_UserId",
+                        name: "FK_DbRecommenderSystems_DbUser_UserId",
                         column: x => x.UserId,
-                        principalTable: "UserList",
+                        principalTable: "DbUser",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -99,15 +100,15 @@ namespace CocktailDebacle.Server.Migrations
                 {
                     table.PrimaryKey("PK_UserCocktailsCreate", x => new { x.CocktailsCreateId, x.User1Id });
                     table.ForeignKey(
-                        name: "FK_UserCocktailsCreate_Cocktails_CocktailsCreateId",
+                        name: "FK_UserCocktailsCreate_DbCocktails_CocktailsCreateId",
                         column: x => x.CocktailsCreateId,
-                        principalTable: "Cocktails",
+                        principalTable: "DbCocktails",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_UserCocktailsCreate_UserList_User1Id",
+                        name: "FK_UserCocktailsCreate_DbUser_User1Id",
                         column: x => x.User1Id,
-                        principalTable: "UserList",
+                        principalTable: "DbUser",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -123,24 +124,34 @@ namespace CocktailDebacle.Server.Migrations
                 {
                     table.PrimaryKey("PK_UserCocktailsLike", x => new { x.CocktailsLikeId, x.UserId });
                     table.ForeignKey(
-                        name: "FK_UserCocktailsLike_Cocktails_CocktailsLikeId",
+                        name: "FK_UserCocktailsLike_DbCocktails_CocktailsLikeId",
                         column: x => x.CocktailsLikeId,
-                        principalTable: "Cocktails",
+                        principalTable: "DbCocktails",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_UserCocktailsLike_UserList_UserId",
+                        name: "FK_UserCocktailsLike_DbUser_UserId",
                         column: x => x.UserId,
-                        principalTable: "UserList",
+                        principalTable: "DbUser",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_RecommenderSystems_UserId",
-                table: "RecommenderSystems",
+                name: "IX_DbRecommenderSystems_UserId",
+                table: "DbRecommenderSystems",
                 column: "UserId",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DbUser_UserId",
+                table: "DbUser",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DbUser_UsersId",
+                table: "DbUser",
+                column: "UsersId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserCocktailsCreate_User1Id",
@@ -151,23 +162,13 @@ namespace CocktailDebacle.Server.Migrations
                 name: "IX_UserCocktailsLike_UserId",
                 table: "UserCocktailsLike",
                 column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserList_UserId",
-                table: "UserList",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserList_UsersId",
-                table: "UserList",
-                column: "UsersId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "RecommenderSystems");
+                name: "DbRecommenderSystems");
 
             migrationBuilder.DropTable(
                 name: "UserCocktailsCreate");
@@ -176,13 +177,13 @@ namespace CocktailDebacle.Server.Migrations
                 name: "UserCocktailsLike");
 
             migrationBuilder.DropTable(
-                name: "Cocktails");
+                name: "DbCocktails");
 
             migrationBuilder.DropTable(
-                name: "UserList");
+                name: "DbUser");
 
             migrationBuilder.DropTable(
-                name: "Users");
+                name: "DbUsers");
         }
     }
 }

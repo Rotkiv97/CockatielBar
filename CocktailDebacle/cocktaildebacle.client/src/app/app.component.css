@@ -12,3 +12,15 @@ th, td {
 table {
     margin: 0 auto;
 }
+
+.navbar {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Aggiunge un'ombra */
+  }
+  
+.dropdown-menu {
+    border: none; /* Rimuove il bordo del menu a tendina */
+}
+.custom-icon {
+    width: 10%; /* Riduce la larghezza al 10% della dimensione originale */
+    height: auto; /* Mantiene le proporzioni dell'immagine */
+}

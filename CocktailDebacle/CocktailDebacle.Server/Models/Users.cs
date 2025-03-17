@@ -9,7 +9,6 @@ namespace CocktailDebacle.Server.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; } // Identificativo univoco per la tabella Users
-
         public ICollection<User> UserList { get; set; } = new List<User>(); // Lista di utenti
     }
 }
