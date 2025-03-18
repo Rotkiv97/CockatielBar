@@ -1,0 +1,11 @@
+{
+  "ExpandedNodes": [
+    "\\.angular",
+    "\\src\\app",
+    "\\src\\app\\home",
+    "\\src\\app\\login-signup",
+    "\\src\\app\\privacy-policy",
+    "\\src\\app\\sign-up"
+  ],
+  "PreviewInSolutionExplorer": false
+}

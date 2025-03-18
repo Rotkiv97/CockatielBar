@@ -1,0 +1,78 @@
+<!-- Navbar con icona del menu a tendina -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+    <!-- Bottone per il menu a tendina (visibile solo su schermi piccoli) -->
+    <button class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNavDropdown"
+            aria-controls="navbarNavDropdown"
+            aria-expanded="false"
+            aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Titolo centrato -->
+    <a class="navbar-brand position-absolute start-50 translate-middle-x" href="#">Cockatiels</a>
+
+    <!-- Menu a tendina con icona personalizzata -->
+    <div class="collapse navbar-collapse" id="navbarNavDropdown">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle"
+             href="#"
+             id="navbarDropdownMenuLink"
+             role="button"
+             data-bs-toggle="dropdown"
+             aria-expanded="false">
+            <!-- Icona personalizzata con immagine PNG -->
+            <img src="assets/menu-logo.png" alt="Menu" class="custom-icon">
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end p-2" aria-labelledby="navbarDropdownMenuLink">
+            <li><a class="dropdown-item" routerLink="/login-signup">Login/Signup</a></li>
+            <li><a class="dropdown-item" routerLink="/settings">Settings</a></li>
+            <li><a class="dropdown-item" routerLink="/logout">Log-out</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Contenuto della pagina di login -->
+<div class="d-flex justify-content-center align-items-center vh-100">
+  <div class="login-container p-4 shadow-lg position-relative">
+    <!-- Aggiunto position-relative -->
+    <!-- Icona freccia per tornare alla home -->
+    <div class="position-absolute top-0 start-0 m-3">
+      <a routerLink="/" class="text-decoration-none">
+        <i class="bi bi-arrow-left fs-3 text-black"></i> <!-- Icona freccia nera -->
+      </a>
+    </div>
+
+    <h2 class="text-center mb-4">Login</h2>
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <!-- Campo per l'username -->
+      <div class="mb-3">
+        <label for="username" class="form-label">Username</label>
+        <input type="text" class="form-control" id="username" formControlName="username" placeholder="Enter your username" required>
+      </div>
+
+      <!-- Campo per la password -->
+      <div class="mb-3">
+        <label for="password" class="form-label">Password</label>
+        <input type="password" class="form-control" id="password" formControlName="password" placeholder="Enter your password" required>
+      </div>
+
+      <!-- Bottone di login -->
+      <div class="d-grid">
+        <button type="submit" class="btn btn-primary" [disabled]="loginForm.invalid">Login</button>
+      </div>
+    </form>
+
+    <!-- Link per la registrazione -->
+    <div class="text-center mt-3">
+      <p>Not signed up yet? <a routerLink="/sign-up">Click here</a></p>
+    </div>
+  </div>
+</div>
