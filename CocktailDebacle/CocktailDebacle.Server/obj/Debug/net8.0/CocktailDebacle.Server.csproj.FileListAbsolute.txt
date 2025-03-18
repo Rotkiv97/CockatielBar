@@ -283,3 +283,5 @@ C:\Users\EURONICS\Documents\GitHub\SfidaTerranova\CocktailDebacle\CocktailDebacl
 C:\Users\EURONICS\Documents\GitHub\SfidaTerranova\CocktailDebacle\CocktailDebacle.Server\obj\Debug\net8.0\CocktailDebacle.Server.pdb
 C:\Users\EURONICS\Documents\GitHub\SfidaTerranova\CocktailDebacle\CocktailDebacle.Server\obj\Debug\net8.0\CocktailDebacle.Server.genruntimeconfig.cache
 C:\Users\EURONICS\Documents\GitHub\SfidaTerranova\CocktailDebacle\CocktailDebacle.Server\obj\Debug\net8.0\ref\CocktailDebacle.Server.dll
+C:\Users\EURONICS\Documents\GitHub\SfidaTerranova\CocktailDebacle\CocktailDebacle.Server\bin\Debug\net8.0\BCrypt.Net-Next.dll
+C:\Users\EURONICS\Documents\GitHub\SfidaTerranova\CocktailDebacle\CocktailDebacle.Server\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll

@@ -16,10 +16,12 @@ namespace CocktailDebacle.Server.Controllers
     public class UsersController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IAuthService _authService;
 
-        public UsersController(AppDbContext context)
+        public UsersController(AppDbContext context, IAuthService authService)
         {
             _context = context;
+            _authService = authService;
         }
 
         // GET: api/Users
@@ -29,20 +31,41 @@ namespace CocktailDebacle.Server.Controllers
             return await _context.DbUsers.Include(u => u.UserList).ToListAsync();
         }
 
-        // GET: api/Users/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Users>> GetUsersById(int id)
+        // GET: api/Users/5 - Restituisce un utente in base alla passsword e all'email
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            var users = await _context.DbUsers
-                                      .Include(u => u.UserList)
-                                      .FirstOrDefaultAsync(u => u.Id == id);
+            var token = await _authService.AuthenticateUser(request.EmailRequest, request.PasswordRequest);
 
-            if (users == null)
+            if (token == null)
             {
-                return NotFound();
+                return Unauthorized(new { message = "Credenziali non valide" });
             }
 
-            return Ok(users);
+            // Trova l'utente corrispondente
+            var user = await _context.DbUser
+                .Where(u => u.Email == request.EmailRequest)
+                .Select(u => new
+                {
+                    u.Id,
+                    u.UserName,
+                    u.Name,
+                    u.LastName,
+                    u.Email,
+                    u.PersonalizedExperience,
+                    u.AcceptCookis,
+                    u.Online,
+                    u.Leanguage,
+                    u.ImgProfile
+                })
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                return NotFound("Utente non trovato.");
+            }
+
+            return Ok(new { token, user });
         }
 
         // POST: api/Users/register - Aggiunge un nuovo utente a Users
@@ -60,7 +83,7 @@ namespace CocktailDebacle.Server.Controllers
                 return BadRequest("Questa Email è già in uso");
             }
 
-            user.Password = HashPassword(user.Password);
+            user.PasswordHash = HashPassword(user.PasswordHash);
             user.UsersId = usersId; // Assegna l'utente a questo Users
 
             _context.DbUser.Add(user);
@@ -68,7 +91,7 @@ namespace CocktailDebacle.Server.Controllers
 
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetUsersById), new { id = users.Id }, user);
+            return CreatedAtAction(nameof(Login), new { id = users.Id }, user);
         }
 
     // PUT: api/Users/{id} - Modifica un utente esistente
@@ -94,9 +117,9 @@ namespace CocktailDebacle.Server.Controllers
         user.ImgProfile = updatedUser.ImgProfile;
 
         // Se la password viene cambiata, aggiorna l'hash
-        if (!string.IsNullOrEmpty(updatedUser.Password) && updatedUser.Password != user.Password)
+        if (!string.IsNullOrEmpty(updatedUser.PasswordHash) && updatedUser.PasswordHash != user.PasswordHash)
         {
-            user.Password = HashPassword(updatedUser.Password);
+            user.PasswordHash = HashPassword(updatedUser.PasswordHash);
         }
 
         try
@@ -137,5 +160,11 @@ namespace CocktailDebacle.Server.Controllers
                 return Convert.ToBase64String(bytes);
             }
         }
+    }
+
+    public class LoginRequest
+    {
+        public string EmailRequest { get; set; } = string.Empty;
+        public string PasswordRequest { get; set; } = string.Empty;
     }
 }
