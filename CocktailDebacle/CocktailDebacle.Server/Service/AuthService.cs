@@ -27,9 +27,9 @@ namespace CocktailDebacle.Server.Models
             _configuration = configuration;
         }
 
-        public async Task<string> AuthenticateUser(string email, string password)
+        public async Task<string> AuthenticateUser(string UserName, string password)
         {
-            var user = await _context.DbUser.SingleOrDefaultAsync(u => u.Email == email);
+            var user = await _context.DbUser.SingleOrDefaultAsync(u => u.UserName == UserName);
             
             if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
             {
@@ -58,7 +58,7 @@ namespace CocktailDebacle.Server.Models
                 Subject = new ClaimsIdentity(new[]
                 {
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString() ?? string.Empty),
-                    new Claim(ClaimTypes.Email, user.Email)
+                    new Claim(ClaimTypes.Name, user.UserName)
                 }),
                 Expires = DateTime.UtcNow.AddHours(1),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)

@@ -7,6 +7,6 @@ namespace CocktailDebacle.Server.Service
 {
     public interface IAuthService
     {
-        Task<string> AuthenticateUser(string email, string password);
+        Task<string> AuthenticateUser(string UserName, string password);
     }
 }

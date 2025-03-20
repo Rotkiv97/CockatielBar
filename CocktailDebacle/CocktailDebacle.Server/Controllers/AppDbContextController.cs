@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Security.Cryptography;
 using System.Text;
 using System;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace CocktailDebacle.Server.Controllers
 {
@@ -33,9 +34,10 @@ namespace CocktailDebacle.Server.Controllers
 
         // GET: api/Users/5 - Restituisce un utente in base alla passsword e all'email
         [HttpPost("login")]
+        [EnableRateLimiting("fixed")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            var token = await _authService.AuthenticateUser(request.EmailRequest, request.PasswordRequest);
+            var token = await _authService.AuthenticateUser(request.UserNameRequest, request.PasswordRequest);
 
             if (token == null)
             {
@@ -44,7 +46,7 @@ namespace CocktailDebacle.Server.Controllers
 
             // Trova l'utente corrispondente
             var user = await _context.DbUser
-                .Where(u => u.Email == request.EmailRequest)
+                .Where(u => u.UserName == request.UserNameRequest)
                 .Select(u => new
                 {
                     u.Id,
@@ -68,74 +70,74 @@ namespace CocktailDebacle.Server.Controllers
             return Ok(new { token, user });
         }
 
-        // POST: api/Users/register - Aggiunge un nuovo utente a Users
-        [HttpPost("register/{usersId}")]
-        public async Task<ActionResult<User>> Register(int usersId, User user)
+            // POST: api/Users/register - Aggiunge un nuovo utente a Users
+        [HttpPost("register")]
+        public async Task<ActionResult<User>> Register([FromBody] User user)
         {
-            var users = await _context.DbUsers.FindAsync(usersId);
-            if (users == null)
+            // Controlla se esiste già un utente con la stessa email
+            bool emailExists = await _context.DbUser.AnyAsync(u => u.Email == user.Email);
+            if (emailExists)
             {
-                return NotFound("Users non trovato.");
+                return BadRequest("Questa Email è già in uso.");
             }
-
-            if (await _context.DbUser.AnyAsync(u => u.Email == user.Email))
-            {
-                return BadRequest("Questa Email è già in uso");
-            }
-
+            // Hash della password
             user.PasswordHash = HashPassword(user.PasswordHash);
-            user.UsersId = usersId; // Assegna l'utente a questo Users
 
+            // Aggiungi l'utente alla tabella User
             _context.DbUser.Add(user);
-            users.UserList.Add(user);
 
+            // Associa l'utente alla lista di Users
+            // usersGroup.UserList.Add(user); // This line is commented out because usersGroup is not defined
+
+            // Salva i cambiamenti
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(Login), new { id = users.Id }, user);
+            return CreatedAtAction(nameof(Login), new { id = user.Id }, user);
         }
 
-    // PUT: api/Users/{id} - Modifica un utente esistente
-    [HttpPut("{id}")]
-    public async Task<IActionResult> PutUser(int id, User updatedUser)
-    {
-        // Trova l'utente nel database
-        var user = await _context.DbUser.FindAsync(id);
-        if (user == null)
+
+        // PUT: api/Users/{id} - Modifica un utente esistente
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutUser(int id, User updatedUser)
         {
-            return NotFound("Utente non trovato.");
+            // Trova l'utente nel database
+            var user = await _context.DbUser.FindAsync(id);
+            if (user == null)
+            {
+                return NotFound("Utente non trovato.");
+            }
+
+            // Aggiorna solo i campi modificabili
+            user.UserName = updatedUser.UserName;
+            user.Name = updatedUser.Name;
+            user.LastName = updatedUser.LastName;
+            user.Email = updatedUser.Email;
+            user.PersonalizedExperience = updatedUser.PersonalizedExperience;
+            user.AcceptCookis = updatedUser.AcceptCookis;
+            user.Online = updatedUser.Online;
+            user.Leanguage = updatedUser.Leanguage;
+            user.ImgProfile = updatedUser.ImgProfile;
+
+            // Se la password viene cambiata, aggiorna l'hash
+            if (!string.IsNullOrEmpty(updatedUser.PasswordHash) && updatedUser.PasswordHash != user.PasswordHash)
+            {
+                user.PasswordHash = HashPassword(updatedUser.PasswordHash);
+            }
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return StatusCode(500, "Errore durante l'aggiornamento dell'utente.");
+            }
+
+            return NoContent();
         }
 
-        // Aggiorna solo i campi modificabili
-        user.UserName = updatedUser.UserName;
-        user.Name = updatedUser.Name;
-        user.LastName = updatedUser.LastName;
-        user.Email = updatedUser.Email;
-        user.PersonalizedExperience = updatedUser.PersonalizedExperience;
-        user.AcceptCookis = updatedUser.AcceptCookis;
-        user.Online = updatedUser.Online;
-        user.Leanguage = updatedUser.Leanguage;
-        user.ImgProfile = updatedUser.ImgProfile;
 
-        // Se la password viene cambiata, aggiorna l'hash
-        if (!string.IsNullOrEmpty(updatedUser.PasswordHash) && updatedUser.PasswordHash != user.PasswordHash)
-        {
-            user.PasswordHash = HashPassword(updatedUser.PasswordHash);
-        }
-
-        try
-        {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            return StatusCode(500, "Errore durante l'aggiornamento dell'utente.");
-        }
-
-        return NoContent();
-    }
-
-
-        // DELETE: api/Users/5
+            // DELETE: api/Users/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
@@ -148,23 +150,23 @@ namespace CocktailDebacle.Server.Controllers
             _context.DbUser.Remove(user);
             await _context.SaveChangesAsync();
 
-            return NoContent();
-        }
+                return NoContent();
+            }
 
-        // Metodo per l'hashing della password
-        private string HashPassword(string password)
-        {
-            using (var sha256 = SHA256.Create())
+            // Metodo per l'hashing della password
+            private string HashPassword(string password)
             {
-                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-                return Convert.ToBase64String(bytes);
+                using (var sha256 = SHA256.Create())
+                {
+                    byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+                    return Convert.ToBase64String(bytes);
+                }
             }
         }
-    }
 
-    public class LoginRequest
-    {
-        public string EmailRequest { get; set; } = string.Empty;
-        public string PasswordRequest { get; set; } = string.Empty;
-    }
+        public class LoginRequest
+        {
+            public string UserNameRequest { get; set; } = string.Empty;
+            public string PasswordRequest { get; set; } = string.Empty;
+        }
 }

@@ -18,7 +18,8 @@ namespace CocktailDebacle.Server.Service
             modelBuilder.Entity<Users>()
                 .HasMany(u => u.UserList)
                 .WithOne(u => u.Users)
-                .HasForeignKey(u => u.UsersId);
+                .HasForeignKey(u => u.UsersId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // Relazioni per User
             modelBuilder.Entity<User>()

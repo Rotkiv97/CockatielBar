@@ -6,7 +6,17 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using CocktailDebacle.Server.Service;
 var builder = WebApplication.CreateBuilder(args);
-
+var MyallowSpecificOrigins = "_myAllowSpecificOrigins";
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: MyallowSpecificOrigins,
+                      builder =>
+                      {
+                          builder.WithOrigins("http://localhost:4200")
+                                 .AllowAnyHeader()
+                                 .AllowAnyMethod();
+                      });
+});
 // Add services to the container.
 
 builder.Services.AddControllers();
@@ -45,6 +55,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors(MyallowSpecificOrigins);
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
