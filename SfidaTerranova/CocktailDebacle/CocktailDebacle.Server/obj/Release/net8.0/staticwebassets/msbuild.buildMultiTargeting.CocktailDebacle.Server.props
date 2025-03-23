@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\CocktailDebacle.Server.props" />
+</Project>

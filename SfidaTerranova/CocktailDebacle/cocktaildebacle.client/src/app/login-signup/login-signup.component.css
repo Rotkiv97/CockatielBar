@@ -1,0 +1,49 @@
+/* Stile per il contenitore del login */
+.login-container {
+  background-color: #ffffff; /* Sfondo bianco */
+  border-radius: 10px; /* Bordi arrotondati */
+  width: 400px; /* Larghezza del rettangolo */
+  max-width: 90%; /* Larghezza massima per dispositivi piccoli */
+  padding: 20px; /* Spaziatura interna */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Ombra per l'effetto in rilievo */
+}
+
+/* Stile per il titolo */
+h2 {
+  color: #333; /* Colore del testo */
+  font-weight: bold; /* Testo in grassetto */
+}
+
+/* Stile per il link di registrazione */
+a {
+  color: #007bff; /* Colore del link */
+  text-decoration: none; /* Rimuove la sottolineatura */
+}
+
+  a:hover {
+    text-decoration: underline; /* Sottolineatura al passaggio del mouse */
+  }
+
+/* Stile per la freccia di ritorno alla home */
+.back-arrow {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  cursor: pointer;
+}
+
+/* Stile per l'icona del menu */
+.custom-icon {
+  width: 24px; /* Larghezza dell'icona */
+  height: 24px; /* Altezza dell'icona */
+  cursor: pointer; /* Cambia il cursore in una mano al passaggio del mouse */
+}
+/* Stile per l'icona freccia */
+.bi-arrow-left-circle {
+  color: #007bff; /* Colore dell'icona */
+  transition: color 0.2s ease; /* Transizione al passaggio del mouse */
+}
+
+  .bi-arrow-left-circle:hover {
+    color: #0056b3; /* Cambia colore al passaggio del mouse */
+  }

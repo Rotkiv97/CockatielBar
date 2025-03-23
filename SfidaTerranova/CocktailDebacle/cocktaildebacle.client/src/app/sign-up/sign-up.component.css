@@ -1,0 +1,41 @@
+/* Stile per il contenitore del signup */
+.signup-container {
+  background-color: #ffffff; /* Sfondo bianco */
+  border-radius: 10px; /* Bordi arrotondati */
+  width: 400px; /* Larghezza del rettangolo */
+  max-width: 90%; /* Larghezza massima per dispositivi piccoli */
+  padding: 20px; /* Spaziatura interna */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Ombra per l'effetto in rilievo */
+}
+
+/* Stile per il titolo */
+h2 {
+  color: #333; /* Colore del testo */
+  font-weight: bold; /* Testo in grassetto */
+}
+
+/* Stile per il link di registrazione */
+a {
+  color: #007bff; /* Colore del link */
+  text-decoration: none; /* Rimuove la sottolineatura */
+}
+
+  a:hover {
+    text-decoration: underline; /* Sottolineatura al passaggio del mouse */
+  }
+.form-check-label {
+  font-size: 13px;
+}
+/* Stile per il link della Privacy Policy */
+.privacy-link {
+  font-size: 13px; /* Dimensione del font */
+  color: #007bff; /* Colore del link */
+  text-decoration: none; /* Rimuove la sottolineatura */
+  cursor: pointer; /* Cambia il cursore in una mano */
+  margin-left: 5px; /* Spaziatura a sinistra */
+}
+
+  .privacy-link:hover {
+    text-decoration: underline; /* Sottolineatura al passaggio del mouse */
+    color: #0056b3; /* Cambia colore al passaggio del mouse */
+  }
