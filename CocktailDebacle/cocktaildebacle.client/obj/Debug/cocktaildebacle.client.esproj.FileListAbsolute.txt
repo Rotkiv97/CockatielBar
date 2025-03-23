@@ -1,2 +1,0 @@
-C:\Users\EURONICS\Desktop\CocktailDebacle\cocktaildebacle.client\obj\Debug\cocktaildebacle.client.esproj.CoreCompileInputs.cache
-C:\Users\EURONICS\Documents\GitHub\SfidaTerranova\CocktailDebacle\cocktaildebacle.client\obj\Debug\cocktaildebacle.client.esproj.CoreCompileInputs.cache

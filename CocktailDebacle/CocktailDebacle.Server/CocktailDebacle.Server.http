@@ -1,6 +1,0 @@
-@CocktailDebacle.Server_HostAddress = http://localhost:5052
-
-GET {{CocktailDebacle.Server_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
