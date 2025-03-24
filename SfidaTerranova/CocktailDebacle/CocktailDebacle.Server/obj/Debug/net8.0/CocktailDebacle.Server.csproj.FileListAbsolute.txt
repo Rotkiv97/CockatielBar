@@ -578,3 +578,4 @@ C:\Users\matti\OneDrive\Desktop\TerraNovaChallengeLatest\SfidaTerranova\Cocktail
 C:\Users\matti\OneDrive\Desktop\TerraNovaChallengeLatest\SfidaTerranova\CocktailDebacle\CocktailDebacle.Server\obj\Debug\net8.0\CocktailDebacle.Server.pdb
 C:\Users\matti\OneDrive\Desktop\TerraNovaChallengeLatest\SfidaTerranova\CocktailDebacle\CocktailDebacle.Server\obj\Debug\net8.0\CocktailDebacle.Server.genruntimeconfig.cache
 C:\Users\matti\OneDrive\Desktop\TerraNovaChallengeLatest\SfidaTerranova\CocktailDebacle\CocktailDebacle.Server\obj\Debug\net8.0\ref\CocktailDebacle.Server.dll
+C:\Users\matti\OneDrive\Desktop\TerraNovaChallengeLatest\SfidaTerranova\CocktailDebacle\CocktailDebacle.Server\obj\Debug\net8.0\CocktailDebacle.Server.sourcelink.json

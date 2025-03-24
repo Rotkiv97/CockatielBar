@@ -39,3 +39,13 @@ a {
     text-decoration: underline; /* Sottolineatura al passaggio del mouse */
     color: #0056b3; /* Cambia colore al passaggio del mouse */
   }
+  .alert {
+    opacity: 0;
+    animation: fadeIn 0.3s ease-in forwards;
+  }
+  
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+    }
+  }

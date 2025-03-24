@@ -1,4 +1,12 @@
 <div class="d-flex justify-content-center align-items-center vh-100">
+  <!-- Messaggio di stato -->
+  <div *ngIf="message" class="alert alert-dismissible fade show" 
+       [ngClass]="{'alert-success': isSuccess, 'alert-danger': !isSuccess}"
+       style="position: fixed; top: 20px; z-index: 1000; width: 80%; max-width: 500px;">
+    {{message}}
+    <button type="button" class="btn-close" (click)="dismissMessage()"></button>
+  </div>
+
   <div class="signup-container p-4 shadow-lg position-relative">
     <!-- Icona freccia per tornare alla home -->
     <div class="position-absolute top-0 start-0 m-3">
