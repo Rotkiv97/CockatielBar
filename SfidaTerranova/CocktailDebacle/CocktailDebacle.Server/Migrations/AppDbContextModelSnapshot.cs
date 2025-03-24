@@ -58,6 +58,7 @@ namespace CocktailDebacle.Server.Migrations
                     b.ToTable("DbRecommenderSystems");
                 });
 
+<<<<<<< Updated upstream:SfidaTerranova/CocktailDebacle/CocktailDebacle.Server/Migrations/AppDbContextModelSnapshot.cs
             modelBuilder.Entity("CocktailDebacle.Server.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -122,6 +123,8 @@ namespace CocktailDebacle.Server.Migrations
                     b.ToTable("DbUser");
                 });
 
+=======
+>>>>>>> Stashed changes:CocktailDebacle/CocktailDebacle.Server/Migrations/AppDbContextModelSnapshot.cs
             modelBuilder.Entity("CocktailDebacle.Server.Models.Users", b =>
                 {
                     b.Property<int>("Id")
@@ -165,28 +168,77 @@ namespace CocktailDebacle.Server.Migrations
                     b.ToTable("UserCocktailsCreate", (string)null);
                 });
 
+            modelBuilder.Entity("User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("AcceptCookis")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImgProfile")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Leanguage")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("Online")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("PersonalizedExperience")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("UsersId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UsersId");
+
+                    b.ToTable("DbUser");
+                });
+
             modelBuilder.Entity("CocktailDebacle.Server.Models.RecommenderSystems", b =>
                 {
-                    b.HasOne("CocktailDebacle.Server.Models.User", null)
+                    b.HasOne("User", null)
                         .WithOne("RecommenderSystems")
                         .HasForeignKey("CocktailDebacle.Server.Models.RecommenderSystems", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("CocktailDebacle.Server.Models.User", b =>
-                {
-                    b.HasOne("CocktailDebacle.Server.Models.User", null)
-                        .WithMany("Friends")
-                        .HasForeignKey("UserId");
-
-                    b.HasOne("CocktailDebacle.Server.Models.Users", "Users")
-                        .WithMany("UserList")
-                        .HasForeignKey("UsersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("CocktailUser", b =>
@@ -197,7 +249,7 @@ namespace CocktailDebacle.Server.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("CocktailDebacle.Server.Models.User", null)
+                    b.HasOne("User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -212,23 +264,38 @@ namespace CocktailDebacle.Server.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("CocktailDebacle.Server.Models.User", null)
+                    b.HasOne("User", null)
                         .WithMany()
                         .HasForeignKey("User1Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("CocktailDebacle.Server.Models.User", b =>
+            modelBuilder.Entity("User", b =>
                 {
-                    b.Navigation("Friends");
+                    b.HasOne("User", null)
+                        .WithMany("Friends")
+                        .HasForeignKey("UserId");
 
-                    b.Navigation("RecommenderSystems");
+                    b.HasOne("CocktailDebacle.Server.Models.Users", "Users")
+                        .WithMany("UserList")
+                        .HasForeignKey("UsersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("CocktailDebacle.Server.Models.Users", b =>
                 {
                     b.Navigation("UserList");
+                });
+
+            modelBuilder.Entity("User", b =>
+                {
+                    b.Navigation("Friends");
+
+                    b.Navigation("RecommenderSystems");
                 });
 #pragma warning restore 612, 618
         }
