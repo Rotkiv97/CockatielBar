@@ -2,7 +2,6 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { UserService } from '../services/user.service';
-import { Router } from '@angular/router';
 
 interface User {
   UserName: string;
@@ -15,31 +14,25 @@ interface User {
 
 @Component({
   selector: 'app-sign-up',
-  standalone: true,
-  imports: [ReactiveFormsModule, CommonModule],
+  standalone: true, // Imposta il componente come standalone
+  imports: [ReactiveFormsModule, CommonModule], // Importa i moduli necessari
   templateUrl: './sign-up.component.html',
   styleUrls: ['./sign-up.component.css']
 })
 export class SignUpComponent {
   signupForm: FormGroup;
-  message: string = '';
-  isSuccess: boolean = false;
 
-  constructor(
-    private fb: FormBuilder, 
-    private userService: UserService,
-    private router: Router
-  ) {
+  constructor(private fb: FormBuilder, private userService: UserService) {
     this.signupForm = this.fb.group({
-      FirstName: ['', Validators.required],
-      LastName: ['', Validators.required],
-      UserName: ['', Validators.required],
-      Email: ['', [Validators.required, Validators.email]],
-      ConfirmEmail: ['', [Validators.required, Validators.email]],
-      Password: ['', [Validators.required, Validators.minLength(8)]],
-      ConfirmPassword: ['', [Validators.required, Validators.minLength(8)]],
-      AcceptCookies: [false, Validators.requiredTrue]
-    }, { validators: [this.checkPasswords, this.checkEmails] });
+      FirstName: ['', Validators.required], // Nome
+      LastName: ['', Validators.required], // Cognome
+      UserName: ['', Validators.required], // Username
+      Email: ['', [Validators.required, Validators.email]], // Email
+      ConfirmEmail: ['', [Validators.required, Validators.email]], // Conferma email
+      Password: ['', [Validators.required, Validators.minLength(8)]], // Password
+      ConfirmPassword: ['', [Validators.required, Validators.minLength(8)]], // Conferma password
+      AcceptCookies: [false, Validators.requiredTrue] // Accettazione cookie
+    }, { validators: [this.checkPasswords, this.checkEmails] }); // Validatori personalizzati
   }
 
   // Validatore personalizzato per conferma password
@@ -60,48 +53,20 @@ export class SignUpComponent {
   onSubmit() {
     if (this.signupForm.valid) {
       const user: User = {
-        UserName: this.signupForm.value.UserName,
-        Name: this.signupForm.value.FirstName,
-        LastName: this.signupForm.value.LastName,
-        Email: this.signupForm.value.Email,
-        PasswordHash: this.signupForm.value.Password,
-        AcceptCookies: this.signupForm.value.AcceptCookies
+        UserName: this.signupForm.value.UserName, // Usa "UserName"
+        Name: this.signupForm.value.FirstName,   // Usa "FirstName"
+        LastName: this.signupForm.value.LastName, // Usa "LastName"
+        Email: this.signupForm.value.Email,      // Usa "Email"
+        PasswordHash: this.signupForm.value.Password, // Usa "Password"
+        AcceptCookies: this.signupForm.value.AcceptCookies // Usa "AcceptCookies"
       };
-      
+      console.log('Dati utente:', user);
       this.userService.registerUser(user).subscribe({
-        next: (response) => {
-          this.showMessage('Iscrizione avvenuta con successo!', true);
-          // Reindirizza alla home dopo 2 secondi
-          setTimeout(() => {
-            this.router.navigate(['/']);
-          }, 2000);
-        },
-        error: (error) => {
-          console.error('Errore durante la registrazione:', error);
-          const errorMessage = error.error?.message || 'Errore durante la registrazione. Riprova più tardi.';
-          this.showMessage(errorMessage, false);
-        }
+        next: (response) => console.log('Utente registrato:', response),
+        error: (error) => console.error('Errore durante la registrazione:', error)
       });
     } else {
-      this.showMessage('Per favore, compila correttamente tutti i campi.', false);
+      console.log('Il form non è valido');
     }
-  }
-
-  // Mostra un messaggio di stato
-  showMessage(msg: string, isSuccess: boolean) {
-    this.message = msg;
-    this.isSuccess = isSuccess;
-    
-    // Nascondi automaticamente il messaggio dopo 5 secondi
-    if (isSuccess) {
-      setTimeout(() => {
-        this.dismissMessage();
-      }, 5000);
-    }
-  }
-
-  // Nasconde il messaggio
-  dismissMessage() {
-    this.message = '';
   }
 }

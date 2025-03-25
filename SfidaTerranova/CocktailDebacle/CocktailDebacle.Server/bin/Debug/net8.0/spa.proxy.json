@@ -1,0 +1,10 @@
+{
+"SpaProxyServer": {
+"ServerUrl": "https://localhost:4200",
+"RedirectUrl": "",
+"LaunchCommand": "npm start",
+"WorkingDirectory": "C:\\Users\\matti\\OneDrive\\Desktop\\TerraNovaChallengeLatest\\SfidaTerranova\\CocktailDebacle\\CocktailDebacle.Server\\..\\cocktaildebacle.client",
+"MaxTimeoutInSeconds": "120",
+"KeepRunning": "false"
+}
+}
