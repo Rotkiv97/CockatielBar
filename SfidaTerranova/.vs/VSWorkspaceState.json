@@ -2,11 +2,10 @@
   "ExpandedNodes": [
     "",
     "\\CocktailDebacle",
-    "\\CocktailDebacle\\CocktailDebacle.Server",
     "\\CocktailDebacle\\CocktailDebacle.Server\\Controllers",
     "\\CocktailDebacle\\CocktailDebacle.Server\\Models",
     "\\CocktailDebacle\\CocktailDebacle.Server\\Service"
   ],
-  "SelectedNode": "\\CocktailDebacle\\CocktailDebacle.Server\\Controllers\\AppDbContextController.cs",
+  "SelectedNode": "\\CocktailDebacle\\CocktailDebacle.Server",
   "PreviewInSolutionExplorer": false
 }
