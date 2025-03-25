@@ -5,7 +5,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using CocktailDebacle.Server.Service;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Configura il CORS
 var MyallowSpecificOrigins = "_myAllowSpecificOrigins";
 builder.Services.AddCors(options =>
 {
@@ -18,16 +21,15 @@ builder.Services.AddCors(options =>
                     .AllowAnyMethod();
         });
 });
-// Add services to the container.
 
-builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-
+// Configura il Database
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddHttpClient<CocktailService>();
+builder.Services.AddScoped<CocktailService>();
+
+// Configura l'autenticazione con JWT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -36,33 +38,50 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"])),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
             ValidateIssuer = false,
-            ValidateAudience = false
+            ValidateAudience = false,
+            ValidateLifetime = true
         };
     });
 
+// Configura l'Autorizzazione
+builder.Services.AddAuthorization();
+
+// Registra il Servizio di Autenticazione
 builder.Services.AddScoped<IAuthService, AuthService>();
+
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-app.UseDefaultFiles();
-app.UseStaticFiles();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+using (var scope = app.Services.CreateScope())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    var services = scope.ServiceProvider;
+    var cocktailService = services.GetRequiredService<CocktailService>();
+    await cocktailService.ImportCocktailsAsync();
 }
 
+//ATTIVA SWAGGER ANCHE IN PRODUZIONE SE NECESSARIO
+if (app.Environment.IsDevelopment() || app.Environment.IsProduction()) 
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Cocktail API V1");
+        c.RoutePrefix = "swagger"; // Imposta il percorso di Swagger
+    });
+}
+
+// Middleware
 app.UseCors(MyallowSpecificOrigins);
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-app.MapFallbackToFile("/index.html");
 
 app.Run();

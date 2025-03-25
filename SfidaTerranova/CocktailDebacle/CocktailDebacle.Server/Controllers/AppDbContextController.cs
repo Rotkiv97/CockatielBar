@@ -9,12 +9,13 @@ using System.Security.Cryptography;
 using System.Text;
 using System;
 using Microsoft.AspNetCore.RateLimiting;
-using CocktailDebacle.Server.Models.DTOs; // Importa il namespace del DTO
+using CocktailDebacle.Server.Models.DTOs;
+using Microsoft.AspNetCore.Authorization; // Importa il namespace del DTO
 
 
 namespace CocktailDebacle.Server.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/Cocktaildebacle")]
     [ApiController]
     public class UsersController : ControllerBase
     {
@@ -28,7 +29,7 @@ namespace CocktailDebacle.Server.Controllers
         // COCKTAILS /////////////////////////////////////////////////////
 
 
-        [HttpGet("all cocktails")]
+        [HttpGet("all-cocktails")]
         public async Task<ActionResult<IEnumerable<Cocktail>>> GetAllCocktails()
         {
             var cocktails = await _context.DbCocktails.Include(c => c.Ingredients).ToListAsync();
@@ -48,6 +49,48 @@ namespace CocktailDebacle.Server.Controllers
 
 
         // USER /////////////////////////////////////////////////////
+
+        // GET: api/Users - Restituisce tutti gli utenti
+        [HttpGet("all-users")]
+        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        {
+            return await _context.DbUser.ToListAsync();
+        }
+
+        // GET: api/Users/{id} - Restituisce un utente specifico        
+        [Authorize] // proteggere l'endpoint con JWT
+        [HttpGet("user")]
+        public async Task<ActionResult<User>> GetUserProfile()
+        {
+            var UserName = User.Identity?.Name;
+            if(string.IsNullOrEmpty(UserName))
+            {
+                return NotFound();
+            }
+            var user = await _context.DbUser
+                .Where(u => u.UserName == UserName)
+                .Select(u => new
+                {
+                    u.Id,
+                    u.UserName,
+                    u.Name,
+                    u.LastName,
+                    u.Email,
+                    //u.PersonalizedExperience,
+                    u.AcceptCookies,
+                    //u.Online,
+                    //u.Language,
+                    //u.ImgProfile
+                })
+                .FirstOrDefaultAsync();
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return Ok(user);
+        }
+
+
         [HttpPost("login")]
         [EnableRateLimiting("fixed")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
