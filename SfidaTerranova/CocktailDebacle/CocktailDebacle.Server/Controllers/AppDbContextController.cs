@@ -18,15 +18,36 @@ namespace CocktailDebacle.Server.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly AppDbContext _context;
         private readonly IAuthService _authService;
-
-        public UsersController(AppDbContext context, IAuthService authService)
+        private readonly AppDbContext _context;
+        public UsersController(AppDbContext dbcontext, IAuthService authService)
         {
-            _context = context;
+            _context = dbcontext;
             _authService = authService;
         }
+        // COCKTAILS /////////////////////////////////////////////////////
 
+
+        [HttpGet("all cocktails")]
+        public async Task<ActionResult<IEnumerable<Cocktail>>> GetAllCocktails()
+        {
+            var cocktails = await _context.DbCocktails.Include(c => c.Ingredients).ToListAsync();
+            return Ok(cocktails);
+        }
+
+        [HttpGet("cocktail/{id}")]
+        public async Task<ActionResult<Cocktail>> GetCocktail(int id)
+        {
+            var cocktail = await _context.DbCocktails.Include(c => c.Ingredients).FirstOrDefaultAsync(c => c.Id == id);
+            if (cocktail == null)
+            {
+                return NotFound();
+            }
+            return Ok(cocktail);
+        }
+
+
+        // USER /////////////////////////////////////////////////////
         [HttpPost("login")]
         [EnableRateLimiting("fixed")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
