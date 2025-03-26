@@ -10,7 +10,9 @@ using System.Text;
 using System;
 using Microsoft.AspNetCore.RateLimiting;
 using CocktailDebacle.Server.Models.DTOs;
-using Microsoft.AspNetCore.Authorization; // Importa il namespace del DTO
+using Microsoft.AspNetCore.Authorization;
+using CocktailDebacle.Server.DTOs; // Importa il namespace del DTO
+using System.Text.Json;
 
 
 namespace CocktailDebacle.Server.Controllers
@@ -27,7 +29,6 @@ namespace CocktailDebacle.Server.Controllers
             _authService = authService;
         }
         // COCKTAILS /////////////////////////////////////////////////////
-
 
         [HttpGet("all-cocktails")]
         public async Task<ActionResult<IEnumerable<Cocktail>>> GetAllCocktails()
@@ -132,6 +133,9 @@ namespace CocktailDebacle.Server.Controllers
         [HttpPost("register")]
         public async Task<ActionResult<User>> Register([FromBody] RegisterUserDto userDto)
         {
+            Console.ForegroundColor = ConsoleColor.Green;  // Testo verde
+            Console.WriteLine($"✔ Cocktail trovati: {userDto.UserName}"); // Stampa a video
+            Console.ForegroundColor = ConsoleColor.White;  // Testo bianco
             // Controlla se esiste già un utente con la stessa email
             bool emailExists = await _context.DbUser.AnyAsync(u => u.Email == userDto.Email);
             if (emailExists)
