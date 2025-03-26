@@ -26,7 +26,7 @@ namespace CocktailDebacle.Server.Service
             
             if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
             {
-                return null; // Utente non trovato o password errata
+                return string.Empty; // Utente non trovato o password errata
             }
 
             // Recupera la chiave JWT dalla configurazione

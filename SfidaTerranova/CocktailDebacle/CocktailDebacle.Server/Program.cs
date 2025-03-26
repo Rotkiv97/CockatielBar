@@ -57,12 +57,12 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    var cocktailService = services.GetRequiredService<CocktailService>();
-    await cocktailService.ImportCocktailsAsync();
-}
+// using (var scope = app.Services.CreateScope())
+// {
+//     var services = scope.ServiceProvider;
+//     var cocktailService = services.GetRequiredService<CocktailService>();
+//     await cocktailService.ImportCocktailsAsync();
+// }
 
 //ATTIVA SWAGGER ANCHE IN PRODUZIONE SE NECESSARIO
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction()) 

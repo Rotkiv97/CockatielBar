@@ -23,57 +23,54 @@ namespace CocktailDebacle.Server.Service
         }
 
         public async Task ImportCocktailsAsync()
-    {
-        char[] alphabet = "abcdefghijklmnopqrstuvwxyz".ToCharArray();
-        foreach (char letter in alphabet)
         {
-            var response = await _httpClient.GetAsync($"{_apiUrlthecocktaildb}search.php?f={letter}");
-            if (!response.IsSuccessStatusCode) continue;
-
-            var jsonResponse = await response.Content.ReadAsStringAsync();
-            var cocktailsResponse = JsonSerializer.Deserialize<CocktailResponse>(jsonResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-
-            if (cocktailsResponse?.Drinks == null) continue;
-
-            foreach (var apiCocktail in cocktailsResponse.Drinks)
+            char[] alphabet = "abcdefghijklmnopqrstuvwxyz".ToCharArray();
+            foreach (char letter in alphabet)
             {
-                apiCocktail.ExtractIngredients();
+                var response = await _httpClient.GetAsync($"{_apiUrlthecocktaildb}search.php?f={letter}");
+                if (!response.IsSuccessStatusCode) continue;
 
-                if (!await _context.DbCocktails.AnyAsync(c => c.Name == apiCocktail.StrDrink))
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                var cocktailsResponse = JsonSerializer.Deserialize<CocktailResponse>(jsonResponse, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                if (cocktailsResponse?.Drinks == null) continue;
+
+                foreach (var apiCocktail in cocktailsResponse.Drinks)
                 {
-                    var newCocktail = new Cocktail
-                    {
-                        Name = apiCocktail.StrDrink,
-                        Category = apiCocktail.StrCategory,
-                        IBA = apiCocktail.StrIBA,
-                        Alcoholic = apiCocktail.StrAlcoholic,
-                        Glass = apiCocktail.StrGlass,
-                        Instructions = apiCocktail.StrInstructions,
-                        ImageUrl = apiCocktail.StrDrinkThumb,
-                        VideoUrl = apiCocktail.StrVideo,
-                        Tags = apiCocktail.StrTags,
-                        CreativeCommonsConfirmed = apiCocktail.StrCreativeCommonsConfirmed,
-                        DateModified = string.IsNullOrEmpty(apiCocktail.DateModified) ? null : DateTime.Parse(apiCocktail.DateModified),
-                        Ingredients = apiCocktail.Ingredients.Select(i => new Ingredient
-                        {
-                            Name = i.Name,
-                            Measure = i.Measure
-                        }).ToList()
-                    };
+                    apiCocktail.ExtractIngredients();
 
-                    _context.DbCocktails.Add(newCocktail);
+                    if (!await _context.DbCocktails.AnyAsync(c => c.Name == apiCocktail.StrDrink))
+                    {
+                        var newCocktail = new Cocktail
+                        {
+                            Name = apiCocktail.StrDrink ?? string.Empty,
+                            Category = apiCocktail.StrCategory ?? string.Empty,
+                            IBA = apiCocktail.StrIBA ?? string.Empty,
+                            Alcoholic = apiCocktail.StrAlcoholic ?? string.Empty,
+                            Glass = apiCocktail.StrGlass ?? string.Empty,
+                            Instructions = apiCocktail.StrInstructions ?? string.Empty,
+                            ImageUrl = apiCocktail.StrDrinkThumb ?? string.Empty,
+                            VideoUrl = apiCocktail.StrVideo ?? string.Empty,
+                            Tags = apiCocktail.StrTags ?? string.Empty,
+                            CreativeCommonsConfirmed = apiCocktail.StrCreativeCommonsConfirmed ?? string.Empty,
+                            DateModified = string.IsNullOrEmpty(apiCocktail.DateModified) ? null : DateTime.Parse(apiCocktail.DateModified),
+                            Ingredients = apiCocktail.Ingredients.Select(i => new Ingredient
+                            {
+                                Name = i.Name,
+                                Measure = i.Measure
+                            }).ToList()
+                        };
+
+                        _context.DbCocktails.Add(newCocktail);
+                    }
                 }
             }
+            await _context.SaveChangesAsync();
         }
-
-        await _context.SaveChangesAsync();
-    }
-
-
     }
 
     public class CocktailResponse
     {
-        public List<CocktailApiModel> Drinks { get; set; }
+        public List<CocktailApiModel>? Drinks { get; set; }
     }
 }
