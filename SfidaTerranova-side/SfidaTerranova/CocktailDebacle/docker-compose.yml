@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sql_server
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong!Passw0rd
+      - MSSQL_PID=Express
+      - MSSQL_MEMORY_LIMIT_MB=2048
+      - MSSQL_LCID=1033
+      - MSSQL_COLLATION=Latin1_General_CI_AS
+      - MSSQL_RUN_PROCESS_AS_ROOT=1  # Necessario per la 2022
+    ports:
+      - "1433:1433"
+    volumes:
+      - sql_data:/var/opt/mssql
+    networks:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "$$SA_PASSWORD" -Q "SELECT 1" -b -o /dev/null || exit 1
+      interval: 10s
+      timeout: 60s
+      retries: 20
+      start_period: 120s
+
+  backend:
+    build:
+      context: ./CocktailDebacle.Server
+      dockerfile: Dockerfile
+    container_name: cocktail_backend
+    ports:
+      - "5000:5000"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:5000
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=CocktailDb;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=true;Connect Timeout=60;
+      - DOTNET_CLI_TELEMETRY_OPTOUT=1
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    networks:
+      - backend
+    restart: on-failure
+
+  frontend:
+    build:
+      context: ./cocktaildebacle.client
+      dockerfile: Dockerfile
+    container_name: cocktail_frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - backend
+    restart: on-failure
+
+volumes:
+  sql_data:
+    driver: local
+
+networks:
+  backend:
+    driver: bridge

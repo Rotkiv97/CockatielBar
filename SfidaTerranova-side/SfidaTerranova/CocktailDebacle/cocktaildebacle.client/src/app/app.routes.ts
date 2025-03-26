@@ -1,0 +1,11 @@
+import { Routes } from '@angular/router';
+import { HomeComponent } from './home/home.component';  
+import { LoginSignupComponent } from './login-signup/login-signup.component';
+import { SignUpComponent } from './sign-up/sign-up.component';
+import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
+export const routes: Routes = [
+  { path: '', component: HomeComponent },
+  { path: 'login-signup', component: LoginSignupComponent },
+  { path: 'sign-up', component: SignUpComponent },
+  { path: 'privacy-policy', component: PrivacyPolicyComponent },
+];

@@ -1,0 +1,23 @@
+{
+  "Version": 1,
+  "Hash": "J2DA5KwTDaXEu3Cjz2wOj4hOfvNGrse1aMhq6J/cQKY=",
+  "Source": "CocktailDebacle.Server",
+  "BasePath": "_content/CocktailDebacle.Server",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [
+    {
+      "Identity": "C:\\Users\\matti\\OneDrive\\Desktop\\TerraNovaChallenge\\lastversion\\lastversion\\SfidaTerranova\\CocktailDebacle\\cocktaildebacle.client\\cocktaildebacle.client.esproj",
+      "Version": 2,
+      "Source": "cocktaildebacle.client",
+      "GetPublishAssetsTargets": "GetCurrentProjectPublishStaticWebAssetItems",
+      "AdditionalPublishProperties": "",
+      "AdditionalPublishPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained",
+      "GetBuildAssetsTargets": "GetCurrentProjectBuildStaticWebAssetItems",
+      "AdditionalBuildProperties": "",
+      "AdditionalBuildPropertiesToRemove": "WebPublishProfileFile;TargetFramework;RuntimeIdentifier;SelfContained"
+    }
+  ],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
