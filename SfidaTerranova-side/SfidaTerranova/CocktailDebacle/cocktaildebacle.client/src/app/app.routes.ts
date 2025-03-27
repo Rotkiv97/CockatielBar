@@ -5,6 +5,7 @@ import { SignUpComponent } from './sign-up/sign-up.component';
 import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
 export const routes: Routes = [
   { path: '', component: HomeComponent },
+  { path: 'home', component: HomeComponent },
   { path: 'login-signup', component: LoginSignupComponent },
   { path: 'sign-up', component: SignUpComponent },
   { path: 'privacy-policy', component: PrivacyPolicyComponent },

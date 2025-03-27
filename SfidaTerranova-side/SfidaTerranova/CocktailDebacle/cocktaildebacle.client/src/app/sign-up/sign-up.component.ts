@@ -105,6 +105,10 @@ export class SignUpComponent {
           console.log('Full error object:', error); // Log the complete error
           console.log('Error status:', error.status);
           console.log('Error response:', error.error);
+          this.snackBar.open(error.error, 'Chiudi', {
+            duration: 5000,
+            panelClass: ['error-snackbar']
+          });
           if (error.status === 409) {
             errorMessage = 'Email già in uso';
           } else if (error.status === 400) {
