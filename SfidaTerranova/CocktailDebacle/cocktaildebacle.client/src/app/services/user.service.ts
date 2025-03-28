@@ -19,7 +19,7 @@ export interface User {
   providedIn: 'root'
 })
 export class UserService {
-  private apiUrl = 'http://localhost:5052/api/Cocktaildebacle'; // Assicurati che l'URL sia corretto
+  private apiUrl = 'http://localhost:5052/api/Users'; // Assicurati che l'URL sia corretto
 
   constructor(private http: HttpClient) { }
 

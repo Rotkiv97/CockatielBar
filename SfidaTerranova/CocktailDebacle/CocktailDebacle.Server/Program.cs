@@ -5,14 +5,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using CocktailDebacle.Server.Service;
-using Microsoft.OpenApi.Models;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Configura il CORS
 var MyallowSpecificOrigins = "_myAllowSpecificOrigins";
+
+// Configurazione CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: MyallowSpecificOrigins,
@@ -25,14 +22,25 @@ builder.Services.AddCors(options =>
         });
 });
 
-// Configura il Database
+// Aggiungi servizi al container
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// Configurazione del DbContext con retry policy per gestire i tentativi di connessione
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlServerOptionsAction: sqlOptions =>
+        {
+            sqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(30),
+                errorNumbersToAdd: null);
+        });
+});
 
-builder.Services.AddHttpClient<CocktailService>();
-builder.Services.AddScoped<CocktailService>();
-
-// Configura l'autenticazione con JWT
+// Configurazione JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -41,31 +49,83 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"])),
             ValidateIssuer = false,
-            ValidateAudience = false,
-            ValidateLifetime = true
+            ValidateAudience = false
         };
     });
 
-// Configura l'Autorizzazione
-builder.Services.AddAuthorization();
-
-// Registra il Servizio di Autenticazione
 builder.Services.AddScoped<IAuthService, AuthService>();
 
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "SwaggerAC-TUACocktailDebacleAPI",
-        Version = "v1"
-    });
-});
-
 var app = builder.Build();
+
+// Applica le migrazioni e crea il database se non esiste
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var dbContext = services.GetRequiredService<AppDbContext>();
+        
+        // Attendi che SQL Server sia pronto (solo in ambiente Docker)
+        if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+        {
+            await WaitForSqlServer(dbContext);
+        }
+        
+        dbContext.Database.Migrate();
+        Console.WriteLine("Database migrated successfully.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"An error occurred while migrating the database: {ex.Message}");
+    }
+}
+
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
+// Configura pipeline HTTP
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseCors(MyallowSpecificOrigins);
+app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
+app.MapControllers();
+app.MapFallbackToFile("/index.html");
+
+app.Run();
+
+// Helper function per attendere che SQL Server sia pronto
+async Task WaitForSqlServer(AppDbContext dbContext, int maxAttempts = 10, int delaySeconds = 5)
+{
+    for (int attempt = 1; attempt <= maxAttempts; attempt++)
+    {
+        try
+        {
+            Console.WriteLine($"Attempting to connect to SQL Server (attempt {attempt}/{maxAttempts})...");
+            if (await dbContext.Database.CanConnectAsync())
+            {
+                Console.WriteLine("Successfully connected to SQL Server.");
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Attempt {attempt} failed: {ex.Message}");
+            if (attempt == maxAttempts)
+                throw;
+        }
+        
+        await Task.Delay(TimeSpan.FromSeconds(delaySeconds));
+    }
+}
+
 
 // using (var scope = app.Services.CreateScope())
 // {
@@ -73,25 +133,3 @@ var app = builder.Build();
 //     var cocktailService = services.GetRequiredService<CocktailService>();
 //     await cocktailService.ImportCocktailsAsync();
 // }
-
-//ATTIVA SWAGGER ANCHE IN PRODUZIONE SE NECESSARIO
-if (app.Environment.IsDevelopment() || app.Environment.IsProduction()) 
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Cocktail API V1");
-        c.RoutePrefix = "swagger"; // Imposta il percorso di Swagger
-    });
-}
-
-// Middleware
-app.UseCors(MyallowSpecificOrigins);
-app.UseHttpsRedirection();
-
-app.UseAuthentication();
-app.UseAuthorization();
-
-app.MapControllers();
-
-app.Run();

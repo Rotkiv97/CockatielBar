@@ -10,10 +10,16 @@ RUN npm install
 COPY . .
 
 # Costruisci il progetto Angular
-RUN npm run build --prod
+RUN npm run build
 
 # Usa un server Nginx per servire i file statici
 FROM nginx:alpine
-COPY --from=build /app/dist/cokatiels /usr/share/nginx/html
+
+# Copia la configurazione personalizzata di Nginx
+COPY nginx/default.conf /etc/nginx/conf.d/default.conf
+
+# Copia i file statici generati dalla build Angular
+COPY --from=build /app/dist/cokatiels/browser /usr/share/nginx/html
+
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

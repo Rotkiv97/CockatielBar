@@ -1,7 +1,14 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { UserService } from '../services/user.service';
+import { Router, RouterModule } from '@angular/router';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 interface User {
   UserName: string;
@@ -14,59 +21,112 @@ interface User {
 
 @Component({
   selector: 'app-sign-up',
-  standalone: true, // Imposta il componente come standalone
-  imports: [ReactiveFormsModule, CommonModule], // Importa i moduli necessari
+  standalone: true,
+  imports: [
+    ReactiveFormsModule,
+    FormsModule,
+    CommonModule,
+    RouterModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatIconModule,
+    MatButtonModule,
+    MatCheckboxModule,
+    MatSnackBarModule
+  ],
   templateUrl: './sign-up.component.html',
   styleUrls: ['./sign-up.component.css']
 })
 export class SignUpComponent {
   signupForm: FormGroup;
 
-  constructor(private fb: FormBuilder, private userService: UserService) {
+  constructor(
+    private fb: FormBuilder,
+    private userService: UserService,
+    private router: Router,
+    private snackBar: MatSnackBar
+  ) {
     this.signupForm = this.fb.group({
-      FirstName: ['', Validators.required], // Nome
-      LastName: ['', Validators.required], // Cognome
-      UserName: ['', Validators.required], // Username
-      Email: ['', [Validators.required, Validators.email]], // Email
-      ConfirmEmail: ['', [Validators.required, Validators.email]], // Conferma email
-      Password: ['', [Validators.required, Validators.minLength(8)]], // Password
-      ConfirmPassword: ['', [Validators.required, Validators.minLength(8)]], // Conferma password
-      AcceptCookies: [false, Validators.requiredTrue] // Accettazione cookie
-    }, { validators: [this.checkPasswords, this.checkEmails] }); // Validatori personalizzati
+      FirstName: ['', [Validators.required, Validators.minLength(2)]],
+      LastName: ['', Validators.required],
+      UserName: ['', Validators.required],
+      Email: ['', [Validators.required, Validators.email]],
+      ConfirmEmail: ['', [Validators.required, Validators.email]],
+      Password: ['', [
+        Validators.required, 
+        Validators.minLength(8),
+        Validators.pattern(/^(?=.*[A-Z])(?=.*\d)/)
+      ]],
+      ConfirmPassword: ['', [Validators.required, Validators.minLength(8)]],
+      AcceptCookies: [false, Validators.requiredTrue]
+    }, { validators: [this.checkPasswords, this.checkEmails] });
   }
 
-  // Validatore personalizzato per conferma password
+  // Add this method to handle navigation
+  navigateToLoginSignup() {
+    this.router.navigate(['/login-signup']);
+  }
+
   checkPasswords(group: FormGroup) {
     const password = group.get('Password')?.value;
     const confirmPassword = group.get('ConfirmPassword')?.value;
     return password === confirmPassword ? null : { notSame: true };
   }
 
-  // Validatore personalizzato per conferma email
   checkEmails(group: FormGroup) {
     const email = group.get('Email')?.value;
     const confirmEmail = group.get('ConfirmEmail')?.value;
     return email === confirmEmail ? null : { emailsNotSame: true };
   }
 
-  // Metodo chiamato alla submit del form
   onSubmit() {
     if (this.signupForm.valid) {
       const user: User = {
-        UserName: this.signupForm.value.UserName, // Usa "UserName"
-        Name: this.signupForm.value.FirstName,   // Usa "FirstName"
-        LastName: this.signupForm.value.LastName, // Usa "LastName"
-        Email: this.signupForm.value.Email,      // Usa "Email"
-        PasswordHash: this.signupForm.value.Password, // Usa "Password"
-        AcceptCookies: this.signupForm.value.AcceptCookies // Usa "AcceptCookies"
+        UserName: this.signupForm.value.UserName,
+        Name: this.signupForm.value.FirstName,
+        LastName: this.signupForm.value.LastName,
+        Email: this.signupForm.value.Email,
+        PasswordHash: this.signupForm.value.Password,
+        AcceptCookies: this.signupForm.value.AcceptCookies
       };
-      console.log('Dati utente:', user);
+
       this.userService.registerUser(user).subscribe({
-        next: (response) => console.log('Utente registrato:', response),
-        error: (error) => console.error('Errore durante la registrazione:', error)
+        next: (response) => {
+          this.snackBar.open('Registrazione avvenuta con successo!', 'Chiudi', {
+            duration: 3000,
+            panelClass: ['success-snackbar']
+          });
+          setTimeout(() => {
+            this.router.navigate(['/home']);
+          }, 1500);
+        },
+        error: (error) => {
+          let errorMessage = 'Errore durante la registrazione';
+          console.log('Full error object:', error); // Log the complete error
+          console.log('Error status:', error.status);
+          console.log('Error response:', error.error);
+          this.snackBar.open(error.error, 'Chiudi', {
+            duration: 5000,
+            panelClass: ['error-snackbar']
+          });
+          if (error.status === 409) {
+            errorMessage = 'Email già in uso';
+          } else if (error.status === 400) {
+            errorMessage = error.error?.message || 'Dati non validi';
+          }
+
+          this.snackBar.open(errorMessage, 'Chiudi', {
+            duration: 5000,
+            panelClass: ['error-snackbar']
+          });
+        }
       });
-    } else {
-      console.log('Il form non è valido');
+    } 
+    else {
+      this.snackBar.open('Compila correttamente tutti i campi', 'Chiudi', {
+        duration: 5000,
+        panelClass: ['warning-snackbar']
+      });
     }
   }
 }
