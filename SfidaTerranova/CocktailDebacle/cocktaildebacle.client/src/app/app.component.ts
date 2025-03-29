@@ -1,37 +1,18 @@
-import { HttpClient } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  standalone: true,
+  imports: [CommonModule, RouterOutlet],
+  template: `
+    <!-- Header/Navbar può essere aggiunto qui -->
+    <router-outlet></router-outlet>
+    <!-- Footer può essere aggiunto qui -->
+  `,
+  styleUrls: ['./app.component.css']
 })
-
 export class AppComponent {
   title = 'Cokatiels';
 }
-
-// export class AppComponent implements OnInit {
-//   public forecasts: CocktailDebacle[] = [];
-
-//   constructor(private http: HttpClient) {}
-
-//   ngOnInit() {
-//     this.getForecasts();
-//   }
-
-//   getForecasts() {
-//     this.http.get<CocktailDebacle[]>('/CocktailDebacle').subscribe(
-//       (result) => {
-//         this.forecasts = result;
-//       },
-//       (error) => {
-//         console.error(error);
-//       }
-//     );
-//   }
-
-//   title = 'cocktaildebacle.client';
-// }

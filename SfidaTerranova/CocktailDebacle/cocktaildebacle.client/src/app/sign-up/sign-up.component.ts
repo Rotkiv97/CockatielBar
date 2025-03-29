@@ -121,8 +121,7 @@ export class SignUpComponent {
           });
         }
       });
-    } 
-    else {
+    } else {
       this.snackBar.open('Compila correttamente tutti i campi', 'Chiudi', {
         duration: 5000,
         panelClass: ['warning-snackbar']

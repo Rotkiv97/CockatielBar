@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@angular/core": "^19.2.4",
+    "@angular/material": "^19.2.7"
+  }
+}
