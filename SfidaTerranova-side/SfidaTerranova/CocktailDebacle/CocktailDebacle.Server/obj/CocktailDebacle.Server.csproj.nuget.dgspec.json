@@ -1,20 +1,24 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\matti\\OneDrive\\Desktop\\TerraNovaChallengeLatest\\SfidaTerranova-side\\SfidaTerranova\\CocktailDebacle\\CocktailDebacle.Server\\CocktailDebacle.Server.csproj": {}
+    "C:\\Users\\EURONICS\\Documents\\GitHub\\SfidaTerranova\\SfidaTerranova-side\\SfidaTerranova\\CocktailDebacle\\CocktailDebacle.Server\\CocktailDebacle.Server.csproj": {}
   },
   "projects": {
-    "C:\\Users\\matti\\OneDrive\\Desktop\\TerraNovaChallengeLatest\\SfidaTerranova-side\\SfidaTerranova\\CocktailDebacle\\CocktailDebacle.Server\\CocktailDebacle.Server.csproj": {
+    "C:\\Users\\EURONICS\\Documents\\GitHub\\SfidaTerranova\\SfidaTerranova-side\\SfidaTerranova\\CocktailDebacle\\CocktailDebacle.Server\\CocktailDebacle.Server.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\matti\\OneDrive\\Desktop\\TerraNovaChallengeLatest\\SfidaTerranova-side\\SfidaTerranova\\CocktailDebacle\\CocktailDebacle.Server\\CocktailDebacle.Server.csproj",
+        "projectUniqueName": "C:\\Users\\EURONICS\\Documents\\GitHub\\SfidaTerranova\\SfidaTerranova-side\\SfidaTerranova\\CocktailDebacle\\CocktailDebacle.Server\\CocktailDebacle.Server.csproj",
         "projectName": "CocktailDebacle.Server",
-        "projectPath": "C:\\Users\\matti\\OneDrive\\Desktop\\TerraNovaChallengeLatest\\SfidaTerranova-side\\SfidaTerranova\\CocktailDebacle\\CocktailDebacle.Server\\CocktailDebacle.Server.csproj",
-        "packagesPath": "C:\\Users\\matti\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\matti\\OneDrive\\Desktop\\TerraNovaChallengeLatest\\SfidaTerranova-side\\SfidaTerranova\\CocktailDebacle\\CocktailDebacle.Server\\obj\\",
+        "projectPath": "C:\\Users\\EURONICS\\Documents\\GitHub\\SfidaTerranova\\SfidaTerranova-side\\SfidaTerranova\\CocktailDebacle\\CocktailDebacle.Server\\CocktailDebacle.Server.csproj",
+        "packagesPath": "C:\\Users\\EURONICS\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\EURONICS\\Documents\\GitHub\\SfidaTerranova\\SfidaTerranova-side\\SfidaTerranova\\CocktailDebacle\\CocktailDebacle.Server\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\matti\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\EURONICS\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -22,6 +26,7 @@
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -38,8 +43,9 @@
         "restoreAuditProperties": {
           "enableAudit": "true",
           "auditLevel": "low",
-          "auditMode": "direct"
-        }
+          "auditMode": "all"
+        },
+        "SdkAnalysisLevel": "9.0.100"
       },
       "frameworks": {
         "net8.0": {
@@ -91,6 +97,24 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[8.0.10, 8.0.10]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Host.win-x64",
+              "version": "[8.0.10, 8.0.10]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[8.0.10, 8.0.10]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Ref",
+              "version": "[8.0.10, 8.0.10]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.AspNetCore.App": {
               "privateAssets": "none"
@@ -99,7 +123,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.407/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.100-rc.2.24474.11/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
