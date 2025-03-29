@@ -1,0 +1,103 @@
+<div class="d-flex justify-content-center align-items-center vh-100 bg-light">
+  <div class="signup-container p-4 shadow-lg rounded bg-white" style="width: 100%; max-width: 500px;">
+    <button mat-icon-button (click)="navigateToLoginSignup()" class="mb-3">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+
+    <h2 class="text-center mb-4">Registrazione</h2>
+    
+    <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="mt-3">
+      <!-- Nome -->
+      <mat-form-field appearance="outline" class="w-100 mb-3">
+        <mat-label>Nome</mat-label>
+        <input matInput formControlName="FirstName" required>
+        <mat-error *ngIf="signupForm.get('FirstName')?.hasError('required')">
+          Campo obbligatorio
+        </mat-error>
+        <mat-error *ngIf="signupForm.get('FirstName')?.hasError('minlength')">
+          Minimo 2 caratteri
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Cognome -->
+      <mat-form-field appearance="outline" class="w-100 mb-3">
+        <mat-label>Cognome</mat-label>
+        <input matInput formControlName="LastName" required>
+        <mat-error *ngIf="signupForm.get('LastName')?.hasError('required')">
+          Campo obbligatorio
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Username -->
+      <mat-form-field appearance="outline" class="w-100 mb-3">
+        <mat-label>Username</mat-label>
+        <input matInput formControlName="UserName" required>
+        <mat-error *ngIf="signupForm.get('UserName')?.hasError('required')">
+          Campo obbligatorio
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Email -->
+      <mat-form-field appearance="outline" class="w-100 mb-3">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" formControlName="Email" required>
+        <mat-error *ngIf="signupForm.get('Email')?.hasError('required')">
+          Campo obbligatorio
+        </mat-error>
+        <mat-error *ngIf="signupForm.get('Email')?.hasError('email')">
+          Email non valida
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Conferma Email -->
+      <mat-form-field appearance="outline" class="w-100 mb-3">
+        <mat-label>Conferma Email</mat-label>
+        <input matInput type="email" formControlName="ConfirmEmail" required>
+        <mat-error *ngIf="signupForm.hasError('emailsNotSame')">
+          Le email non corrispondono
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Password -->
+      <mat-form-field appearance="outline" class="w-100 mb-3">
+        <mat-label>Password</mat-label>
+        <input matInput type="password" formControlName="Password" required>
+        <mat-hint>Minimo 8 caratteri, con maiuscola e numero</mat-hint>
+        <mat-error *ngIf="signupForm.get('Password')?.hasError('required')">
+          Campo obbligatorio
+        </mat-error>
+        <mat-error *ngIf="signupForm.get('Password')?.hasError('pattern')">
+          Password troppo debole
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Conferma Password -->
+      <mat-form-field appearance="outline" class="w-100 mb-3">
+        <mat-label>Conferma Password</mat-label>
+        <input matInput type="password" formControlName="ConfirmPassword" required>
+        <mat-error *ngIf="signupForm.hasError('notSame')">
+          Le password non corrispondono
+        </mat-error>
+      </mat-form-field>
+
+      <!-- Checkbox Cookie -->
+      <mat-checkbox formControlName="AcceptCookies" class="mb-3">
+        Accetto i cookie per un'esperienza personalizzata
+        <a href="/privacy-policy" class="text-primary text-decoration-none">(Privacy Policy)</a>
+      </mat-checkbox>
+      <mat-error *ngIf="signupForm.get('AcceptCookies')?.hasError('required')">
+        È necessario accettare i cookie
+      </mat-error>
+
+      <!-- Bottone Submit -->
+      <button 
+        mat-raised-button 
+        color="primary" 
+        type="submit" 
+        class="w-100 py-2"
+        [disabled]="signupForm.invalid">
+        Registrati
+      </button>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,44 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+    <!-- Bottone per il menu a tendina (visibile solo su schermi piccoli) -->
+    <button class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarNavDropdown"
+            aria-controls="navbarNavDropdown"
+            aria-expanded="false"
+            aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <!-- Titolo centrato -->
+    <a class="navbar-brand position-absolute start-50 translate-middle-x" href="#">Home</a>
+
+    <!-- Menu a tendina con icona personalizzata -->
+    <div class="collapse navbar-collapse" id="navbarNavDropdown">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle"
+             href="#"
+             id="navbarDropdownMenuLink"
+             role="button"
+             data-bs-toggle="dropdown"
+             aria-expanded="false">
+            <!-- Icona personalizzata con immagine PNG -->
+            <img src="assets/menu-logo.png" alt="Menu" class="custom-icon">
+          </a>
+          <ul class="dropdown-menu p-2" aria-labelledby="navbarDropdownMenuLink">
+            <li><a class="dropdown-item" href="/login-signup">Login/Sigup</a></li>
+            <li><a class="dropdown-item" href="#">Settings</a></li>
+            <li><a class="dropdown-item" href="#">Log-out</a></li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container mt-5">
+  <h2 class="text-center">Benvenuto nella Home!</h2>
+  <p class="text-center lead">Questo è un componente home generato con Angular.</p>
+</div>

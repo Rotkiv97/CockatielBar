@@ -1,0 +1,52 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest  # Immagine ufficiale
+    container_name: sql_server
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong!Passw0rd
+      - MSSQL_PID=Express
+    ports:
+      - "1433:1433"
+    volumes:
+      - sql_data:/var/opt/mssql
+      - ./init-db:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+    networks:
+      - cocktail_network
+
+  backend:
+    build:
+      context: ./CocktailDebacle.Server
+      dockerfile: Dockerfile
+    container_name: cocktail_backend
+    ports:
+      - "5052:5052"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sql_server;Database=CocktailDb;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=true;
+    depends_on:
+      - sqlserver
+    networks:
+      - cocktail_network
+
+  frontend:
+    build:
+      context: ./cocktaildebacle.client
+      dockerfile: Dockerfile
+    container_name: cocktail_frontend
+    ports:
+      - "4200:80"
+    volumes:
+      - ./cocktaildebacle.client/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
+    networks:
+      - cocktail_network
+
+volumes:
+  sql_data:
+
+networks:
+  cocktail_network:
+    driver: bridge
