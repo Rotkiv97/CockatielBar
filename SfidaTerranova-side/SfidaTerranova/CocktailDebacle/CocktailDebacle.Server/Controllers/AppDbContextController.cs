@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CocktailDebacle.Server.Models;
 using CocktailDebacle.Server.Service;
@@ -11,8 +11,9 @@ using System;
 using Microsoft.AspNetCore.RateLimiting;
 using CocktailDebacle.Server.Models.DTOs; // Importa il namespace del DTO
 
-
+using BCrypt.Net;
 namespace CocktailDebacle.Server.Controllers
+
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -31,16 +32,9 @@ namespace CocktailDebacle.Server.Controllers
         [EnableRateLimiting("fixed")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            var token = await _authService.AuthenticateUser(request.UserNameRequest, request.PasswordRequest);
-
-            if (token == null)
-            {
-                return Unauthorized(new { message = "Credenziali non valide" });
-            }
-
             // Trova l'utente corrispondente
             var user = await _context.DbUser
-                .Where(u => u.UserName == request.UserNameRequest)
+                .Where(u => u.UserName == request.UserNameRequest && u.PasswordHash == HashPassword(request.PasswordRequest))
                 .Select(u => new
                 {
                     u.Id,
@@ -58,10 +52,21 @@ namespace CocktailDebacle.Server.Controllers
 
             if (user == null)
             {
-                return NotFound("Utente non trovato.");
+                return NotFound("Password or username is incorrect.");
             }
-
-            return Ok(new { token, user });
+            return Ok(new
+            {
+                user.Id,
+                user.UserName,
+                user.Name,
+                user.LastName,
+                user.Email,
+               // user.PersonalizedExperience,
+                user.AcceptCookies,
+               // user.Online,
+               // user.Language,
+              //  user.ImgProfile
+            });
         }
 
             // POST: api/Users/register - Aggiunge un nuovo utente a Users
@@ -70,9 +75,14 @@ namespace CocktailDebacle.Server.Controllers
         {
             // Controlla se esiste già un utente con la stessa email
             bool emailExists = await _context.DbUser.AnyAsync(u => u.Email == userDto.Email);
+            bool userNameExists = await _context.DbUser.AnyAsync(u => u.UserName == userDto.UserName);
+            if (userNameExists)
+            {
+                return BadRequest("Questo Nome Utente è già in uso.");
+            }
             if (emailExists)
             {
-                return BadRequest("Questa Email è già in uso.");
+                return BadRequest("Questa Email è già in uso?.");
             }
 
             // Mappa il DTO al modello User
@@ -121,7 +131,6 @@ namespace CocktailDebacle.Server.Controllers
             {
                 user.PasswordHash = HashPassword(updatedUser.PasswordHash);
             }
-
             try
             {
                 await _context.SaveChangesAsync();
@@ -152,11 +161,9 @@ namespace CocktailDebacle.Server.Controllers
             // Metodo per l'hashing della password
             private string HashPassword(string password)
             {
-                using (var sha256 = SHA256.Create())
-                {
-                    byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-                    return Convert.ToBase64String(bytes);
-                }
+
+                return BCrypt.Net.BCrypt.HashPassword(password);
+                
             }
         }
 

@@ -1,0 +1,35 @@
+<mat-toolbar color="primary">
+    <span>CocktailDebacle</span>
+    <span class="spacer"></span>
+    <button mat-icon-button [matMenuTriggerFor]="menu">
+      <mat-icon>account_circle</mat-icon>
+    </button>
+    <mat-menu #menu="matMenu">
+      <button mat-menu-item (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        <span>Logout</span>
+      </button>
+    </mat-menu>
+  </mat-toolbar>
+  
+  <div class="container">
+    <mat-card *ngIf="isLoggedIn" class="profile-card">
+      <mat-card-header>
+        <div mat-card-avatar class="profile-image-container">
+          <img [src]="profileImage" alt="Profile" class="profile-image">
+        </div>
+        <mat-card-title>Benvenuto, {{ username }}!</mat-card-title>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <p>Sei correttamente loggato nel sistema.</p>
+        <p>Qui potrai visualizzare le tue statistiche e i tuoi cocktail preferiti.</p>
+      </mat-card-content>
+    </mat-card>
+  
+    <div *ngIf="!isLoggedIn" class="not-logged">
+      <mat-icon class="error-icon">error_outline</mat-icon>
+      <h2>Accesso non autorizzato</h2>
+      <p>Verrai reindirizzato alla pagina di login...</p>
+    </div>
+  </div>
