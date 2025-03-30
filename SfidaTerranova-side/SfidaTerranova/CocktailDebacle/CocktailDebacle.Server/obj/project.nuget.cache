@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "QfdTBrm6i1E=",
+  "dgSpecHash": "2shCgtTMYm0=",
   "success": true,
-  "projectFilePath": "C:\\Users\\matti\\OneDrive\\Desktop\\Fix\\SfidaTerranova\\SfidaTerranova-side\\SfidaTerranova\\CocktailDebacle\\CocktailDebacle.Server\\CocktailDebacle.Server.csproj",
+  "projectFilePath": "C:\\Users\\matti\\OneDrive\\Desktop\\TerraNova(Fix)\\SfidaTerranova\\SfidaTerranova-side\\SfidaTerranova\\CocktailDebacle\\CocktailDebacle.Server\\CocktailDebacle.Server.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\matti\\.nuget\\packages\\azure.core\\1.25.0\\azure.core.1.25.0.nupkg.sha512",
     "C:\\Users\\matti\\.nuget\\packages\\azure.identity\\1.7.0\\azure.identity.1.7.0.nupkg.sha512",

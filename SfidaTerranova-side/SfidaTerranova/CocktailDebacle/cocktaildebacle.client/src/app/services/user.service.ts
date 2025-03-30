@@ -55,6 +55,10 @@ export class UserService {
       tap((response: any) => {
         if (response.success) {
           this.setCurrentUser(response.user);
+          this.http.post(`${this.apiUrl}/login`,
+            {
+
+            });
         }
       })
     );
