@@ -1,93 +1,148 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, tap } from 'rxjs';
+import { Router } from '@angular/router';
 
 export interface User {
+  UsersId?: number; // Aggiunto ID utente
   UserName: string;
   Name: string;
   LastName: string;
   Email: string;
-  PasswordHash: string; // Hashed password
-  PersonalizedExperience?: boolean;
-  AcceptCookies?: boolean; // Corretto: "AcceptCookies" invece di "acceptCookis"
-  Online?: boolean; // Corretto: "Online" invece di "online"
-  Language?: string; // Corretto: "Language" invece di "language"
-  ImgProfile?: string; // Corretto: "ImgProfile" invece di "imgProfile"
+  PasswordHash: string;
+  AcceptCookies?: boolean;
+  Online?: boolean;
+  Language?: string;
+  ImgProfile?: string;
+  Token?: string; // Aggiunto per JWT
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class UserService {
-  private apiUrl = 'http://localhost:5052/api/Users'; // Assicurati che l'URL sia corretto
+  private apiUrl = 'http://localhost:5052/api/Users';
+  private currentUser: User | null = null;
 
-  constructor(private http: HttpClient) { }
-
-  // Metodo per la registrazione di un utente
-  registerUser(user: User): Observable<any> {
-    console.log("Invio richiesta di registrazione:", user); // Debug: stampa i dati inviati
-    return this.http.post(`${this.apiUrl}/register`, user);
+  constructor(
+    private http: HttpClient,
+    private router: Router
+  ) {
+    this.loadUserFromStorage(); // Carica l'utente al startup
+  }
+  
+  forceLogout() {
+    this.clearCurrentUser();
+    this.router.navigate(['/login-signup']);
   }
 
-  // Metodo per il login
+  // ---- API CALLS ----
+  registerUser(user: User): Observable<any> {
+    return this.http.post(`${this.apiUrl}/register`, user).pipe(
+      tap((response: any) => {
+        if (response.success) {
+          this.setCurrentUser(response.user);
+        }
+      })
+    );
+  }
+
   login(userName: string, password: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/login`, { 
       UserNameRequest: userName, 
       PasswordRequest: password 
-    });
+    }).pipe(
+      tap((response: any) => {
+        if (response.success) {
+          this.setCurrentUser(response.user);
+          this.http.post(`${this.apiUrl}/login`,
+            {
+
+            });
+        }
+      })
+    );
   }
 
-  // Metodo per l'aggiornamento di un utente
+  logout(): Observable<any> {
+    return this.http.post(`${this.apiUrl}/logout`, {}).pipe(
+      tap(() => {
+        this.clearCurrentUser();
+        this.router.navigate(['/login-signup']);
+      })
+    );
+  }
+
+  // ---- CLIENT-SIDE AUTH MANAGEMENT ----
+  private setCurrentUser(user: User): void {
+    this.currentUser = user;
+    localStorage.setItem('currentUser', JSON.stringify(user));
+  }
+
+  private clearCurrentUser(): void {
+    this.currentUser = null;
+    localStorage.removeItem('currentUser');
+  }
+
+  private loadUserFromStorage(): void {
+    const userData = localStorage.getItem('currentUser');
+    if (userData) {
+      this.currentUser = JSON.parse(userData);
+    }
+  }
+
+
+  isLoggedIn(): boolean {
+    return !!this.currentUser;
+  }
+
+
+  getToken(): string | null {
+    return this.currentUser?.Token || null;
+  }
+
+  // ---- REST OF API METHODS ----
   updateUser(usersId: number, user: Partial<User>): Observable<any> {
     return this.http.put(`${this.apiUrl}/${usersId}`, user);
   }
 
-  // Metodo per l'eliminazione di un utente
   deleteUser(usersId: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${usersId}`);
+    return this.http.delete(`${this.apiUrl}/${usersId}`).pipe(
+      tap(() => this.clearCurrentUser())
+    );
   }
 
-  // Metodo per il recupero di un utente
-  getUser(usersId: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/${usersId}`);
+  getUser(): Observable<any> {
+    var getUrl = "http://localhost:5052/api/getUser"
+    return this.http.get(`${getUrl}`);
   }
 
-  // Metodo per il recupero di tutti gli utenti
   getUsers(): Observable<any> {
     return this.http.get(`${this.apiUrl}`);
   }
 
-  // Metodo per il logout
-  logout(usersId: number): Observable<any> {
-    return this.http.post(`${this.apiUrl}/logout/${usersId}`, {});
-  }
-
-  // Metodo per il recupero della password
   recoverPassword(email: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/recoverPassword`, { 
-      EmailRequest: email // Corretto: "EmailRequest" invece di "emailRequest"
+      EmailRequest: email
     });
   }
 
-  // Metodo per il reset della password
   resetPassword(usersId: number, password: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/resetPassword/${usersId}`, { 
-      PasswordRequest: password // Corretto: "PasswordRequest" invece di "passwordRequest"
+      PasswordRequest: password
     });
   }
 
-  // Metodo per il cambio password
   changePassword(usersId: number, oldPassword: string, newPassword: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/changePassword/${usersId}`, { 
-      OldPasswordRequest: oldPassword, // Corretto: "OldPasswordRequest" invece di "oldPasswordRequest"
-      NewPasswordRequest: newPassword // Corretto: "NewPasswordRequest" invece di "newPasswordRequest"
+      OldPasswordRequest: oldPassword,
+      NewPasswordRequest: newPassword
     });
   }
 
-  // Metodo per il cambio email
   changeEmail(usersId: number, email: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/changeEmail/${usersId}`, { 
-      EmailRequest: email // Corretto: "EmailRequest" invece di "emailRequest"
+      EmailRequest: email
     });
   }
 }

@@ -14,17 +14,6 @@ h2 {
   font-weight: bold; /* Testo in grassetto */
 }
 
-/* Stile per il link di registrazione */
-a {
-  color: #007bff; /* Colore del link */
-  text-decoration: none; /* Rimuove la sottolineatura */
-}
-
-  a:hover {
-    text-decoration: underline; /* Sottolineatura al passaggio del mouse */
-  }
-
-/* Stile per la freccia di ritorno alla home */
 .back-arrow {
   position: absolute;
   top: 20px;
@@ -32,18 +21,29 @@ a {
   cursor: pointer;
 }
 
-/* Stile per l'icona del menu */
 .custom-icon {
-  width: 24px; /* Larghezza dell'icona */
-  height: 24px; /* Altezza dell'icona */
-  cursor: pointer; /* Cambia il cursore in una mano al passaggio del mouse */
+  width: 48px;
+  height: 48px;
+  cursor: pointer;
+  object-fit: contain;
+  transition: transform 0.2s ease;
+  margin-right: 76px;
 }
+
+.custom-icon:hover {
+  transform: scale(1.40);
+}
+
 /* Stile per l'icona freccia */
 .bi-arrow-left-circle {
-  color: #007bff; /* Colore dell'icona */
+  color: #000000; /* Colore dell'icona */
   transition: color 0.2s ease; /* Transizione al passaggio del mouse */
 }
 
   .bi-arrow-left-circle:hover {
-    color: #0056b3; /* Cambia colore al passaggio del mouse */
+    color: #000000; /* Cambia colore al passaggio del mouse */
+  }
+
+  .nav-link.dropdown-toggle::after {
+    display: none !important;
   }

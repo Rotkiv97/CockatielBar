@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { UserService } from '../services/user.service';
 import { Router, RouterModule } from '@angular/router';
@@ -9,15 +9,6 @@ import { MatInputModule } from '@angular/material/input';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-
-interface User {
-  UserName: string;
-  Name: string;
-  LastName: string;
-  Email: string;
-  PasswordHash: string;
-  AcceptCookies: boolean;
-}
 
 @Component({
   selector: 'app-sign-up',
@@ -39,6 +30,8 @@ interface User {
 })
 export class SignUpComponent {
   signupForm: FormGroup;
+  hidePassword = true;
+  hideConfirmPassword = true;
 
   constructor(
     private fb: FormBuilder,
@@ -47,85 +40,114 @@ export class SignUpComponent {
     private snackBar: MatSnackBar
   ) {
     this.signupForm = this.fb.group({
-      FirstName: ['', [Validators.required, Validators.minLength(2)]],
-      LastName: ['', Validators.required],
-      UserName: ['', Validators.required],
+      FirstName: ['', [Validators.required, Validators.minLength(2), Validators.pattern(/^[a-zA-ZÀ-ÿ\s']+$/)]],
+      LastName: ['', [Validators.required, Validators.pattern(/^[a-zA-ZÀ-ÿ\s']+$/)]],
+      UserName: ['', [Validators.required, Validators.minLength(4), Validators.pattern(/^[a-zA-Z0-9_]+$/)]],
       Email: ['', [Validators.required, Validators.email]],
       ConfirmEmail: ['', [Validators.required, Validators.email]],
       Password: ['', [
-        Validators.required, 
+        Validators.required,
         Validators.minLength(8),
-        Validators.pattern(/^(?=.*[A-Z])(?=.*\d)/)
+        Validators.pattern(/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/)
       ]],
-      ConfirmPassword: ['', [Validators.required, Validators.minLength(8)]],
+      ConfirmPassword: ['', Validators.required],
       AcceptCookies: [false, Validators.requiredTrue]
-    }, { validators: [this.checkPasswords, this.checkEmails] });
+    }, { 
+      validators: [this.checkPasswords, this.checkEmails] 
+    });
   }
 
-  // Add this method to handle navigation
+  // Controllo avanzato password
+  checkPasswords: (group: AbstractControl) => ValidationErrors | null = (group: AbstractControl) => {
+    const password = group.get('Password')?.value;
+    const confirmPassword = group.get('ConfirmPassword')?.value;
+
+    if (!password || !confirmPassword) {
+      return null;
+    }
+
+    if (password !== confirmPassword) {
+      group.get('ConfirmPassword')?.setErrors({ notSame: true });
+      return { notSame: true };
+    } else {
+      group.get('ConfirmPassword')?.setErrors(null);
+      return null;
+    }
+  };
+
+  // Controllo email
+  checkEmails: (group: AbstractControl) => ValidationErrors | null = (group: AbstractControl) => {
+    const email = group.get('Email')?.value;
+    const confirmEmail = group.get('ConfirmEmail')?.value;
+
+    if (!email || !confirmEmail) {
+      return null;
+    }
+
+    if (email !== confirmEmail) {
+      group.get('ConfirmEmail')?.setErrors({ emailsNotSame: true });
+      return { emailsNotSame: true };
+    } else {
+      group.get('ConfirmEmail')?.setErrors(null);
+      return null;
+    }
+  };
+
+  // Navigazione
   navigateToLoginSignup() {
     this.router.navigate(['/login-signup']);
   }
 
-  checkPasswords(group: FormGroup) {
-    const password = group.get('Password')?.value;
-    const confirmPassword = group.get('ConfirmPassword')?.value;
-    return password === confirmPassword ? null : { notSame: true };
-  }
-
-  checkEmails(group: FormGroup) {
-    const email = group.get('Email')?.value;
-    const confirmEmail = group.get('ConfirmEmail')?.value;
-    return email === confirmEmail ? null : { emailsNotSame: true };
-  }
-
+  // Submit del form
   onSubmit() {
-    if (this.signupForm.valid) {
-      const user: User = {
-        UserName: this.signupForm.value.UserName,
-        Name: this.signupForm.value.FirstName,
-        LastName: this.signupForm.value.LastName,
-        Email: this.signupForm.value.Email,
-        PasswordHash: this.signupForm.value.Password,
-        AcceptCookies: this.signupForm.value.AcceptCookies
-      };
-
-      this.userService.registerUser(user).subscribe({
-        next: (response) => {
-          this.snackBar.open('Registrazione avvenuta con successo!', 'Chiudi', {
-            duration: 3000,
-            panelClass: ['success-snackbar']
-          });
-          setTimeout(() => {
-            this.router.navigate(['/home']);
-          }, 1500);
-        },
-        error: (error) => {
-          let errorMessage = 'Errore durante la registrazione';
-          console.log('Full error object:', error); // Log the complete error
-          console.log('Error status:', error.status);
-          console.log('Error response:', error.error);
-          this.snackBar.open(error.error, 'Chiudi', {
-            duration: 5000,
-            panelClass: ['error-snackbar']
-          });
-          if (error.status === 409) {
-            errorMessage = 'Email già in uso';
-          } else if (error.status === 400) {
-            errorMessage = error.error?.message || 'Dati non validi';
-          }
-
-          this.snackBar.open(errorMessage, 'Chiudi', {
-            duration: 5000,
-            panelClass: ['error-snackbar']
-          });
-        }
-      });
-    } else {
+    if (this.signupForm.invalid) {
+      this.markAllAsTouched();
       this.snackBar.open('Compila correttamente tutti i campi', 'Chiudi', {
         duration: 5000,
         panelClass: ['warning-snackbar']
       });
+      return;
     }
+
+    const user = {
+      UserName: this.signupForm.value.UserName,
+      Name: this.signupForm.value.FirstName,
+      LastName: this.signupForm.value.LastName,
+      Email: this.signupForm.value.Email,
+      PasswordHash: this.signupForm.value.Password,
+      AcceptCookies: this.signupForm.value.AcceptCookies
+    };
+
+    this.userService.registerUser(user).subscribe({
+      next: (response) => {
+        this.snackBar.open('Registrazione avvenuta con successo!', 'Chiudi', {
+          duration: 3000,
+          panelClass: ['success-snackbar']
+        });
+        //console.log( this.userService.getUser());
+        setTimeout(() => {
+          this.router.navigate(['/login-signup']);
+        }, 1500);
+      },
+      error: (error) => {
+        console.log('Error response:', error.error);
+        this.snackBar.open(error.error, 'Chiudi', {
+          duration: 5000,
+          panelClass: ['error-snackbar']
+        });
+        this.snackBar.open(error.error, 'Chiudi', {
+          duration: 5000,
+          panelClass: ['error-snackbar']
+        });
+      }
+    });
   }
+
+  private markAllAsTouched() {
+    Object.values(this.signupForm.controls).forEach(control => {
+      control.markAsTouched();
+    });
+  }
+
+  get f() { return this.signupForm.controls; }
 }

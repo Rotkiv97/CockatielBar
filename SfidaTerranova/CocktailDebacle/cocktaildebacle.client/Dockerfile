@@ -1,25 +1,22 @@
-# Usa Node.js per la build
 FROM node:20 AS build
 WORKDIR /app
 
-# Copia il package.json e installa le dipendenze
+# 1. Copia SOLO i file necessari per l'installazione
 COPY package.json package-lock.json ./
-RUN npm install
 
-# Copia il resto del progetto
+# 2. Fix MIRACOLOSO (2 righe aggiuntive)
+RUN npm install --legacy-peer-deps --force
+RUN npm install @angular/animations@19.2.2 @angular/core@19.2.2 --no-audit --fund=false
+
+# 3. Copia tutto il resto
 COPY . .
 
-# Costruisci il progetto Angular
+# 4. Build con la tua configurazione originale
 RUN npm run build
 
-# Usa un server Nginx per servire i file statici
+# Fase produzione (IDENTICA alla tua)
 FROM nginx:alpine
-
-# Copia la configurazione personalizzata di Nginx
-COPY nginx/default.conf /etc/nginx/conf.d/default.conf
-
-# Copia i file statici generati dalla build Angular
 COPY --from=build /app/dist/cokatiels/browser /usr/share/nginx/html
-
+COPY nginx/default.conf /etc/nginx/conf.d/default.conf
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]

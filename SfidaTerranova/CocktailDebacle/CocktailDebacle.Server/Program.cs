@@ -125,11 +125,3 @@ async Task WaitForSqlServer(AppDbContext dbContext, int maxAttempts = 10, int de
         await Task.Delay(TimeSpan.FromSeconds(delaySeconds));
     }
 }
-
-
-// using (var scope = app.Services.CreateScope())
-// {
-//     var services = scope.ServiceProvider;
-//     var cocktailService = services.GetRequiredService<CocktailService>();
-//     await cocktailService.ImportCocktailsAsync();
-// }

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using CocktailDebacle.Server.Models;
 using CocktailDebacle.Server.Service;
@@ -9,138 +9,72 @@ using System.Security.Cryptography;
 using System.Text;
 using System;
 using Microsoft.AspNetCore.RateLimiting;
-using CocktailDebacle.Server.Models.DTOs;
-using Microsoft.AspNetCore.Authorization;
-using CocktailDebacle.Server.DTOs; // Importa il namespace del DTO
-using System.Text.Json;
+using CocktailDebacle.Server.Models.DTOs; // Importa il namespace del DTO
 
-
+using BCrypt.Net;
 namespace CocktailDebacle.Server.Controllers
+
 {
-    [Route("api/Cocktaildebacle")]
+    [Route("api/[controller]")]
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly IAuthService _authService;
         private readonly AppDbContext _context;
-        public UsersController(AppDbContext dbcontext, IAuthService authService)
+        private readonly IAuthService _authService;
+
+        public UsersController(AppDbContext context, IAuthService authService)
         {
-            _context = dbcontext;
+            _context = context;
             _authService = authService;
         }
-        // COCKTAILS /////////////////////////////////////////////////////
-
-        [HttpGet("all-cocktails")]
-        public async Task<ActionResult<IEnumerable<Cocktail>>> GetAllCocktails()
-        {
-            var cocktails = await _context.DbCocktails.Include(c => c.Ingredients).ToListAsync();
-            return Ok(cocktails);
-        }
-
-        [HttpGet("cocktail/{id}")]
-        public async Task<ActionResult<Cocktail>> GetCocktail(int id)
-        {
-            var cocktail = await _context.DbCocktails.Include(c => c.Ingredients).FirstOrDefaultAsync(c => c.Id == id);
-            if (cocktail == null)
-            {
-                return NotFound();
-            }
-            return Ok(cocktail);
-        }
-
-
-        // USER /////////////////////////////////////////////////////
-
-        // GET: api/Users - Restituisce tutti gli utenti
-        [HttpGet("all-users")]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
-        {
-            return await _context.DbUser.ToListAsync();
-        }
-
-        // GET: api/Users/{id} - Restituisce un utente specifico        
-        [Authorize] // proteggere l'endpoint con JWT
-        [HttpGet("user")]
-        public async Task<ActionResult<User>> GetUserProfile()
-        {
-            var UserName = User.Identity?.Name;
-            if(string.IsNullOrEmpty(UserName))
-            {
-                return NotFound();
-            }
-            var user = await _context.DbUser
-                .Where(u => u.UserName == UserName)
-                .Select(u => new
-                {
-                    u.Id,
-                    u.UserName,
-                    u.Name,
-                    u.LastName,
-                    u.Email,
-                    //u.PersonalizedExperience,
-                    u.AcceptCookies,
-                    //u.Online,
-                    //u.Language,
-                    //u.ImgProfile
-                })
-                .FirstOrDefaultAsync();
-            if (user == null)
-            {
-                return NotFound();
-            }
-            return Ok(user);
-        }
-
 
         [HttpPost("login")]
         [EnableRateLimiting("fixed")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            var token = await _authService.AuthenticateUser(request.UserNameRequest, request.PasswordRequest);
-
-            if (token == null)
-            {
-                return Unauthorized(new { message = "Credenziali non valide" });
-            }
-
             // Trova l'utente corrispondente
             var user = await _context.DbUser
                 .Where(u => u.UserName == request.UserNameRequest)
-                .Select(u => new
-                {
-                    u.Id,
-                    u.UserName,
-                    u.Name,
-                    u.LastName,
-                    u.Email,
-                   // u.PersonalizedExperience,
-                    u.AcceptCookies,
-                   // u.Online,
-                   // u.Language,
-                  //  u.ImgProfile
-                })
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(); // Recupera l'utente completo, inclusa la password hashata
 
             if (user == null)
             {
-                return NotFound("Utente non trovato.");
+                return NotFound("User not found");
             }
 
-            return Ok(new { token, user });
+            // Verifica la password hashata con BCrypt
+            bool passwordMatch = BCrypt.Net.BCrypt.Verify(request.PasswordRequest, user.PasswordHash);
+            if (!passwordMatch)
+            {
+                return Unauthorized("Invalid password");
+            }
+
+            // Se la password è corretta, restituisci i dati utente
+            return Ok(new
+            {
+                user.Id,
+                user.UserName,
+                user.Name,
+                user.LastName,
+                user.Email,
+                user.AcceptCookies
+            });
         }
 
             // POST: api/Users/register - Aggiunge un nuovo utente a Users
         [HttpPost("register")]
         public async Task<ActionResult<User>> Register([FromBody] RegisterUserDto userDto)
         {
-            Console.ForegroundColor = ConsoleColor.Green;  // Testo verde
-            Console.WriteLine($"✔ Cocktail trovati: {userDto.UserName}"); // Stampa a video
-            Console.ForegroundColor = ConsoleColor.White;  // Testo bianco
             // Controlla se esiste già un utente con la stessa email
             bool emailExists = await _context.DbUser.AnyAsync(u => u.Email == userDto.Email);
+            bool userNameExists = await _context.DbUser.AnyAsync(u => u.UserName == userDto.UserName);
+            if (userNameExists)
+            {
+                return BadRequest("Questo Nome Utente è già in uso.");
+            }
             if (emailExists)
             {
-                return BadRequest("Questa Email è già in uso.");
+                return BadRequest("Questa Email è già in uso?.");
             }
 
             // Mappa il DTO al modello User
@@ -160,6 +94,31 @@ namespace CocktailDebacle.Server.Controllers
 
             return CreatedAtAction(nameof(Login), new { id = user.Id }, user);
         }
+
+        [HttpPost("{tokenize}")]
+
+        public async Task<IActionResult> TokenizeUser(String Username)
+        {
+            // Trova l'utente corrispondente
+            var user = await _context.DbUser
+                .Where(u => u.UserName == Username)
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+            {
+                return NotFound("Error.User not found.");
+            }
+
+            // Genera un token univoco
+            var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+
+            // Salva il token nel database o restituiscilo come risposta
+            user.Token = token;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { Token = token });
+        }
+
 
 
         // PUT: api/Users/{id} - Modifica un utente esistente
@@ -189,7 +148,6 @@ namespace CocktailDebacle.Server.Controllers
             {
                 user.PasswordHash = HashPassword(updatedUser.PasswordHash);
             }
-
             try
             {
                 await _context.SaveChangesAsync();
@@ -220,11 +178,9 @@ namespace CocktailDebacle.Server.Controllers
             // Metodo per l'hashing della password
             private string HashPassword(string password)
             {
-                using (var sha256 = SHA256.Create())
-                {
-                    byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-                    return Convert.ToBase64String(bytes);
-                }
+
+                return BCrypt.Net.BCrypt.HashPassword(password);
+                
             }
         }
 
