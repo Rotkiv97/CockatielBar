@@ -6,6 +6,7 @@ namespace CocktailDebacle.Server.Service
     public class AppDbContext : DbContext
     {
         public DbSet<User> DbUser { get; set; } // DbSet per la tabella Users
+        public DbSet<Cocktail> DbCocktails { get; set; } // DbSet per la tabella Cocktails
         // public DbSet<Cocktail> DbCocktails { get; set; } // Se necessario, decommenta
         // public DbSet<RecommenderSystems> DbRecommenderSystems { get; set; } // Se necessario, decommenta
 
@@ -21,6 +22,8 @@ namespace CocktailDebacle.Server.Service
                 entity.Property(u => u.Email).IsRequired(); // Campo obbligatorio
                 entity.Property(u => u.PasswordHash).IsRequired(); // Campo obbligatorio
             });
+
+            da
 
             // Se necessario, aggiungi qui altre configurazioni per Cocktail e RecommenderSystems
             // modelBuilder.Entity<Cocktail>(entity =>

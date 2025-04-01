@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.RateLimiting;
 using CocktailDebacle.Server.Models.DTOs; // Importa il namespace del DTO
 
 using BCrypt.Net;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 namespace CocktailDebacle.Server.Controllers
 
 {
@@ -82,6 +84,20 @@ namespace CocktailDebacle.Server.Controllers
             await _context.SaveChangesAsync();
 
             return Ok("Logout effettuato con successo.");
+        }
+
+        [HttpGet("check-token")]
+        [Authorize]
+        public async Task<IActionResult> CheckToken()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userName = User.Identity?.Name;
+            return Ok(new
+            {
+                Message = "Token valido",
+                UserId = userId,
+                UserName = userName
+            });
         }
 
 
@@ -182,6 +198,16 @@ namespace CocktailDebacle.Server.Controllers
                 return BCrypt.Net.BCrypt.HashPassword(password);
                 
             }
+
+
+            // Api cocktail /////////// /////////////////////////////
+            [HttpPost("import-cocktails")]
+            public async Task<IActionResult> GetCocktails()
+            {
+                await importService.ImportAllCocktailsAsync();
+                return Ok("Importazione completata!");
+            }
+
         }
 
         public class LoginRequest
