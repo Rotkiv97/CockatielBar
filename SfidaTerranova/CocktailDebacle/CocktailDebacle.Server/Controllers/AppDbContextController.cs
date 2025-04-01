@@ -49,6 +49,15 @@ namespace CocktailDebacle.Server.Controllers
                 return Unauthorized("Invalid password");
             }
 
+            var token = await _authService.AuthenticateUser(user.UserName, request.PasswordRequest);
+            if (string.IsNullOrEmpty(token))
+            {
+                return Unauthorized($"Invalid token = {token}");
+            }
+           user.Token = token;
+           await _context.SaveChangesAsync();
+
+            
             // Se la password è corretta, restituisci i dati utente
             return Ok(new
             {
@@ -57,11 +66,25 @@ namespace CocktailDebacle.Server.Controllers
                 user.Name,
                 user.LastName,
                 user.Email,
-                user.AcceptCookies
+                user.AcceptCookies,
+                Token = token
             });
         }
 
-            // POST: api/Users/register - Aggiunge un nuovo utente a Users
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout([FromBody] LogoutRequest request)
+        {
+            var user = await _context.DbUser.FirstOrDefaultAsync(u => u.UserName == request.UserName);
+            if (user == null)
+                return NotFound("Utente non trovato");
+
+            user.Token = null;
+            await _context.SaveChangesAsync();
+
+            return Ok("Logout effettuato con successo.");
+        }
+
+
         [HttpPost("register")]
         public async Task<ActionResult<User>> Register([FromBody] RegisterUserDto userDto)
         {
@@ -95,29 +118,6 @@ namespace CocktailDebacle.Server.Controllers
             return CreatedAtAction(nameof(Login), new { id = user.Id }, user);
         }
 
-        [HttpPost("{tokenize}")]
-
-        public async Task<IActionResult> TokenizeUser(String Username)
-        {
-            // Trova l'utente corrispondente
-            var user = await _context.DbUser
-                .Where(u => u.UserName == Username)
-                .FirstOrDefaultAsync();
-
-            if (user == null)
-            {
-                return NotFound("Error.User not found.");
-            }
-
-            // Genera un token univoco
-            var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
-
-            // Salva il token nel database o restituiscilo come risposta
-            user.Token = token;
-            await _context.SaveChangesAsync();
-
-            return Ok(new { Token = token });
-        }
 
 
 
@@ -189,4 +189,32 @@ namespace CocktailDebacle.Server.Controllers
             public string UserNameRequest { get; set; } = string.Empty;
             public string PasswordRequest { get; set; } = string.Empty;
         }
+
+        public class LogoutRequest
+        {
+            public string UserName { get; set; } = string.Empty;
+        }
 }
+        // [HttpPost("{tokenize}")]
+
+        // public async Task<IActionResult> TokenizeUser(String Username)
+        // {
+        //     // Trova l'utente corrispondente
+        //     var user = await _context.DbUser
+        //         .Where(u => u.UserName == Username)
+        //         .FirstOrDefaultAsync();
+
+        //     if (user == null)
+        //     {
+        //         return NotFound("Error.User not found.");
+        //     }
+
+        //     // Genera un token univoco
+        //     var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+
+        //     // Salva il token nel database o restituiscilo come risposta
+        //     user.Token = token;
+        //     await _context.SaveChangesAsync();
+
+        //     return Ok(new { Token = token });
+        // }

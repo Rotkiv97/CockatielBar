@@ -33,31 +33,24 @@ namespace CocktailDebacle.Server.Models
             
             if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
             {
-                return null; // Utente non trovato o password errata
+                return null;
             }
 
-            // Generazione del token JWT
             var tokenHandler = new JwtSecurityTokenHandler();
-            // var secretKey = _configuration["Jwt:Key"];
-            // if (string.IsNullOrEmpty(secretKey))
-            // {
-            //     throw new Exception("Errore: la chiave JWT è mancante nella configurazione! Assicurati che sia presente in appsettings.json.");
-            // }
 
             var jwtKey = _configuration["Jwt:Key"];
             if (string.IsNullOrEmpty(jwtKey))
             {
                 throw new Exception("Errore: la chiave JWT è mancante nella configurazione! Assicurati che sia presente in appsettings.json.");
             }
+
             var key = Encoding.ASCII.GetBytes(jwtKey);
-            {
-                throw new Exception("Errore: la chiave JWT è mancante nella configurazione! Assicurati che sia presente in appsettings.json.");
-            }
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[]
                 {
-                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString() ?? string.Empty),
+                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                     new Claim(ClaimTypes.Name, user.UserName)
                 }),
                 Expires = DateTime.UtcNow.AddHours(1),

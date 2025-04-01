@@ -53,25 +53,22 @@ export class UserService {
       PasswordRequest: password 
     }).pipe(
       tap((response: any) => {
-        if (response.success) {
-          this.setCurrentUser(response.user);
-          this.http.post(`${this.apiUrl}/login`,
-            {
-
-            });
-        }
+        this.setCurrentUser(response); // Salva i dati corretti
       })
     );
   }
 
   logout(): Observable<any> {
-    return this.http.post(`${this.apiUrl}/logout`, {}).pipe(
-      tap(() => {
-        this.clearCurrentUser();
-        this.router.navigate(['/login-signup']);
-      })
-    );
+    const currentUser = this.currentUser;
+    const payload = { User: currentUser?.UserName }; // Assicurati che sia 'UserName', non 'username'
+    
+    return this.http.post(`${this.apiUrl}/logout`, payload, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
   }
+  
 
   // ---- CLIENT-SIDE AUTH MANAGEMENT ----
   private setCurrentUser(user: User): void {
