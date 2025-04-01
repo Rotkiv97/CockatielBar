@@ -26,6 +26,8 @@ public class User
     public string PasswordHash { get; set; } = string.Empty;
     public bool? AcceptCookies { get; set; } = false;
 
+    public string Token { get; set; } = string.Empty;
+
     // public string Language { get; set; } = "en";
     // Relazione con Users (gruppo di utenti)
     // [ForeignKey("Users")]
