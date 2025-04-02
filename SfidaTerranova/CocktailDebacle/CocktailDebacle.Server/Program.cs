@@ -51,11 +51,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"])),
             ValidateIssuer = false,
-            ValidateAudience = false
+            ValidateAudience = false, 
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero // Riduci il tempo di tolleranza per la scadenza del token
         };
     });
 
-builder.Services.AddScoped<IAuthService, AuthService, CocktailImportService>();
+builder.Services.AddScoped<IAuthService, AuthService>(); // aggiungi cocketail service
+builder.Services.AddHttpClient<CocktailImportService>(); // aggiungi cocketail service
 
 var app = builder.Build();
 
@@ -75,6 +78,11 @@ using (var scope = app.Services.CreateScope())
         
         dbContext.Database.Migrate();
         Console.WriteLine("Database migrated successfully.");
+
+        // Importa i cocktail
+        var cocktailImportService = services.GetRequiredService<CocktailImportService>();
+        await cocktailImportService.ImportCocktailsAsync();
+        Console.WriteLine("Cocktails imported successfully.");
     }
     catch (Exception ex)
     {

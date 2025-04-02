@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 
 export interface User {
   UsersId?: number; // Aggiunto ID utente
-  UserName: string;
+  userName: string;
   Name: string;
   LastName: string;
   Email: string;
@@ -59,13 +59,9 @@ export class UserService {
   }
 
   logout(): Observable<any> {
-    const currentUser = this.currentUser;
-    const payload = { User: currentUser?.UserName }; // Assicurati che sia 'UserName', non 'username'
-    
+    const payload = { User: this.currentUser?.userName }; 
+    console.log(this.apiUrl, "CANE DEI CANI " , payload);
     return this.http.post(`${this.apiUrl}/logout`, payload, {
-      headers: {
-        'Content-Type': 'application/json'
-      }
     });
   }
   

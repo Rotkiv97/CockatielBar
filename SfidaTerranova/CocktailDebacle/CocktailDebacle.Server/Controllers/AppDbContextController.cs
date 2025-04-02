@@ -24,8 +24,11 @@ namespace CocktailDebacle.Server.Controllers
         private readonly AppDbContext _context;
         private readonly IAuthService _authService;
 
-        public UsersController(AppDbContext context, IAuthService authService)
+        private readonly CocktailImportService _cocktailImportService;
+
+        public UsersController(AppDbContext context, IAuthService authService, CocktailImportService cocktailImportService)
         {
+            _cocktailImportService = cocktailImportService;
             _context = context;
             _authService = authService;
         }
@@ -51,7 +54,7 @@ namespace CocktailDebacle.Server.Controllers
                 return Unauthorized("Invalid password");
             }
 
-            var token = await _authService.AuthenticateUser(user.UserName, request.PasswordRequest);
+            var token = await _authService.AuthenticateUser(user.UserName, request.PasswordRequest, user);
             if (string.IsNullOrEmpty(token))
             {
                 return Unauthorized($"Invalid token = {token}");
@@ -78,9 +81,9 @@ namespace CocktailDebacle.Server.Controllers
         {
             var user = await _context.DbUser.FirstOrDefaultAsync(u => u.UserName == request.UserName);
             if (user == null)
-                return NotFound("Utente non trovato");
+                return NotFound($"Utente non trovato{request.UserName} = {user?.UserName}");
 
-            user.Token = null;
+            user.Token = string.Empty;
             await _context.SaveChangesAsync();
 
             return Ok("Logout effettuato con successo.");
@@ -88,16 +91,16 @@ namespace CocktailDebacle.Server.Controllers
 
         [HttpGet("check-token")]
         [Authorize]
-        public async Task<IActionResult> CheckToken()
+        public Task<IActionResult> CheckToken()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var userName = User.Identity?.Name;
-            return Ok(new
+            return Task.FromResult<IActionResult>(Ok(new
             {
                 Message = "Token valido",
                 UserId = userId,
                 UserName = userName
-            });
+            }));
         }
 
 
@@ -184,63 +187,26 @@ namespace CocktailDebacle.Server.Controllers
             {
                 return NotFound();
             }
-
             _context.DbUser.Remove(user);
             await _context.SaveChangesAsync();
-
-                return NoContent();
-            }
+            return NoContent();
+        }
 
             // Metodo per l'hashing della password
-            private string HashPassword(string password)
-            {
-
-                return BCrypt.Net.BCrypt.HashPassword(password);
-                
-            }
-
-
-            // Api cocktail /////////// /////////////////////////////
-            [HttpPost("import-cocktails")]
-            public async Task<IActionResult> GetCocktails()
-            {
-                await importService.ImportAllCocktailsAsync();
-                return Ok("Importazione completata!");
-            }
-
-        }
-
-        public class LoginRequest
+        private string HashPassword(string password)
         {
-            public string UserNameRequest { get; set; } = string.Empty;
-            public string PasswordRequest { get; set; } = string.Empty;
+            return BCrypt.Net.BCrypt.HashPassword(password);
         }
+    }
 
-        public class LogoutRequest
-        {
-            public string UserName { get; set; } = string.Empty;
-        }
+    public class LoginRequest
+    {
+        public string UserNameRequest { get; set; } = string.Empty;
+        public string PasswordRequest { get; set; } = string.Empty;
+    }
+
+    public class LogoutRequest
+    {
+        public string UserName { get; set; } = string.Empty;
+    }
 }
-        // [HttpPost("{tokenize}")]
-
-        // public async Task<IActionResult> TokenizeUser(String Username)
-        // {
-        //     // Trova l'utente corrispondente
-        //     var user = await _context.DbUser
-        //         .Where(u => u.UserName == Username)
-        //         .FirstOrDefaultAsync();
-
-        //     if (user == null)
-        //     {
-        //         return NotFound("Error.User not found.");
-        //     }
-
-        //     // Genera un token univoco
-        //     var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
-
-        //     // Salva il token nel database o restituiscilo come risposta
-        //     user.Token = token;
-        //     await _context.SaveChangesAsync();
-
-        //     return Ok(new { Token = token });
-        // }

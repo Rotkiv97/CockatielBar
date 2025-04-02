@@ -23,7 +23,13 @@ namespace CocktailDebacle.Server.Service
                 entity.Property(u => u.PasswordHash).IsRequired(); // Campo obbligatorio
             });
 
-            da
+            modelBuilder.Entity<Cocktail>(entity =>
+            {
+                entity.HasKey(c => c.Id); // Definisci la chiave primaria
+                entity.ToTable("Cocktails"); // Nome della tabella nel database
+            });
+
+            // Configurazione della tabella Cocktails
 
             // Se necessario, aggiungi qui altre configurazioni per Cocktail e RecommenderSystems
             // modelBuilder.Entity<Cocktail>(entity =>

@@ -110,7 +110,7 @@ export class SignUpComponent {
     }
 
     const user = {
-      UserName: this.signupForm.value.UserName,
+      userName: this.signupForm.value.UserName,
       Name: this.signupForm.value.FirstName,
       LastName: this.signupForm.value.LastName,
       Email: this.signupForm.value.Email,

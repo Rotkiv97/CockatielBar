@@ -27,14 +27,14 @@ namespace CocktailDebacle.Server.Models
             _configuration = configuration;
         }
 
-        public async Task<string> AuthenticateUser(string UserName, string password)
+        public async Task<string> AuthenticateUser(string UserName, string password, User user)
         {
-            var user = await _context.DbUser.SingleOrDefaultAsync(u => u.UserName == UserName);
+            // var user = await _context.DbUser.SingleOrDefaultAsync(u => u.UserName == UserName);
             
-            if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
-            {
-                return null;
-            }
+            // if (user == null || !BCrypt.Net.BCrypt.Verify(password, user.PasswordHash))
+            // {
+            //     return null; // Autenticazione fallita
+            // }
 
             var tokenHandler = new JwtSecurityTokenHandler();
 
@@ -53,7 +53,7 @@ namespace CocktailDebacle.Server.Models
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                     new Claim(ClaimTypes.Name, user.UserName)
                 }),
-                Expires = DateTime.UtcNow.AddHours(1),
+                Expires = DateTime.UtcNow.AddHours(1), //Expires = DateTime.UtcNow.AddMinutes(5),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 
