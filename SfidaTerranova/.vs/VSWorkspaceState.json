@@ -2,10 +2,15 @@
   "ExpandedNodes": [
     "",
     "\\CocktailDebacle",
-    "\\CocktailDebacle\\CocktailDebacle.Server\\Controllers",
-    "\\CocktailDebacle\\CocktailDebacle.Server\\Models",
+    "\\CocktailDebacle\\cocktaildebacle.client",
+    "\\CocktailDebacle\\cocktaildebacle.client\\.angular",
+    "\\CocktailDebacle\\cocktaildebacle.client\\src",
+    "\\CocktailDebacle\\cocktaildebacle.client\\src\\app",
+    "\\CocktailDebacle\\cocktaildebacle.client\\src\\app\\services",
+    "\\CocktailDebacle\\CocktailDebacle.Server",
+    "\\CocktailDebacle\\CocktailDebacle.Server\\DTOs",
     "\\CocktailDebacle\\CocktailDebacle.Server\\Service"
   ],
-  "SelectedNode": "\\CocktailDebacle\\CocktailDebacle.Server",
+  "SelectedNode": "\\CocktailDebacle\\docker-compose.yml",
   "PreviewInSolutionExplorer": false
 }
