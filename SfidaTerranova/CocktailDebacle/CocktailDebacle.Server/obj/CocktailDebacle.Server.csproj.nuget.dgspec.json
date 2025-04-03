@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "c:\\Users\\EURONICS\\Documents\\GitHub\\SfidaTerranova\\SfidaTerranova\\CocktailDebacle\\CocktailDebacle.Server\\CocktailDebacle.Server.csproj": {}
+    "C:\\Users\\EURONICS\\Documents\\GitHub\\SfidaTerranova\\SfidaTerranova\\CocktailDebacle\\CocktailDebacle.Server\\CocktailDebacle.Server.csproj": {}
   },
   "projects": {
-    "c:\\Users\\EURONICS\\Documents\\GitHub\\SfidaTerranova\\SfidaTerranova\\CocktailDebacle\\CocktailDebacle.Server\\CocktailDebacle.Server.csproj": {
+    "C:\\Users\\EURONICS\\Documents\\GitHub\\SfidaTerranova\\SfidaTerranova\\CocktailDebacle\\CocktailDebacle.Server\\CocktailDebacle.Server.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "c:\\Users\\EURONICS\\Documents\\GitHub\\SfidaTerranova\\SfidaTerranova\\CocktailDebacle\\CocktailDebacle.Server\\CocktailDebacle.Server.csproj",
+        "projectUniqueName": "C:\\Users\\EURONICS\\Documents\\GitHub\\SfidaTerranova\\SfidaTerranova\\CocktailDebacle\\CocktailDebacle.Server\\CocktailDebacle.Server.csproj",
         "projectName": "CocktailDebacle.Server",
-        "projectPath": "c:\\Users\\EURONICS\\Documents\\GitHub\\SfidaTerranova\\SfidaTerranova\\CocktailDebacle\\CocktailDebacle.Server\\CocktailDebacle.Server.csproj",
+        "projectPath": "C:\\Users\\EURONICS\\Documents\\GitHub\\SfidaTerranova\\SfidaTerranova\\CocktailDebacle\\CocktailDebacle.Server\\CocktailDebacle.Server.csproj",
         "packagesPath": "C:\\Users\\EURONICS\\.nuget\\packages\\",
-        "outputPath": "c:\\Users\\EURONICS\\Documents\\GitHub\\SfidaTerranova\\SfidaTerranova\\CocktailDebacle\\CocktailDebacle.Server\\obj\\",
+        "outputPath": "C:\\Users\\EURONICS\\Documents\\GitHub\\SfidaTerranova\\SfidaTerranova\\CocktailDebacle\\CocktailDebacle.Server\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
