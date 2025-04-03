@@ -24,11 +24,12 @@ namespace CocktailDebacle.Server.Controllers
         private readonly AppDbContext _context;
         private readonly IAuthService _authService;
 
-        private readonly CocktailImportService _cocktailImportService;
+        private readonly ILogger<UsersController> _logger;
 
-        public UsersController(AppDbContext context, IAuthService authService, CocktailImportService cocktailImportService)
+        public UsersController(AppDbContext context, IAuthService authService, ILogger<UsersController> logger)
         {
-            _cocktailImportService = cocktailImportService;
+            _logger = logger;
+            _logger.LogInformation("UsersController initialized.✅");
             _context = context;
             _authService = authService;
         }
@@ -59,10 +60,9 @@ namespace CocktailDebacle.Server.Controllers
             {
                 return Unauthorized($"Invalid token = {token}");
             }
-           user.Token = token;
-           await _context.SaveChangesAsync();
-
-            
+            _logger.LogDebug($"Token = {token}");
+            user.Token = token;
+            await _context.SaveChangesAsync();
             // Se la password è corretta, restituisci i dati utente
             return Ok(new
             {
@@ -86,7 +86,7 @@ namespace CocktailDebacle.Server.Controllers
             user.Token = string.Empty;
             await _context.SaveChangesAsync();
 
-            return Ok("Logout effettuato con successo.");
+            return new JsonResult(new { message = "Logout effettuato con successo." });
         }
 
         [HttpGet("check-token")]
@@ -101,6 +101,16 @@ namespace CocktailDebacle.Server.Controllers
                 UserId = userId,
                 UserName = userName
             }));
+        }
+
+        [HttpGet("GetToken")]
+        public async Task<IActionResult> GetToken(string userName)
+        {
+            var user = await _context.DbUser.FirstOrDefaultAsync(u => u.UserName == userName);
+            if (user == null)
+                return NotFound($"Utente non trovato{userName} = {user?.UserName}");
+
+            return Ok(user.Token);
         }
 
 

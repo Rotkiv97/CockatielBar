@@ -57,7 +57,8 @@ export class ProfilePageComponent implements OnInit {
 
   logout(): void {
     this.userService.logout().subscribe({
-      next: () => {
+      next: (res) => {
+        console.log('Logout response:', res);
         this.router.navigate(['/login-signup']);
       },
       error: (err) => {

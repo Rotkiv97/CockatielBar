@@ -58,12 +58,11 @@ export class UserService {
     );
   }
 
-  logout(): Observable<any> {
-    const payload = { User: this.currentUser?.userName }; 
-    console.log(this.apiUrl, "CANE DEI CANI " , payload);
-    return this.http.post(`${this.apiUrl}/logout`, payload, {
-    });
+  logout(): Observable<{ message: string }> {
+    const payload = { UserName: this.currentUser?.userName };
+    return this.http.post<{ message: string }>(`${this.apiUrl}/logout`, payload);
   }
+  
   
 
   // ---- CLIENT-SIDE AUTH MANAGEMENT ----

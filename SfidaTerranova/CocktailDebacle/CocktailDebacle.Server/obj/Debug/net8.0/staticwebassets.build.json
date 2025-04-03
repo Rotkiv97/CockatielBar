@@ -1,13 +1,13 @@
 {
   "Version": 1,
-  "Hash": "gT+RAo5nZfMMs0rL3pfVWnVkEEdp2OILkIKPUhZ9RQQ=",
+  "Hash": "62ZufmmcYQ+WQtVhyd2pI7edjlnyPtNxmdhDZVRyR6g=",
   "Source": "CocktailDebacle.Server",
   "BasePath": "_content/CocktailDebacle.Server",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [
     {
-      "Identity": "C:\\Users\\EURONICS\\Documents\\GitHub\\SfidaTerranova\\SfidaTerranova\\CocktailDebacle\\cocktaildebacle.client\\cocktaildebacle.client.esproj",
+      "Identity": "c:\\Users\\EURONICS\\Documents\\GitHub\\SfidaTerranova\\SfidaTerranova\\CocktailDebacle\\cocktaildebacle.client\\cocktaildebacle.client.esproj",
       "Version": 2,
       "Source": "cocktaildebacle.client",
       "GetPublishAssetsTargets": "GetCurrentProjectPublishStaticWebAssetItems",
