@@ -109,6 +109,7 @@ namespace CocktailDebacle.Server.Controllers
             }));
         }
 
+        // http://localhost:5052/api/Users/GetToken?userName=...
         [HttpGet("GetToken")]
         public async Task<IActionResult> GetToken(string userName)
         {
@@ -118,7 +119,7 @@ namespace CocktailDebacle.Server.Controllers
             return Ok(user.Token);
         }
 
-
+        // http://localhost:5052/api/Users + body -> row {"userName": ="" "name": ="" "lastName": ="" "email": ="" "passwordHash": ="" "acceptCookies": =""}
         [HttpPost("register")]
         public async Task<ActionResult<User>> Register([FromBody] RegisterUserDto userDto)
         {
@@ -156,6 +157,7 @@ namespace CocktailDebacle.Server.Controllers
 
 
         // PUT: api/Users/{id} - Modifica un utente esistente
+        // http://localhost:5052/api/Users/1 + body -> row {"userName": ="" "name": ="" "lastName": ="" "email": ="" "passwordHash": ="" "acceptCookies": =""}
         [HttpPut("{id}")]
         public async Task<IActionResult> PutUser(int id, User updatedUser)
         {
@@ -182,6 +184,7 @@ namespace CocktailDebacle.Server.Controllers
             {
                 user.PasswordHash = HashPassword(updatedUser.PasswordHash);
             }
+            
             try
             {
                 await _context.SaveChangesAsync();
@@ -194,6 +197,7 @@ namespace CocktailDebacle.Server.Controllers
             return NoContent();
         }
 
+        // http://localhost:5052/api/Users/{id} - Elimina un utente
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {

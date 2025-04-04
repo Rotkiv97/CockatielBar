@@ -50,7 +50,7 @@ export class UserService {
   login(userName: string, password: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/login`, { 
       UserNameRequest: userName, 
-      PasswordRequest: password 
+      PasswordRequest: password
     }).pipe(
       tap((response: any) => {
         this.setCurrentUser(response); // Salva i dati corretti
