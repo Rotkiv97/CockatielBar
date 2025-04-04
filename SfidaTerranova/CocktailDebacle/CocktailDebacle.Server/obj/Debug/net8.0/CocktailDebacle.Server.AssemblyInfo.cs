@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CocktailDebacle.Server")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f2be9ed17accb25a8ee7da79fe31979552924f94")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b0bc89ff9ebc77bfbd007d9aa763028960e58fb7")]
 [assembly: System.Reflection.AssemblyProductAttribute("CocktailDebacle.Server")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CocktailDebacle.Server")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -34,6 +34,8 @@ namespace CocktailDebacle.Server.Controllers
             _authService = authService;
         }
 
+
+        // http://localhost:5052/api/Users/login + body -> row {"userNameRequest": ="" "passwordRequest": ""}
         [HttpPost("login")]
         [EnableRateLimiting("fixed")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
@@ -76,6 +78,8 @@ namespace CocktailDebacle.Server.Controllers
             });
         }
 
+
+        // http://localhost:5052/api/Users/logout + body -> row {"userName": =""}
         [HttpPost("logout")]
         public async Task<IActionResult> Logout([FromBody] LogoutRequest request)
         {
@@ -89,6 +93,8 @@ namespace CocktailDebacle.Server.Controllers
             return new JsonResult(new { message = "Logout effettuato con successo." });
         }
 
+
+        // http://localhost:5052/api/Users/check-token
         [HttpGet("check-token")]
         [Authorize]
         public Task<IActionResult> CheckToken()
@@ -109,7 +115,6 @@ namespace CocktailDebacle.Server.Controllers
             var user = await _context.DbUser.FirstOrDefaultAsync(u => u.UserName == userName);
             if (user == null)
                 return NotFound($"Utente non trovato{userName} = {user?.UserName}");
-
             return Ok(user.Token);
         }
 

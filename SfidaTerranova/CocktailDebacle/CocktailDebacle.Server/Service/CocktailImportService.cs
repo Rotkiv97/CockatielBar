@@ -14,7 +14,6 @@ namespace CocktailDebacle.Server.Service
         public CocktailImportService(HttpClient httpClient, AppDbContext context, ILogger<CocktailImportService> logger)
         {
             _logger = logger;
-            _logger.LogInformation("CocktailImportService initialized.✅");
             _httpClient = httpClient;
             _context = context;
         }
