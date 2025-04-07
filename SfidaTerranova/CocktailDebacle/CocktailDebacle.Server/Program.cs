@@ -6,6 +6,11 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using CocktailDebacle.Server.Service;
 
+
+/*
+local => Server=MSI; Database=CocktailDebacle; Trusted_Connection=True; TrustServerCertificate=True; MultipleActiveResultSets=True;
+Docket => Server=sqlserver;Database=CocktailDb;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=true;
+*/
 var builder = WebApplication.CreateBuilder(args);
 var MyallowSpecificOrigins = "_myAllowSpecificOrigins";
 

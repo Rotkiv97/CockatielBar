@@ -42,7 +42,7 @@ export class SignUpComponent {
     this.signupForm = this.fb.group({
       FirstName: ['', [Validators.required, Validators.minLength(2), Validators.pattern(/^[a-zA-ZÀ-ÿ\s']+$/)]],
       LastName: ['', [Validators.required, Validators.pattern(/^[a-zA-ZÀ-ÿ\s']+$/)]],
-      UserName: ['', [Validators.required, Validators.minLength(4), Validators.pattern(/^[a-zA-Z0-9_]+$/)]],
+      userName: ['', [Validators.required, Validators.minLength(4), Validators.pattern(/^[a-zA-Z0-9_]+$/)]],
       Email: ['', [Validators.required, Validators.email]],
       ConfirmEmail: ['', [Validators.required, Validators.email]],
       Password: ['', [
@@ -110,7 +110,7 @@ export class SignUpComponent {
     }
 
     const user = {
-      userName: this.signupForm.value.UserName,
+      userName: this.signupForm.value.userName,
       Name: this.signupForm.value.FirstName,
       LastName: this.signupForm.value.LastName,
       Email: this.signupForm.value.Email,

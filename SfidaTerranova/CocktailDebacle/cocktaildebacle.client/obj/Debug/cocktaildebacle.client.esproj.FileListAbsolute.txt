@@ -1,6 +1,10 @@
-C:\Users\EURONICS\Desktop\CocktailDebacle\cocktaildebacle.client\obj\Debug\cocktaildebacle.client.esproj.CoreCompileInputs.cache
-C:\Users\EURONICS\Documents\GitHub\SfidaTerranova\CocktailDebacle\cocktaildebacle.client\obj\Debug\cocktaildebacle.client.esproj.CoreCompileInputs.cache
-C:\Users\matti\OneDrive\Desktop\TerraNovaChallenge\lastversion\lastversion\SfidaTerranova\CocktailDebacle\cocktaildebacle.client\obj\Debug\cocktaildebacle.client.esproj.CoreCompileInputs.cache
-C:\Users\matti\OneDrive\Desktop\TerraNovaChallengeLatest\SfidaTerranova\CocktailDebacle\cocktaildebacle.client\obj\Debug\cocktaildebacle.client.esproj.CoreCompileInputs.cache
-C:\Users\matti\OneDrive\Desktop\TerraNovaChallengeLatest\SfidaTerranova-side\SfidaTerranova\CocktailDebacle\cocktaildebacle.client\obj\Debug\cocktaildebacle.client.esproj.CoreCompileInputs.cache
+C:/Users/EURONICS/Desktop/CocktailDebacle/cocktaildebacle.client/obj/Debug/cocktaildebacle.client.esproj.CoreCompileInputs.cache
+C:/Users/EURONICS/Documents/GitHub/SfidaTerranova/CocktailDebacle/cocktaildebacle.client/obj/Debug/cocktaildebacle.client.esproj.CoreCompileInputs.cache
+C:/Users/matti/OneDrive/Desktop/TerraNovaChallenge/lastversion/lastversion/SfidaTerranova/CocktailDebacle/cocktaildebacle.client/obj/Debug/cocktaildebacle.client.esproj.CoreCompileInputs.cache
+C:/Users/matti/OneDrive/Desktop/TerraNovaChallengeLatest/SfidaTerranova/CocktailDebacle/cocktaildebacle.client/obj/Debug/cocktaildebacle.client.esproj.CoreCompileInputs.cache
+C:/Users/matti/OneDrive/Desktop/TerraNovaChallengeLatest/SfidaTerranova-side/SfidaTerranova/CocktailDebacle/cocktaildebacle.client/obj/Debug/cocktaildebacle.client.esproj.CoreCompileInputs.cache
+C:/Users/matti/OneDrive/Desktop/NEWterranova/SfidaTerranova-main/SfidaTerranova/CocktailDebacle/cocktaildebacle.client/obj/Debug/cocktaildebacle.client.esproj.CoreCompileInputs.cache
+/src/cocktaildebacle.client/obj/Debug/cocktaildebacle.client.esproj.CoreCompileInputs.cache
+C:\Users\matti\OneDrive\Desktop\NEWterranova\SfidaTerranova-main\SfidaTerranova\CocktailDebacle\cocktaildebacle.client\obj\Debug\cocktaildebacle.client.esproj.CoreCompileInputs.cache
+C:\Users\EURONICS\Downloads\SfidaTerranova-latest\SfidaTerranova-latest\SfidaTerranova-main\SfidaTerranova\CocktailDebacle\cocktaildebacle.client\obj\Debug\cocktaildebacle.client.esproj.CoreCompileInputs.cache
 C:\Users\EURONICS\Documents\GitHub\SfidaTerranova\SfidaTerranova\CocktailDebacle\cocktaildebacle.client\obj\Debug\cocktaildebacle.client.esproj.CoreCompileInputs.cache

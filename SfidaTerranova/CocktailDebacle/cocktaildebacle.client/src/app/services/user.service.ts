@@ -1,10 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, BehaviorSubject } from 'rxjs';
 import { Router } from '@angular/router';
+import { map, catchError} from 'rxjs/operators'
+import { of } from 'rxjs';
 
 export interface User {
-  UsersId?: number; // Aggiunto ID utente
+  UsersId?: number;
   userName: string;
   Name: string;
   LastName: string;
@@ -14,7 +16,10 @@ export interface User {
   Online?: boolean;
   Language?: string;
   ImgProfile?: string;
-  Token?: string; // Aggiunto per JWT
+  ProfileParallaxImg?: string;
+  Token?: string;
+  Bio?: string;
+  Bio_link?: string;
 }
 
 @Injectable({
@@ -22,15 +27,16 @@ export interface User {
 })
 export class UserService {
   private apiUrl = 'http://localhost:5052/api/Users';
-  private currentUser: User | null = null;
+  private currentUserSubject = new BehaviorSubject<User | null>(null);
+  public currentUser$ = this.currentUserSubject.asObservable();
 
   constructor(
     private http: HttpClient,
     private router: Router
   ) {
-    this.loadUserFromStorage(); // Carica l'utente al startup
+    this.loadUserFromStorage(); 
   }
-  
+
   forceLogout() {
     this.clearCurrentUser();
     this.router.navigate(['/login-signup']);
@@ -50,47 +56,74 @@ export class UserService {
   login(userName: string, password: string): Observable<any> {
     return this.http.post(`${this.apiUrl}/login`, { 
       UserNameRequest: userName, 
-      PasswordRequest: password
+      PasswordRequest: password 
     }).pipe(
       tap((response: any) => {
-        this.setCurrentUser(response); // Salva i dati corretti
+        if (response) {
+          this.setCurrentUser(response);
+          console.log('User logged in:', this.currentUserSubject.value, );
+        }
       })
     );
   }
 
   logout(): Observable<{ message: string }> {
-    const payload = { UserName: this.currentUser?.userName };
-    return this.http.post<{ message: string }>(`${this.apiUrl}/logout`, payload);
+    const payload = { userName: this.currentUserSubject.value?.userName };
+    return this.http.post<{ message: string }>(`${this.apiUrl}/logout`, payload).pipe(
+      tap(() => this.clearCurrentUser())
+    );
   }
-  
-  
 
   // ---- CLIENT-SIDE AUTH MANAGEMENT ----
   private setCurrentUser(user: User): void {
-    this.currentUser = user;
+    this.currentUserSubject.next(user);
     localStorage.setItem('currentUser', JSON.stringify(user));
   }
 
   private clearCurrentUser(): void {
-    this.currentUser = null;
+    this.currentUserSubject.next(null);
     localStorage.removeItem('currentUser');
   }
 
   private loadUserFromStorage(): void {
     const userData = localStorage.getItem('currentUser');
     if (userData) {
-      this.currentUser = JSON.parse(userData);
+      this.currentUserSubject.next(JSON.parse(userData));
     }
   }
 
-
-  isLoggedIn(): boolean {
-    return !!this.currentUser;
+  isLoggedIn(user: User): Promise<string> {
+    if (!user || !user.userName) {
+      console.log('Utente non valido o username mancante.');
+      return Promise.resolve('failed');
+    }
+  
+    const url = `${this.apiUrl}/GetToken?userName=${encodeURIComponent(user.userName)}`;
+    console.log('Verifica autenticazione con URL:', url);
+  
+    return this.http.get(url, { responseType: 'text' }).pipe(
+      tap(response => console.log('Token ricevuto:', response)),
+      map(response => response ?? 'failed'), // Se `response` è undefined, restituisce 'failed'
+      catchError(error => {
+        console.error('Errore durante la verifica del login:', error);
+        return of('failed');
+      })
+    ).toPromise() as Promise<string>; // Forziamo il tipo per evitare l'errore TypeScript
   }
+  
+  
 
+  
+  
+  
 
   getToken(): string | null {
-    return this.currentUser?.Token || null;
+    return this.currentUserSubject.value?.Token || null;
+  }
+
+  getUser(): User | null {
+
+    return this.currentUserSubject.value || null;
   }
 
   // ---- REST OF API METHODS ----
@@ -104,37 +137,7 @@ export class UserService {
     );
   }
 
-  getUser(): Observable<any> {
-    var getUrl = "http://localhost:5052/api/getUser"
-    return this.http.get(`${getUrl}`);
-  }
 
-  getUsers(): Observable<any> {
-    return this.http.get(`${this.apiUrl}`);
-  }
 
-  recoverPassword(email: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/recoverPassword`, { 
-      EmailRequest: email
-    });
-  }
 
-  resetPassword(usersId: number, password: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/resetPassword/${usersId}`, { 
-      PasswordRequest: password
-    });
-  }
-
-  changePassword(usersId: number, oldPassword: string, newPassword: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/changePassword/${usersId}`, { 
-      OldPasswordRequest: oldPassword,
-      NewPasswordRequest: newPassword
-    });
-  }
-
-  changeEmail(usersId: number, email: string): Observable<any> {
-    return this.http.post(`${this.apiUrl}/changeEmail/${usersId}`, { 
-      EmailRequest: email
-    });
-  }
 }

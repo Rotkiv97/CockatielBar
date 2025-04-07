@@ -41,11 +41,12 @@ namespace CocktailDebacle.Server.Service
                 File = new FileDescription(file.FileName, stream),
                 PublicId = publicId,
                 Type = "authenticated", // immagine privata
-                Overwrite = true
+                Overwrite = true,
+                Invalidate = true
             };
 
             var uploadResult = await _cloudinary.UploadAsync(uploadParams);
-            return uploadResult.PublicId;
+            return uploadResult.SecureUrl?.ToString();
         }
 
         public string GeneratePrivateImageUrl(string publicId, int expireSeconds = 3600)
@@ -58,14 +59,18 @@ namespace CocktailDebacle.Server.Service
                 .BuildUrl(publicId);
         }
 
-        public async Task DeleteImageAsync(string publicId)
+        public async Task<string> DeleteImageAsync(string publicId)
         {
             var deleteParams = new DeletionParams(publicId)
             {
                 ResourceType = ResourceType.Image,
-                Type = "authenticated" // immagine privata
+                Type = "authenticated"
             };
-            await _cloudinary.DestroyAsync(deleteParams);
+
+            var result = await _cloudinary.DestroyAsync(deleteParams);
+            Console.WriteLine($"[Cloudinary] Eliminazione {publicId} → {result.Result}");
+
+            return result.Result;
         }
         // Implementa i metodi per caricare, eliminare e gestire le immagini su Cloudinary qui
     }

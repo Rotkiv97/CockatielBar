@@ -14,8 +14,10 @@ using CocktailDebacle.Server.Models.DTOs; // Importa il namespace del DTO
 using BCrypt.Net;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
-namespace CocktailDebacle.Server.Controllers
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
+using CloudinaryDotNet;
 
+namespace CocktailDebacle.Server.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -24,14 +26,17 @@ namespace CocktailDebacle.Server.Controllers
         private readonly AppDbContext _context;
         private readonly IAuthService _authService;
 
+        private readonly CloudinaryService _cloudinaryService;
+
         private readonly ILogger<UsersController> _logger;
 
-        public UsersController(AppDbContext context, IAuthService authService, ILogger<UsersController> logger)
+        public UsersController(AppDbContext context, IAuthService authService, ILogger<UsersController> logger, CloudinaryService cloudinaryService)
         {
-            _logger = logger;
-            _logger.LogInformation("UsersController initialized.✅");
-            _context = context;
+            _cloudinaryService = cloudinaryService;
             _authService = authService;
+            _context = context;
+            _logger = logger;
+            _logger.LogInformation("CloudinaryService initialized.✅");
         }
 
 
@@ -215,6 +220,84 @@ namespace CocktailDebacle.Server.Controllers
         private string HashPassword(string password)
         {
             return BCrypt.Net.BCrypt.HashPassword(password);
+        }
+
+
+        //img profile
+
+        [HttpPost("{UserName}/upload-profile-image")]
+        public async Task<IActionResult> UploadProfileImageLocal(string UserName, IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("Nessun file caricato.");
+            }
+
+            var user = await _context.DbUser.FirstOrDefaultAsync(u => u.UserName == UserName);
+            
+            if (user == null)
+            {
+                return NotFound("Utente non trovato.");
+            }
+            
+            if (!string.IsNullOrEmpty(user.ImgProfileUrl))
+            {
+                try
+                {
+                    var uri = new Uri(user.ImgProfileUrl);
+                    var segments = uri.AbsolutePath.Split('/');
+                    var folder = string.Join("/", segments.Skip(segments.ToList().IndexOf("upload") + 1));
+                    var publicId = Path.Combine(Path.GetDirectoryName(folder) ?? "", Path.GetFileNameWithoutExtension(folder)).Replace("\\", "/");
+
+                    var result = await _cloudinaryService.DeleteImageAsync(publicId);
+                    Console.WriteLine($"[Cloudinary] Eliminata: {publicId} → {result}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Errore durante l'eliminazione dell'immagine precedente: {ex.Message}");
+                }
+            }
+
+            var publicIdNew = $"profile_images/{UserName}";
+            var uploadedUrl = await _cloudinaryService.UploadImageAsync(file, publicIdNew);
+
+            if (uploadedUrl == null)
+                return BadRequest("Errore nel caricamento dell'immagine.");
+
+            user.ImgProfileUrl = uploadedUrl;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { Url = uploadedUrl });
+        }
+
+        [HttpPost("{UserName}/upload-profile-image-Url")]
+        public async Task<IActionResult> UploadProfileImageUrl(string UserName, [FromBody] string ImgProfileUrl)
+        {
+           var user = await _context.DbUser.FirstOrDefaultAsync(u => u.UserName == UserName);
+            
+            if (user == null)
+            {
+                return NotFound("Utente non trovato.");
+            }
+
+            if (!string.IsNullOrEmpty(user?.ImgProfileUrl))
+            {
+                try
+                {
+                    var publicId = Path.GetFileNameWithoutExtension(new Uri(user.ImgProfileUrl).AbsolutePath);
+                    await _cloudinaryService.DeleteImageAsync(publicId);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Errore durante l'eliminazione dell'immagine precedente: {ex.Message}");
+                    // Non bloccare il flusso
+                }
+            }
+            if(user?.ImgProfileUrl != null)
+                user.ImgProfileUrl = ImgProfileUrl;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { Url = user?.ImgProfileUrl });
         }
     }
 

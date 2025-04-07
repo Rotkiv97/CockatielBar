@@ -31,8 +31,8 @@
       <!-- Username -->
       <mat-form-field appearance="outline" class="w-100 mb-3">
         <mat-label>Username</mat-label>
-        <input matInput formControlName="UserName" required>
-        <mat-error *ngIf="signupForm.get('UserName')?.hasError('required')">
+        <input matInput formControlName="userName" required>
+        <mat-error *ngIf="signupForm.get('userName')?.hasError('required')">
           Campo obbligatorio
         </mat-error>
       </mat-form-field>

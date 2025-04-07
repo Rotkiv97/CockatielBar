@@ -1,35 +1,130 @@
-<mat-toolbar color="primary">
-    <span>CocktailDebacle</span>
-    <span class="spacer"></span>
-    <button mat-icon-button [matMenuTriggerFor]="menu">
-      <mat-icon>account_circle</mat-icon>
-    </button>
-    <mat-menu #menu="matMenu">
-      <button mat-menu-item (click)="logout()">
-        <mat-icon>logout</mat-icon>
-        <span>Logout</span>
+<div class="tiktok-container">
+  <!-- Header -->
+  <div class="tiktok-header">
+    <div class="header-left"></div>
+    <div class="header-right">
+      <button mat-icon-button [matMenuTriggerFor]="menu">
+        <mat-icon style="color:black">more_vert</mat-icon>
       </button>
-    </mat-menu>
-  </mat-toolbar>
-  
-  <div class="container">
-    <mat-card *ngIf="isLoggedIn" class="profile-card">
-      <mat-card-header>
-        <div mat-card-avatar class="profile-image-container">
-          <img [src]="profileImage" alt="Profile" class="profile-image">
-        </div>
-        <mat-card-title>Benvenuto, {{ username }}!</mat-card-title>
-      </mat-card-header>
-      
-      <mat-card-content>
-        <p>Sei correttamente loggato nel sistema.</p>
-        <p>Qui potrai visualizzare le tue statistiche e i tuoi cocktail preferiti.</p>
-      </mat-card-content>
-    </mat-card>
-  
-    <div *ngIf="!isLoggedIn" class="not-logged">
-      <mat-icon class="error-icon">error_outline</mat-icon>
-      <h2>Accesso non autorizzato</h2>
-      <p>Verrai reindirizzato alla pagina di login...</p>
+      <mat-menu #menu="matMenu">
+        <button mat-menu-item (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <span>Logout</span>
+        </button>
+      </mat-menu>
     </div>
   </div>
+
+  <!-- Main Content with Parallax -->
+  <div class="main-content">
+    <div class="parallax-background"
+         [style.background-image]="'url(' + parallaxImage + ')'"
+         [style.transform]="parallaxTransform"></div>
+
+    <!-- Profile Content -->
+    <div class="profile-transparent-content">
+      <div *ngIf="isLoggedIn" class="profile-section">
+        <!-- Profile Info -->
+        <div class="profile-info">
+          <div class="profile-pic-container">
+            <img [src]="profileImage" alt="Profile" class="profile-pic">
+            <div class="profile-verify">
+              <mat-icon>verified</mat-icon>
+            </div>
+          </div>
+          <div class="profile-name">
+            <br>
+            <br>
+            <h3>{{username}}</h3>
+          </div>
+          <div class="stats-container">
+            <div class="stat">
+              <div class="stat-number">0</div>
+              <div class="stat-label">Following</div>
+            </div>
+            <div class="stat">
+              <div class="stat-number">0</div>
+              <div class="stat-label">Followers</div>
+            </div>
+            <div class="stat">
+              <div class="stat-number">{{likedCocktails.length}}</div>
+              <div class="stat-label">Likes</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bio -->
+        <div class="profile-bio">
+          <h2>{{Bio}}</h2>
+          <a href="#" class="link">{{Bio_link}}</a>
+        </div>
+
+
+        <!-- Tab Bar -->
+        <mat-tab-group (selectedTabChange)="onTabChange($event.index)" [selectedIndex]="getSelectedTabIndex()">
+          <mat-tab label="Cocktails" class = "crazy-tab">
+            <div *ngIf="myCocktails.length === 0" class="empty-state">
+              <mat-icon class="empty-icon">local_bar</mat-icon>
+              <h3>No cocktails yet</h3>
+              <p>Create your first cocktail to get started!</p>
+              <button mat-raised-button color="warn" class="create-btn">Create Cocktail</button>
+            </div>
+            <div *ngIf="myCocktails.length > 0" class="grid">
+              <div class="grid-item" *ngFor="let cocktail of myCocktails">
+                <img [src]="cocktail.image || 'assets/default-cocktail.jpg'" [alt]="cocktail.name">
+                <div class="item-info">
+                  <mat-icon>play_circle_filled</mat-icon>
+                  <span>{{cocktail.likes || 0}}</span>
+                </div>
+              </div>
+            </div>
+          </mat-tab>
+
+          <mat-tab label="Liked">
+            <div *ngIf="likedCocktails.length === 0" class="empty-state">
+              <mat-icon class="empty-icon">favorite_border</mat-icon>
+              <h3>No liked cocktails yet</h3>
+              <p>Like some cocktails to see them here!</p>
+              <button mat-raised-button color="warn" class="create-btn">Browse Cocktails</button>
+            </div>
+            <div *ngIf="likedCocktails.length > 0" class="grid">
+              <div class="grid-item" *ngFor="let cocktail of likedCocktails">
+                <img [src]="cocktail.image || 'assets/default-cocktail.jpg'" [alt]="cocktail.name">
+                <div class="item-info">
+                  <mat-icon>play_circle_filled</mat-icon>
+                  <span>{{cocktail.likes || 0}}</span>
+                </div>
+              </div>
+            </div>
+          </mat-tab>
+
+          <mat-tab label="Friends">
+            <h3>Your Friends</h3>
+          </mat-tab>
+        </mat-tab-group>
+      </div>
+
+      <!-- Not Logged In State -->
+      <div *ngIf="!isLoggedIn" class="not-logged">
+        <div class="not-logged-content">
+          <mat-icon class="error-icon">lock</mat-icon>
+          <h2>Private Account</h2>
+          <p>Log in to view this profile</p>
+          <button mat-raised-button class="login-btn" (click)="logout()">Log In</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="profile-footer">
+    <div class="footer-content">
+      <p>© {{currentYear}} CocktailApp</p>
+      <div class="footer-links">
+        <a href="#">Privacy</a>
+        <a href="#">Terms</a>
+        <a href="#">Help</a>
+      </div>
+    </div>
+  </div>
+</div>

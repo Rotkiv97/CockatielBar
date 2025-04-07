@@ -6,11 +6,11 @@ import { UserService } from '../services/user.service'; // Importa il servizio u
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 @Component({
-  selector: 'app-login-signup', // Selettore del componente
-  standalone: true, // Indica che è un componente standalone
-  imports: [ReactiveFormsModule, CommonModule, RouterModule], // Importa i moduli necessari
-  templateUrl: './login-signup.component.html', // Percorso del template HTML
-  styleUrls: ['./login-signup.component.css'] // Percorso del file CSS
+  selector: 'app-login-signup', 
+  standalone: true, 
+  imports: [ReactiveFormsModule, CommonModule, RouterModule], 
+  templateUrl: './login-signup.component.html', 
+  styleUrls: ['./login-signup.component.css'] 
 })
 export class LoginSignupComponent {
   loginForm: FormGroup; // Definisce il form reattivo
@@ -57,7 +57,6 @@ export class LoginSignupComponent {
           });
         }
       });
-
     }
     else 
     {  

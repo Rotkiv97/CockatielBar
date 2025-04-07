@@ -28,8 +28,14 @@ public class User
 
     public string Token { get; set; } = string.Empty;
 
-    [StringLength(100)]
+    // [StringLength(100)]
     public string? ImgProfileUrl { get; set; } = string.Empty;
+
+    public string ProfileParallaxImg { get; set; } = string.Empty; // da levare forse
+
+    public string? Bio { get; set; } = string.Empty; // da levare forse
+
+    public string? Bio_link { get; set; } = string.Empty; // da levare forse
 
     // public string Language { get; set; } = "en";
     // Relazione con Users (gruppo di utenti)
