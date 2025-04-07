@@ -28,6 +28,9 @@ public class User
 
     public string Token { get; set; } = string.Empty;
 
+    [StringLength(100)]
+    public string? ImgProfileUrl { get; set; } = string.Empty;
+
     // public string Language { get; set; } = "en";
     // Relazione con Users (gruppo di utenti)
     // [ForeignKey("Users")]
@@ -44,9 +47,6 @@ public class User
     // public ICollection<Cocktail> CocktailsCreate { get; set; } = new List<Cocktail>();
 
     // public RecommenderSystems? RecommenderSystems { get; set; }
-
     // // Personalizzazioni
-    // [StringLength(10)]
-    // public string ImgProfile { get; set; } = string.Empty;
 }
 

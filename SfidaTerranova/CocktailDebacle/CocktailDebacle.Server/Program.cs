@@ -57,6 +57,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+builder.Services.Configure<CloudinarySettings>(
+    builder.Configuration.GetSection("CloudinarySettings")
+);
+
+builder.Services.AddSingleton<CloudinaryService>();
 builder.Services.AddScoped<IAuthService, AuthService>(); // aggiungi cocketail service
 builder.Services.AddHttpClient<CocktailImportService>(); // aggiungi cocketail service
 
