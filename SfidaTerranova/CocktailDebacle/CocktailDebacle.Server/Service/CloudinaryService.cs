@@ -49,6 +49,21 @@ namespace CocktailDebacle.Server.Service
             return uploadResult.SecureUrl?.ToString();
         }
 
+        public async Task<string?> UploadImageAsyncUrl(string url, string publicId)
+        {
+            var uploadParams = new ImageUploadParams
+            {
+                File = new FileDescription(url),
+                PublicId = publicId,
+                Type = "authenticated", // immagine privata
+                Overwrite = true,
+                Invalidate = true
+            };
+
+            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+            return uploadResult.SecureUrl?.ToString();
+        }
+
         public string GeneratePrivateImageUrl(string publicId, int expireSeconds = 3600)
         {
             return _cloudinary.Api.UrlImgUp

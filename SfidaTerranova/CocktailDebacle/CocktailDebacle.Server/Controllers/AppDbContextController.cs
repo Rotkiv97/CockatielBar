@@ -223,9 +223,36 @@ namespace CocktailDebacle.Server.Controllers
         }
 
 
-        //img profile
+        /// IMG Profile ///
 
-        [HttpPost("{UserName}/upload-profile-image")]
+        // per qunado fai riferimento al Url della immagine dell'user guarda ache questo video per capire come personalizzarlo
+        // https://www.youtube.com/watch?v=P4FhRuttCgY
+
+        /// <summary>
+        /// ✅ Upload di un'immagine profilo da file locale per un determinato utente.
+        /// 🔒 L'immagine sarà caricata su Cloudinary (autenticata) nella cartella `profile_images/`.
+        /// 🧼 Se l'utente ha già un'immagine, verrà eliminata.
+        /// </summary>
+        /// <remarks>
+        /// 📥 Chiamata HTTP:
+        ///     POST http://localhost:5052/api/Users/{UserName}/upload-profile-image-local
+        ///
+        /// 📦 Content-Type:
+        ///     multipart/form-data
+        ///
+        /// 🔑 Parametri nel Body (form-data):
+        ///     Key:    file
+        ///     Value:  (il file immagine .png, .jpg, ecc...)
+        ///
+        /// 📤 Esempio Postman:
+        ///     - Metodo: POST
+        ///     - URL:    http://localhost:5052/api/Users/Vik8/upload-profile-image-local
+        ///     - Body: form-data
+        ///         ▸ Key: file (tipo = File)
+        ///         ▸ Value: selezionare immagine dal disco
+        /// </remarks>
+
+        [HttpPost("{UserName}/upload-profile-image-local")]
         public async Task<IActionResult> UploadProfileImageLocal(string UserName, IFormFile file)
         {
             if (file == null || file.Length == 0)
@@ -270,6 +297,29 @@ namespace CocktailDebacle.Server.Controllers
             return Ok(new { Url = uploadedUrl });
         }
 
+        /// <summary>
+        /// ✅ Caricamento immagine profilo da URL per un determinato utente.
+        /// 📤 L'immagine sarà scaricata dal link fornito e ricaricata su Cloudinary nella cartella `profile_images/`.
+        /// 🧼 Se l'utente ha già un'immagine, verrà eliminata automaticamente.
+        /// </summary>
+        /// <remarks>
+        /// 📥 Chiamata HTTP:
+        ///     POST http://localhost:5052/api/Users/{UserName}/upload-profile-image-Url
+        ///
+        /// 📦 Content-Type:
+        ///     application/json
+        ///
+        /// 🧾 Body (raw, JSON):
+        ///     "https://example.com/image.jpg"
+        ///
+        /// 📤 Esempio Postman:
+        ///     - Metodo: POST  
+        ///     - URL:    http://localhost:5052/api/Users/Vik8/upload-profile-image-Url  
+        ///     - Headers:  
+        ///         ▸ Content-Type: application/json  
+        ///     - Body: raw → JSON  
+        ///         "https://images.miosito.com/profile.jpg"
+        /// </remarks>
         [HttpPost("{UserName}/upload-profile-image-Url")]
         public async Task<IActionResult> UploadProfileImageUrl(string UserName, [FromBody] string ImgProfileUrl)
         {
@@ -284,7 +334,10 @@ namespace CocktailDebacle.Server.Controllers
             {
                 try
                 {
-                    var publicId = Path.GetFileNameWithoutExtension(new Uri(user.ImgProfileUrl).AbsolutePath);
+                    var uri = new Uri(user.ImgProfileUrl);
+                    var segments = uri.AbsolutePath.Split('/');
+                    var folder = string.Join("/", segments.Skip(segments.ToList().IndexOf("upload") + 1));
+                    var publicId = Path.Combine(Path.GetDirectoryName(folder) ?? "", Path.GetFileNameWithoutExtension(folder)).Replace("\\", "/");
                     await _cloudinaryService.DeleteImageAsync(publicId);
                 }
                 catch (Exception ex)
@@ -293,11 +346,17 @@ namespace CocktailDebacle.Server.Controllers
                     // Non bloccare il flusso
                 }
             }
+            
+            var newPublicId = $"profile_images/{UserName}";
+            var uploadedUrl = await _cloudinaryService.UploadImageAsyncUrl(ImgProfileUrl, newPublicId);
+            if (uploadedUrl == null)
+                return BadRequest("Errore nel caricamento dell'immagine.");
             if(user?.ImgProfileUrl != null)
-                user.ImgProfileUrl = ImgProfileUrl;
+                user.ImgProfileUrl = uploadedUrl;
+            
             await _context.SaveChangesAsync();
 
-            return Ok(new { Url = user?.ImgProfileUrl });
+            return Ok(new { Url = uploadedUrl });
         }
     }
 
