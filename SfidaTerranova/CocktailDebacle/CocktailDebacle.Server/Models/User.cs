@@ -28,6 +28,9 @@ public class User
 
     public string Token { get; set; } = string.Empty;
 
+    public DateTime? TokenExpiration { get; set; }
+    // public DateTime? LastLogin { get; set; } = DateTime.UtcNow;
+
     // [StringLength(100)]
     public string? ImgProfileUrl { get; set; } = string.Empty;
 

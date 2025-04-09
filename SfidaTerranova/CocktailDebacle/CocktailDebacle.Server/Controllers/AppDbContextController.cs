@@ -102,16 +102,28 @@ namespace CocktailDebacle.Server.Controllers
         // http://localhost:5052/api/Users/check-token
         [HttpGet("check-token")]
         [Authorize]
-        public Task<IActionResult> CheckToken()
+        public async Task<IActionResult> CheckToken()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var userName = User.Identity?.Name;
-            return Task.FromResult<IActionResult>(Ok(new
+            var user = await _context.DbUser.FirstOrDefaultAsync(u => u.Id.ToString() == userId);
+
+            if (user == null || string.IsNullOrEmpty(user.Token) || user.TokenExpiration < DateTime.UtcNow)
+            {
+                if (user != null)
+                {
+                    user.Token = string.Empty;
+                    user.TokenExpiration = null;
+                    await _context.SaveChangesAsync();
+                }
+                return Unauthorized("Token non valido o scaduto");
+            }
+
+            return Ok(new
             {
                 Message = "Token valido",
                 UserId = userId,
-                UserName = userName
-            }));
+                user.UserName
+            });
         }
 
         // http://localhost:5052/api/Users/GetToken?userName=...
