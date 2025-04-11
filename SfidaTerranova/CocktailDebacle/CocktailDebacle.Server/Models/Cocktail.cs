@@ -6,6 +6,14 @@ namespace CocktailDebacle.Server.Models
     {
         [Key]
         public int Id { get; set; } // Chiave primaria
+
+        public string? UserNameCocktail { get; set; } = string.Empty; // Nome utente che ha creato il cocktail in questo caso null o empty perchè gia un cocktail esistente di default
+        
+        public bool? PublicCocktail { get; set; } = true; // Indica se il cocktail è pubblico o privato
+
+        public DateTime? dateCreated { get; set; } = DateTime.Now; // Data di creazione del cocktail
+        public int Likes { get; set; } = 0; // Indica il numero di like ricevuti dal cocktail
+
         public string? IdDrink { get; set; } = string.Empty;
         public string? StrDrink { get; set; } = string.Empty;
 

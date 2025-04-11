@@ -14,5 +14,9 @@ namespace CocktailDebacle.Server.DTOs
         public string StrGlass { get; set; } = string.Empty;
         public string StrInstructions { get; set; } = string.Empty;
         public string StrDrinkThumb { get; set; } = string.Empty;
+
+        public List<string> Ingredients { get; set; } = new List<string>();
+        public List<string> Measures { get; set; } = new List<string>();
+        public string StrTags { get; set; } = string.Empty;
     }
 }

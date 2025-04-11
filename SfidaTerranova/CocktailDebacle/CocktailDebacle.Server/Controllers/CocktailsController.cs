@@ -14,6 +14,8 @@ using CocktailDebacle.Server.DTOs; // Importa il namespace del DTO
 using BCrypt.Net;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 
 namespace CocktailDebacle.Server.Controllers
 {
@@ -24,9 +26,31 @@ namespace CocktailDebacle.Server.Controllers
         private readonly AppDbContext _context;
         private readonly CocktailImportService _cocktailImportService;
         private readonly HttpClient _httpClient;
-        public CocktailsController(AppDbContext context, CocktailImportService cocktailImportService, HttpClient httpClient)
+
+        private readonly Dictionary<string, int> _glassCapacity = new Dictionary<string, int>
+        {
+            { "Highball glass", 350 },
+            { "Cocktail glass", 150 },
+            { "Old-fashioned glass", 300 },
+            { "Collins glass", 400 },
+            { "Margarita glass", 300 },
+            { "Pint glass", 500 },
+            { "Shot glass", 50 },
+            { "Whiskey sour glass", 250 },
+            { "Hurricane glass", 400 },
+            { "Champagne flute", 200 },
+            { "Beer mug", 500 },
+            { "Brandy snifter", 300 },
+            { "Cordial glass", 100 },
+            { "Copper mug", 350 },
+            { "Irish coffee cup", 300 }
+        };
+
+        private readonly CloudinaryService _cloudinaryService; // Aggiungi questa riga per il servizio Cloudinary
+        public CocktailsController(AppDbContext context, CocktailImportService cocktailImportService, HttpClient httpClient, CloudinaryService cloudinaryService)
         {
             _context = context;
+            _cloudinaryService = cloudinaryService;
             _cocktailImportService = cocktailImportService;
             _httpClient = httpClient;
         }
@@ -69,6 +93,9 @@ namespace CocktailDebacle.Server.Controllers
         )
         {
             IQueryable<Cocktail> query = _context.DbCocktails.AsQueryable();
+
+            query = query.Where(c => c.PublicCocktail == true || c.PublicCocktail == null); // Filtra solo i cocktail pubblici
+
             if(!string.IsNullOrEmpty(glass))
             {
                 query = query.Where(c => c.StrGlass != null && c.StrGlass.ToLower().Contains(glass.ToLower()));
@@ -150,5 +177,381 @@ namespace CocktailDebacle.Server.Controllers
                 Cocktails = cocktails
             });
         }
+
+        // Cocktail Create o Modificati (User)
+
+        [Authorize]
+        [HttpGet("MyCocktails")]
+        public async Task<ActionResult<IEnumerable<CocktailDto>>> GetMyCocktails()
+        {
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(username))
+            {
+                return Unauthorized("User not found.");
+            }
+
+            var cocktails = await _context.DbCocktails
+                .Where(c => c.UserNameCocktail == username)
+                .ToListAsync();
+            return Ok(cocktails);
+        }
+
+        [Authorize]
+        [HttpPost("CocktailCreate")]
+        public async Task<IActionResult> CreateCoctail([FromBody] CocktailCreate cocktailCreate){
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(username))
+            {
+                return Unauthorized("User not found.");
+            }
+            var newcocktail = new Cocktail
+            {
+                UserNameCocktail = username,
+                PublicCocktail = cocktailCreate.PublicCocktail,
+                dateCreated = DateTime.Now,
+                Likes = 0,
+                IdDrink = cocktailCreate.IdDrink,
+                StrDrink = cocktailCreate.StrDrink,
+                StrDrinkAlternate = cocktailCreate.StrDrinkAlternate,
+                StrTags = cocktailCreate.StrTags,
+                StrVideo = cocktailCreate.StrVideo,
+                StrCategory = cocktailCreate.StrCategory,
+                StrIBA = cocktailCreate.StrIBA,
+                StrAlcoholic = cocktailCreate.StrAlcoholic,
+                StrGlass = cocktailCreate.StrGlass,
+                StrInstructions = cocktailCreate.StrInstructions,
+                StrInstructionsES = cocktailCreate.StrInstructionsES,
+                StrInstructionsDE = cocktailCreate.StrInstructionsDE,
+                StrInstructionsFR = cocktailCreate.StrInstructionsFR,
+                StrInstructionsIT = cocktailCreate.StrInstructionsIT,
+                StrInstructionsZH_HANS = cocktailCreate.StrInstructionsZH_HANS,
+                StrInstructionsZH_HANT = cocktailCreate.StrInstructionsZH_HANT,
+                StrDrinkThumb = cocktailCreate.StrDrinkThumb,
+
+                // Aggiungi gli ingredienti e le misure
+                StrIngredient1 = cocktailCreate.StrIngredient1,
+                StrIngredient2 = cocktailCreate.StrIngredient2,
+                StrIngredient3 = cocktailCreate.StrIngredient3,
+                StrIngredient4 = cocktailCreate.StrIngredient4,
+                StrIngredient5 = cocktailCreate.StrIngredient5,
+                StrIngredient6 = cocktailCreate.StrIngredient6,
+                StrIngredient7 = cocktailCreate.StrIngredient7,
+                StrIngredient8 = cocktailCreate.StrIngredient8,
+                StrIngredient9 = cocktailCreate.StrIngredient9,
+                StrIngredient10 = cocktailCreate.StrIngredient10,
+                StrIngredient11 = cocktailCreate.StrIngredient11,
+                StrIngredient12 = cocktailCreate.StrIngredient12,
+                StrIngredient13 = cocktailCreate.StrIngredient13,
+                StrIngredient14 = cocktailCreate.StrIngredient14,
+                StrIngredient15 = cocktailCreate.StrIngredient15,
+                StrMeasure1 = cocktailCreate.StrMeasure1,
+                StrMeasure2 = cocktailCreate.StrMeasure2,
+                StrMeasure3 = cocktailCreate.StrMeasure3,
+                StrMeasure4 = cocktailCreate.StrMeasure4,
+                StrMeasure5 = cocktailCreate.StrMeasure5,
+                StrMeasure6 = cocktailCreate.StrMeasure6,
+                StrMeasure7 = cocktailCreate.StrMeasure7,
+                StrMeasure8 = cocktailCreate.StrMeasure8,
+                StrMeasure9 = cocktailCreate.StrMeasure9,
+                StrMeasure10 = cocktailCreate.StrMeasure10,
+                StrMeasure11 = cocktailCreate.StrMeasure11,
+                StrMeasure12 = cocktailCreate.StrMeasure12,
+                StrMeasure13 = cocktailCreate.StrMeasure13,
+                StrMeasure14 = cocktailCreate.StrMeasure14,
+                StrMeasure15 = cocktailCreate.StrMeasure15
+            };
+
+            // Validazione della coerenza tra ingredienti e misure
+            var validationError = ValidateIngredientMeasureConsistency(newcocktail);
+            if (validationError != null)
+            {
+                return BadRequest(validationError);
+            }
+
+            // Validazione della classe di volume del cocktail
+            var volumeError = ValidateVolumeClassCocktail(newcocktail);
+            if (volumeError != null)
+            {
+                return BadRequest(volumeError);
+            }
+            try{
+                _context.DbCocktails.Add(newcocktail);
+                await _context.SaveChangesAsync();
+                return Ok(new { id = newcocktail.IdDrink, Message = "Cocktail creato con successo !!!" , newcocktail});
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error creating cocktail : {ex.Message}");
+            }
+        }
+
+        // Cocktail Update (User)
+        [Authorize]
+        [HttpPut("CocktailUpdate/{idDrink}")]
+        public async Task<IActionResult> UpdateCocktail(int idDrink, [FromBody] CocktailCreate updatedCocktail)
+        {
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("User not authenticated.");
+
+            var cocktail = await _context.DbCocktails
+                .FirstOrDefaultAsync(c => c.Id == idDrink && c.UserNameCocktail == username);
+
+            if (cocktail == null)
+                return NotFound("Cocktail not found or does not belong to you.");
+
+            cocktail.StrDrink = updatedCocktail.StrDrink;
+            cocktail.StrCategory = updatedCocktail.StrCategory;
+            cocktail.StrAlcoholic = updatedCocktail.StrAlcoholic;
+            cocktail.StrGlass = updatedCocktail.StrGlass;
+            cocktail.StrInstructions = updatedCocktail.StrInstructions;
+            cocktail.StrTags = updatedCocktail.StrTags;
+            cocktail.PublicCocktail = updatedCocktail.PublicCocktail;
+            cocktail.DateModified = DateTime.Now.ToString("yyyy-MM-dd");
+            cocktail.StrDrinkThumb = updatedCocktail.StrDrinkThumb;
+
+            // Ingredienti e misure
+            for (int i = 1; i <= 15; i++)
+            {
+                typeof(Cocktail).GetProperty($"StrIngredient{i}")?.SetValue(cocktail, 
+                    typeof(CocktailCreate).GetProperty($"StrIngredient{i}")?.GetValue(updatedCocktail));
+
+                typeof(Cocktail).GetProperty($"StrMeasure{i}")?.SetValue(cocktail, 
+                    typeof(CocktailCreate).GetProperty($"StrMeasure{i}")?.GetValue(updatedCocktail));
+            }
+
+            // Validazione della coerenza tra ingredienti e misure
+            var validationError = ValidateIngredientMeasureConsistency(cocktail);
+            if (validationError != null)
+            {
+                return BadRequest(validationError);
+            }
+            // Validazione della classe di volume del cocktail
+            var volumeError = ValidateVolumeClassCocktail(cocktail);
+            if (volumeError != null)
+            {
+                return BadRequest(volumeError);
+            }
+            try{
+                await _context.SaveChangesAsync();
+                return Ok(new { Message = "Cocktail aggiornato con successo!" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error updating cocktail: {ex.Message}");
+            }
+        }
+
+
+        // Cocktail Delete (User)
+        [Authorize]
+        [HttpDelete("CocktailDelete/{idDrink}")]
+        public async Task<IActionResult> DeleteCocktail(int idDrink)
+        {
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("User not authenticated.");
+
+            var cocktail = await _context.DbCocktails
+                .FirstOrDefaultAsync(c => c.Id == idDrink && c.UserNameCocktail == username);
+
+            if (cocktail == null)
+                return NotFound("Cocktail not found or does not belong to you.");
+            try{
+                _context.DbCocktails.Remove(cocktail);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { Message = "Cocktail eliminato con successo!" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Error deleting cocktail: {ex.Message}");
+            }
+        }
+
+        // getione delle immagini dei cocktail creati o modificati dall'utente
+        [Authorize]
+        [HttpPost("{id}/UploadImageCocktail-local")]
+        public async Task<IActionResult> UploadImageCocktailLocal(int id, IFormFile file)
+        {
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("User not authenticated.");
+
+            var cocktail = await _context.DbCocktails
+                .FirstOrDefaultAsync(c => c.Id == id && c.UserNameCocktail == username);
+
+            if (cocktail == null)
+                return NotFound("Cocktail not found or does not belong to you.");
+
+            if (file == null || file.Length == 0)
+                return BadRequest("File not provided.");
+
+            if(!string.IsNullOrEmpty(cocktail.StrDrinkThumb))
+            {
+                try{
+                    var uri = new Uri(cocktail.StrDrinkThumb);
+                    var segments = uri.AbsolutePath.Split('/');
+                    var folder = string.Join("/", segments.Skip(Array.IndexOf(segments, "upload") + 1));
+                    var publicId = Path.Combine(Path.GetDirectoryName(folder) ?? "", Path.GetFileNameWithoutExtension(folder)).Replace("\\", "/");
+
+                    await _cloudinaryService.DeleteImageAsync(publicId);
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest($"Error deleting old image: {ex.Message}");
+                }
+            }
+
+            var newPublicId = $"cocktail_images/{username}_{id}_{DateTime.UtcNow.Ticks}"; // Genera un nuovo publicId unico
+            var imageUrl = await _cloudinaryService.UploadImageAsync(file, newPublicId);
+            if (string.IsNullOrEmpty(imageUrl))
+                return BadRequest("Error uploading image.");
+            
+            cocktail.StrDrinkThumb = imageUrl;
+            await _context.SaveChangesAsync();
+            return Ok(new
+            {
+                Message = "Image uploaded successfully!",
+                ImageUrl = cocktail.StrDrinkThumb,
+                CocktailId = cocktail.Id,
+                cocktail.StrDrink
+            });
+
+        }
+
+        [Authorize]
+        [HttpPost("{id}/UploadImageCocktail-url")]
+        public async Task<IActionResult> UploadImageCocktailUrl(int id, [FromBody] string imageUrl)
+        {
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("User not authenticated.");
+
+            var cocktail = await _context.DbCocktails
+                .FirstOrDefaultAsync(c => c.Id == id && c.UserNameCocktail == username);
+
+            if (cocktail == null)
+                return NotFound("Cocktail not found or does not belong to you.");
+
+            if (string.IsNullOrEmpty(imageUrl))
+                return BadRequest("Image URL not provided.");
+
+            if(!string.IsNullOrEmpty(cocktail.StrDrinkThumb))
+            {
+                try{
+                    var uri = new Uri(cocktail.StrDrinkThumb);
+                   var segments = uri.AbsolutePath.Split('/');
+                    var folder = string.Join("/", segments.Skip(Array.IndexOf(segments, "upload") + 1));
+                    var publicId = Path.Combine(Path.GetDirectoryName(folder) ?? "", Path.GetFileNameWithoutExtension(folder)).Replace("\\", "/");
+
+                    await _cloudinaryService.DeleteImageAsync(publicId);
+                }
+                catch (Exception ex)
+                {
+                    return BadRequest($"Error deleting old image: {ex.Message}");
+                }
+            }
+
+            var newPublicId = $"cocktail_images/{username}_{id}_{DateTime.UtcNow.Ticks}"; // Genera un nuovo publicId unico
+            var imageUrlCloudinary = await _cloudinaryService.UploadImageAsyncUrl(imageUrl, newPublicId);
+            if (string.IsNullOrEmpty(imageUrlCloudinary))
+                return BadRequest("Error uploading image.");
+            
+            cocktail.StrDrinkThumb = imageUrlCloudinary;
+            await _context.SaveChangesAsync();
+            return Ok(new
+            {
+                Message = "Image uploaded successfully!",
+                ImageUrl = cocktail.StrDrinkThumb,
+                CocktailId = cocktail.Id,
+                cocktail.StrDrink
+            });
+        }
+
+        [HttpGet("ingredients")]
+        public async Task<IActionResult> GetUniqueIngredients()
+        {
+            var cocktails = await _context.DbCocktails.ToListAsync(); // carica in memoria
+
+            var ingredienti = cocktails
+                .SelectMany(c =>
+                    Enumerable.Range(1, 15)
+                        .Select(i => (string?)typeof(Cocktail).GetProperty($"StrIngredient{i}")?.GetValue(c)))
+                .Where(i => !string.IsNullOrWhiteSpace(i))
+                .Select(i => i!.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(i => i)
+                .ToList();
+
+            return Ok(ingredienti);
+        }
+
+        private double ConvertToMilliliters(string? measure)
+        {
+            if (string.IsNullOrWhiteSpace(measure)) return 0;
+
+            measure = measure.ToLower().Trim();
+            double value = 0;
+
+            var parts = measure.Split(' ');
+            if (parts.Length == 2)
+            {
+                // Parse quantity
+                if (double.TryParse(parts[0], out double parsed))
+                    value = parsed;
+                else if (parts[0].Contains('/'))
+                {
+                    var frac = parts[0].Split('/');
+                    if (frac.Length == 2 &&
+                        double.TryParse(frac[0], out double num) &&
+                        double.TryParse(frac[1], out double denom))
+                        value = num / denom;
+                }
+
+                // Convert unit
+                var unit = parts[1];
+                if (unit.Contains("ml")) return value;
+                if (unit.Contains("oz")) return value * 29.57;
+                if (unit.Contains("cl")) return value * 10;
+                if (unit.Contains("cup")) return value * 240;
+                if (unit.Contains("tsp")) return value * 5;
+                if (unit.Contains("tbsp")) return value * 15;
+                if (unit.Contains("dash")) return value * 0.92;
+            }
+
+            return 0;
+        }
+
+        private string? ValidateVolumeClassCocktail(Cocktail cocktail) {
+             double totalMl = 0;
+            for (int i = 1; i <= 15; i++){
+                var misure = typeof(Cocktail).GetProperty($"StrMeasure{i}")?.GetValue(cocktail)?.ToString();
+                totalMl += ConvertToMilliliters(misure);
+            }
+            var glass  = cocktail.StrGlass ?? "Cocktail glass";
+            int maxCapacity = _glassCapacity.TryGetValue(glass, out var ml)? _glassCapacity[glass] : 250;
+            if (totalMl > maxCapacity) {
+                return $"Il cocktail supera la capacità massima del bicchiere ({maxCapacity} ml).";
+            } 
+            return null;
+        }
+
+        private string? ValidateIngredientMeasureConsistency(Cocktail cocktail)
+        {
+            for (int i = 1; i <= 15; i++)
+            {
+                var ingredient = typeof(Cocktail).GetProperty($"StrIngredient{i}")?.GetValue(cocktail)?.ToString();
+                var measure = typeof(Cocktail).GetProperty($"StrMeasure{i}")?.GetValue(cocktail)?.ToString();
+
+                if (string.IsNullOrWhiteSpace(ingredient) && !string.IsNullOrWhiteSpace(measure))
+                {
+                    return $"❌ Errore: la misura {i} è impostata ma manca l'ingrediente corrispondente.";
+                }
+            }
+
+            return null;
+        }
+
     }
 }

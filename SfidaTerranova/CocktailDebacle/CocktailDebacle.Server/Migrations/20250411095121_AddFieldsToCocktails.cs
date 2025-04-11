@@ -1,11 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace CocktailDebacle.Server.Migrations
 {
     /// <inheritdoc />
-    public partial class dee : Migration
+    public partial class AddFieldsToCocktails : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -16,6 +17,10 @@ namespace CocktailDebacle.Server.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
+                    UserNameCocktail = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PublicCocktail = table.Column<bool>(type: "bit", nullable: true),
+                    dateCreated = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    Likes = table.Column<int>(type: "int", nullable: false),
                     IdDrink = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     StrDrink = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     StrDrinkAlternate = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -86,6 +91,7 @@ namespace CocktailDebacle.Server.Migrations
                     PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     AcceptCookies = table.Column<bool>(type: "bit", nullable: true),
                     Token = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    TokenExpiration = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ImgProfileUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ProfileParallaxImg = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Bio = table.Column<string>(type: "nvarchar(max)", nullable: true),

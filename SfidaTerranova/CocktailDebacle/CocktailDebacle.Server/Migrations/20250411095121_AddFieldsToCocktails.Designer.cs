@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CocktailDebacle.Server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250407132013_dee")]
-    partial class dee
+    [Migration("20250411095121_AddFieldsToCocktails")]
+    partial class AddFieldsToCocktails
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -38,6 +38,12 @@ namespace CocktailDebacle.Server.Migrations
 
                     b.Property<string>("IdDrink")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Likes")
+                        .HasColumnType("int");
+
+                    b.Property<bool?>("PublicCocktail")
+                        .HasColumnType("bit");
 
                     b.Property<string>("StrAlcoholic")
                         .HasColumnType("nvarchar(max)");
@@ -186,6 +192,12 @@ namespace CocktailDebacle.Server.Migrations
                     b.Property<string>("StrVideo")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("UserNameCocktail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("dateCreated")
+                        .HasColumnType("datetime2");
+
                     b.HasKey("Id");
 
                     b.ToTable("Cocktails", (string)null);
@@ -236,6 +248,9 @@ namespace CocktailDebacle.Server.Migrations
                     b.Property<string>("Token")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("TokenExpiration")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("UserName")
                         .IsRequired()
