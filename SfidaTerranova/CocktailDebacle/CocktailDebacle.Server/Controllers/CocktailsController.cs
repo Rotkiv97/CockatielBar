@@ -77,6 +77,33 @@ namespace CocktailDebacle.Server.Controllers
         }
 
 
+        // http://localhost:5052/api/Cocktails/cocktail/11007
+        [Authorize]
+        [HttpGet("cocktail/by-id/{idDrink}")] // più descrittivo
+        public async Task<IActionResult> GetCocktailById(int idDrink){
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("User not authenticated.");
+            
+            var cocktail = await _context.DbCocktails
+                .Where(c => c.Id == idDrink && (c.PublicCocktail == true || c.UserNameCocktail == username)) // Filtra solo i cocktail pubblici o null
+                .Select(c => new CocktailDto
+                {
+                    IdDrink = c.IdDrink ?? string.Empty,
+                    StrDrink = c.StrDrink ?? string.Empty,
+                    StrCategory = c.StrCategory ?? string.Empty,
+                    StrAlcoholic = c.StrAlcoholic ?? string.Empty,
+                    StrGlass = c.StrGlass ?? string.Empty,
+                    StrInstructions = c.StrInstructions ?? string.Empty,
+                    StrDrinkThumb = c.StrDrinkThumb ?? string.Empty
+                })
+                .FirstOrDefaultAsync();
+            if (cocktail == null)
+                return NotFound("Cocktail not found.");
+            return Ok(cocktail);        
+        }
+
+
         // chiamata ipa e come impostarla 
         // http://localhost:5052/api/cocktails/search?ingredient=vodka&glass=Martini glass&alcoholic=Alcoholic&page=1&pageSize=10
         [HttpGet("search")]
@@ -204,6 +231,15 @@ namespace CocktailDebacle.Server.Controllers
             {
                 return Unauthorized("User not found.");
             }
+
+            var cocktail = await _context.DbCocktails
+                .FirstOrDefaultAsync(c => c.StrDrink == cocktailCreate.StrDrink);
+
+            if (cocktail != null)
+            {
+                return BadRequest("Cocktail already exists.");
+            }
+            
             var newcocktail = new Cocktail
             {
                 UserNameCocktail = username,

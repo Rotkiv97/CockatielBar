@@ -8,7 +8,7 @@ namespace CocktailDebacle.Server.Models
 {
     public class CocktailCreate
     {
-         [Key]
+        [Key]
         public int Id { get; set; } // Chiave primaria
 
         public string? UserNameCocktail { get; set; } = string.Empty; // Nome utente che ha creato il cocktail

@@ -46,7 +46,7 @@ namespace CocktailDebacle.Server.Models
                     new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                     new Claim(ClaimTypes.Name, user.UserName)
                 }),
-                Expires = DateTime.UtcNow.AddMinutes(5), //DateTime.UtcNow.AddHours(1),
+                Expires = DateTime.UtcNow.AddHours(1), //DateTime.UtcNow.AddMinutes(5),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 
