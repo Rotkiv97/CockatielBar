@@ -55,7 +55,7 @@ public class User
     // public ICollection<Cocktail> CocktailsLike { get; set; } = new List<Cocktail>();
     // public ICollection<Cocktail> CocktailsCreate { get; set; } = new List<Cocktail>();
 
-    // public RecommenderSystems? RecommenderSystems { get; set; }
+     public RecommenderSystems? RecommenderSystems { get; set; }
     // // Personalizzazioni
 }
 

@@ -80,13 +80,13 @@ namespace CocktailDebacle.Server.Controllers
         // http://localhost:5052/api/Cocktails/cocktail/11007
         [Authorize]
         [HttpGet("cocktail/by-id/{idDrink}")] // più descrittivo
-        public async Task<IActionResult> GetCocktailById(int idDrink){
+        public async Task<IActionResult> GetCocktailById(int id){
             var username = User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(username))
                 return Unauthorized("User not authenticated.");
             
             var cocktail = await _context.DbCocktails
-                .Where(c => c.Id == idDrink && (c.PublicCocktail == true || c.UserNameCocktail == username)) // Filtra solo i cocktail pubblici o null
+                .Where(c => c.Id == id && (c.PublicCocktail == true || c.UserNameCocktail == username)) // Filtra solo i cocktail pubblici o null
                 .Select(c => new CocktailDto
                 {
                     IdDrink = c.IdDrink ?? string.Empty,

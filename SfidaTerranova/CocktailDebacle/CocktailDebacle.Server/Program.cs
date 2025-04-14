@@ -45,6 +45,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         });
 });
 
+var token = builder.Configuration["Jwt:Key"];
+if (string.IsNullOrEmpty(token))
+{
+    throw new ArgumentNullException("JWT key is not configured.");
+}
+
 // Configurazione JWT Authentication
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -54,7 +60,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"])),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(token)),
             ValidateIssuer = false,
             ValidateAudience = false, 
             ValidateLifetime = true,
@@ -69,6 +75,15 @@ builder.Services.Configure<CloudinarySettings>(
 builder.Services.AddSingleton<CloudinaryService>();
 builder.Services.AddScoped<IAuthService, AuthService>(); // aggiungi cocketail service
 builder.Services.AddHttpClient<CocktailImportService>(); // aggiungi cocketail service
+
+// var openAiApiKey = builder.Configuration["OpenAI:ApiKey"];
+
+// if (string.IsNullOrEmpty(openAiApiKey))
+// {
+//     throw new ArgumentNullException("OpenAI API key is not configured.");
+// }
+
+// builder.Services.AddSingleton(new OpenAIService(openAiApiKey));
 
 var app = builder.Build();
 
