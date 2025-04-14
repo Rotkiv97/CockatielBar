@@ -189,6 +189,9 @@ namespace CocktailDebacle.Server.Migrations
                     b.Property<string>("StrVideo")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
                     b.Property<string>("UserNameCocktail")
                         .HasColumnType("nvarchar(max)");
 
@@ -197,7 +200,65 @@ namespace CocktailDebacle.Server.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("UserId");
+
                     b.ToTable("Cocktails", (string)null);
+                });
+
+            modelBuilder.Entity("CocktailDebacle.Server.Models.RecommenderSystems", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("LastUpdated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ProfileText")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("VectorJsonEmbedding")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("DbRecommenderSystems");
+                });
+
+            modelBuilder.Entity("CocktailDebacle.Server.Models.UserSearchHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SearchText")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserName");
+
+                    b.ToTable("DbUserSearchHistory");
                 });
 
             modelBuilder.Entity("User", b =>
@@ -222,6 +283,10 @@ namespace CocktailDebacle.Server.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ImgProfileUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Language")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("LastName")
@@ -257,6 +322,45 @@ namespace CocktailDebacle.Server.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("DbUser");
+                });
+
+            modelBuilder.Entity("CocktailDebacle.Server.Models.Cocktail", b =>
+                {
+                    b.HasOne("User", null)
+                        .WithMany("CocktailsLike")
+                        .HasForeignKey("UserId");
+                });
+
+            modelBuilder.Entity("CocktailDebacle.Server.Models.RecommenderSystems", b =>
+                {
+                    b.HasOne("User", "User")
+                        .WithOne("RecommenderSystems")
+                        .HasForeignKey("CocktailDebacle.Server.Models.RecommenderSystems", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("CocktailDebacle.Server.Models.UserSearchHistory", b =>
+                {
+                    b.HasOne("User", "User")
+                        .WithMany("UserSearchHistory")
+                        .HasForeignKey("UserName")
+                        .HasPrincipalKey("UserName")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("User", b =>
+                {
+                    b.Navigation("CocktailsLike");
+
+                    b.Navigation("RecommenderSystems");
+
+                    b.Navigation("UserSearchHistory");
                 });
 #pragma warning restore 612, 618
         }

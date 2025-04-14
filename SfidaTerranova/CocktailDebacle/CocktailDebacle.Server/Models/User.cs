@@ -39,23 +39,10 @@ public class User
     public string? Bio { get; set; } = string.Empty; // da levare forse
 
     public string? Bio_link { get; set; } = string.Empty; // da levare forse
+    public RecommenderSystems? RecommenderSystems { get; set; }
 
-    // public string Language { get; set; } = "en";
-    // Relazione con Users (gruppo di utenti)
-    // [ForeignKey("Users")]
-    // public int UsersId { get; set; }
-    // public Users? Users { get; set; }
-
-    // // Permessi e preferenze
-    // public bool PersonalizedExperience { get; set; } = false;
-    // public bool Online { get; set; } = false;
-
-    // // Relazioni
-    // public ICollection<User> Friends { get; set; } = new List<User>();
-    // public ICollection<Cocktail> CocktailsLike { get; set; } = new List<Cocktail>();
-    // public ICollection<Cocktail> CocktailsCreate { get; set; } = new List<Cocktail>();
-
-     public RecommenderSystems? RecommenderSystems { get; set; }
-    // // Personalizzazioni
+    public ICollection<UserSearchHistory> UserSearchHistory { get; set; } = new List<UserSearchHistory>();
+    public ICollection<Cocktail> CocktailsLike { get; set; } = new List<Cocktail>();
+    public string Language { get; set; } = "en";    
 }
 
