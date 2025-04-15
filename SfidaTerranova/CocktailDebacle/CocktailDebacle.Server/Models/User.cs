@@ -39,9 +39,6 @@ public class User
     public string? Bio { get; set; } = string.Empty; // da levare forse
 
     public string? Bio_link { get; set; } = string.Empty; // da levare forse
-    public RecommenderSystems? RecommenderSystems { get; set; }
-
-    public ICollection<UserSearchHistory> UserSearchHistory { get; set; } = new List<UserSearchHistory>();
     public ICollection<Cocktail> CocktailsLike { get; set; } = new List<Cocktail>();
     public string Language { get; set; } = "en";    
 }

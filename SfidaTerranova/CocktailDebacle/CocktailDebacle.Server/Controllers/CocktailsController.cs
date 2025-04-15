@@ -164,47 +164,7 @@ namespace CocktailDebacle.Server.Controllers
             }
             if(!string.IsNullOrEmpty(username))
             {
-                var user = await _context.DbUser.FirstOrDefaultAsync(u => u.UserName == username);
-                if (user == null)
-                {
-                    return NotFound("User not found.");
-                }
-
-                var searchCocktails = new List<string>();
-                if(!string.IsNullOrEmpty(nameCocktail))
-                {
-                    searchCocktails.Add(nameCocktail);
-                }
-                if(!string.IsNullOrEmpty(glass))
-                {
-                    searchCocktails.Add(glass);
-                }
-                if(!string.IsNullOrEmpty(ingredient))
-                {
-                    searchCocktails.Add(ingredient);
-                }
-                if(!string.IsNullOrEmpty(category))
-                {
-                    searchCocktails.Add(category);
-                }
-                if(!string.IsNullOrEmpty(alcoholic))
-                {
-                    searchCocktails.Add(alcoholic);
-                }
-                if(!string.IsNullOrEmpty(description))
-                {
-                    searchCocktails.Add(description);
-                }
-
-                var text = string.Join(", ", searchCocktails);
-
-                _context.DbUserSearchHistory.Add(new UserSearchHistory
-                {
-                    UserName = username,
-                    SearchText = text,
-                    DateCreated = DateTime.Now
-                });
-                await _context.SaveChangesAsync();
+                // implementa la logica per filtrare la ricerca personalizzata
             }
 
             var totalItems = await query.CountAsync();

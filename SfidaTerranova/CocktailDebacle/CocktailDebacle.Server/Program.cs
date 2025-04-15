@@ -76,7 +76,6 @@ builder.Services.AddSingleton<CloudinaryService>();
 builder.Services.AddScoped<IAuthService, AuthService>(); // aggiungi cocketail service
 builder.Services.AddHttpClient<CocktailImportService>(); // aggiungi cocketail service
 
-builder.Services.AddSingleton<RecommenderEngine>();
 
 var app = builder.Build();
 
