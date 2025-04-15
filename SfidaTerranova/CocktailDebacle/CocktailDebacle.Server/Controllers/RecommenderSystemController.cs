@@ -18,28 +18,25 @@ namespace CocktailDebacle.Server.Controllers
     public class RecommenderSystemController : Controller
     {
         private readonly AppDbContext _context;
-        private readonly OpenAIService _openAIService;
         private readonly RecommenderEngine _recommenderEngine;
 
 
-        public RecommenderSystemController(AppDbContext context, OpenAIService openAIService, RecommenderEngine recommenderEngine)
+        public RecommenderSystemController(AppDbContext context, RecommenderEngine recommenderEngine)
         {
             _context = context;
-            _openAIService = openAIService;
             _recommenderEngine = recommenderEngine;
         }
 
         [HttpGet]
-        public IActionResult GetRecommenderSystems([FromQuery] string input)
+        public async Task<IActionResult> GetRecommenderSystems([FromQuery] string input)
         {
             try
             {
-                var recommenderSystems = _openAIService.GetEmbeddingAsync(input); // Assicurati di avere DbSet<RecommenderSystems> in AppDbContext
-                return Ok(recommenderSystems);
+               
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Errore interno del server." + ex.Message);
+                return StatusCode(500, $"Errore interno del server. \n {ex.Message}");
             }
         }
 
@@ -102,7 +99,7 @@ namespace CocktailDebacle.Server.Controllers
             }
 
             // Richiedo embedding da OpenAI
-            var vector = await _recommenderEngine.generateEmbedding(profileText);
+            var vector = await ;
             var embeddingJson = System.Text.Json.JsonSerializer.Serialize(vector);
 
             // Aggiorno o creo RecommenderSystems
@@ -179,14 +176,14 @@ namespace CocktailDebacle.Server.Controllers
                 .Take(100) // per evitare troppe richieste embedding
                 .ToListAsync();
 
-            var ranked = await _recommenderEngine.RanckCocktailAsync(userVector, cocktails);
+            var ranked = await _recommenderEngine.;
             foreach (var cocktail in cocktails)
             {
                 var text = string.Join(", ",
                     new[] { cocktail.StrDrink, cocktail.StrCategory, cocktail.StrIngredient1, cocktail.StrIngredient2, cocktail.StrGlass }
                     .Where(s => !string.IsNullOrEmpty(s)));
 
-                var cocktailVec = await _openAIService.GetEmbeddingAsync(text);
+                var cocktailVec = await;
                 var similarity = RecommenderSystemsUtils.CosineSimilarity(userVector, cocktailVec);
 
                 ranked.Add((cocktail, similarity));
