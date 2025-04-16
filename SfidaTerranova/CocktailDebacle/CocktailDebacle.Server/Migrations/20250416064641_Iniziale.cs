@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CocktailDebacle.Server.Migrations
 {
     /// <inheritdoc />
-    public partial class FixedUserSearchHistoryAndRecommender : Migration
+    public partial class Iniziale : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -110,64 +110,10 @@ namespace CocktailDebacle.Server.Migrations
                         principalColumn: "Id");
                 });
 
-            migrationBuilder.CreateTable(
-                name: "DbRecommenderSystems",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    ProfileText = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    VectorJsonEmbedding = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LastUpdated = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_DbRecommenderSystems", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_DbRecommenderSystems_DbUser_UserId",
-                        column: x => x.UserId,
-                        principalTable: "DbUser",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "DbUserSearchHistory",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserName = table.Column<string>(type: "nvarchar(50)", nullable: false),
-                    SearchText = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_DbUserSearchHistory", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_DbUserSearchHistory_DbUser_UserName",
-                        column: x => x.UserName,
-                        principalTable: "DbUser",
-                        principalColumn: "UserName",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_Cocktails_UserId",
                 table: "Cocktails",
                 column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_DbRecommenderSystems_UserId",
-                table: "DbRecommenderSystems",
-                column: "UserId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_DbUserSearchHistory_UserName",
-                table: "DbUserSearchHistory",
-                column: "UserName");
         }
 
         /// <inheritdoc />
@@ -175,12 +121,6 @@ namespace CocktailDebacle.Server.Migrations
         {
             migrationBuilder.DropTable(
                 name: "Cocktails");
-
-            migrationBuilder.DropTable(
-                name: "DbRecommenderSystems");
-
-            migrationBuilder.DropTable(
-                name: "DbUserSearchHistory");
 
             migrationBuilder.DropTable(
                 name: "DbUser");

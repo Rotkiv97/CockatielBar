@@ -106,10 +106,11 @@ namespace CocktailDebacle.Server.Controllers
 
         // chiamata ipa e come impostarla 
         // http://localhost:5052/api/cocktails/search?ingredient=vodka&glass=Martini glass&alcoholic=Alcoholic&page=1&pageSize=10
+        [Authorize]
         [HttpGet("search")]
         public async Task<ActionResult<IEnumerable<CocktailDto>>> SearchCoctktail(
             [FromQuery] string nameCocktail = "",
-            [FromQuery] string glass = "",
+            [FromQuery] string glass = "", //es : "shot glass" "Martini glass" "Highball glass" "Old-fashioned glass" "Collins glass" "Whiskey sour glass"
             [FromQuery] string ingredient = "",
             [FromQuery] string category = "",
             [FromQuery] string alcoholic = "",
@@ -127,14 +128,31 @@ namespace CocktailDebacle.Server.Controllers
             {
                 query = query.Where(c => c.StrGlass != null && c.StrGlass.ToLower().Contains(glass.ToLower()));
             }
+
             if(!string.IsNullOrEmpty(category))
             {
                 query = query.Where(c => c.StrCategory != null && c.StrCategory.ToLower().Contains(category.ToLower()));
             }
+
             if(!string.IsNullOrEmpty(alcoholic))
             {
                 query = query.Where(c => c.StrAlcoholic != null && c.StrAlcoholic.ToLower().Contains(alcoholic.ToLower()));
             }
+
+            if(!string.IsNullOrEmpty(username))
+            {
+                // filtrai i cocktail di quel utente
+                query = query.Where(c => c.UserNameCocktail != null && c.UserNameCocktail.ToLower().Contains(username.ToLower()));
+            }
+
+            var Username = User.FindFirst(ClaimTypes.Name)?.Value;
+            var user = await _context.DbUser.FirstOrDefaultAsync(u => u.UserName == username);
+            if (user != null && user.UserName == Username && user.AcceptCookies == true)
+            {
+                // ricerca personalizzata dei cocktail dell'utente che fa la ricerca
+
+            }
+
             if(!string.IsNullOrEmpty(nameCocktail))
             {
                 query = query.Where(c => c.StrDrink != null && c.StrDrink.ToLower().Contains(nameCocktail.ToLower()));
@@ -161,10 +179,6 @@ namespace CocktailDebacle.Server.Controllers
             if(!string.IsNullOrEmpty(description))
             {
                 query = query.Where(c => c.StrInstructions != null && c.StrInstructions.ToLower().Contains(description.ToLower()));
-            }
-            if(!string.IsNullOrEmpty(username))
-            {
-                // implementa la logica per filtrare la ricerca personalizzata
             }
 
             var totalItems = await query.CountAsync();
@@ -196,6 +210,7 @@ namespace CocktailDebacle.Server.Controllers
                     StrDrinkThumb = c.StrDrinkThumb ?? string.Empty
                 })
                 .ToListAsync();
+
             return Ok( new {
                 TotalResult = totalItems,
                 TotalPages = totalPages,

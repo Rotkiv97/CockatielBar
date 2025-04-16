@@ -205,62 +205,6 @@ namespace CocktailDebacle.Server.Migrations
                     b.ToTable("Cocktails", (string)null);
                 });
 
-            modelBuilder.Entity("CocktailDebacle.Server.Models.RecommenderSystems", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("LastUpdated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ProfileText")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("VectorJsonEmbedding")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("DbRecommenderSystems");
-                });
-
-            modelBuilder.Entity("CocktailDebacle.Server.Models.UserSearchHistory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("DateCreated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("SearchText")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserName");
-
-                    b.ToTable("DbUserSearchHistory");
-                });
-
             modelBuilder.Entity("User", b =>
                 {
                     b.Property<int>("Id")
@@ -321,6 +265,8 @@ namespace CocktailDebacle.Server.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasAlternateKey("UserName");
+
                     b.ToTable("DbUser");
                 });
 
@@ -331,36 +277,9 @@ namespace CocktailDebacle.Server.Migrations
                         .HasForeignKey("UserId");
                 });
 
-            modelBuilder.Entity("CocktailDebacle.Server.Models.RecommenderSystems", b =>
-                {
-                    b.HasOne("User", "User")
-                        .WithOne("RecommenderSystems")
-                        .HasForeignKey("CocktailDebacle.Server.Models.RecommenderSystems", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("CocktailDebacle.Server.Models.UserSearchHistory", b =>
-                {
-                    b.HasOne("User", "User")
-                        .WithMany("UserSearchHistory")
-                        .HasForeignKey("UserName")
-                        .HasPrincipalKey("UserName")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("User", b =>
                 {
                     b.Navigation("CocktailsLike");
-
-                    b.Navigation("RecommenderSystems");
-
-                    b.Navigation("UserSearchHistory");
                 });
 #pragma warning restore 612, 618
         }

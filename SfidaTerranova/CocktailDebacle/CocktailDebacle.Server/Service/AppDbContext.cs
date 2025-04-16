@@ -7,7 +7,8 @@ namespace CocktailDebacle.Server.Service
     {
         public DbSet<User> DbUser { get; set; } // DbSet per la tabella Users
         public DbSet<Cocktail> DbCocktails { get; set; } // DbSet per la tabella Cocktails
-        // public DbSet<Cocktail> DbCocktails { get; set; } // Se necessario, decommenta
+        
+        public DbSet<UserHistorySearch> DbUserHistorySearch { get; set; } // DbSet per la tabella UserHistorySearch
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -27,6 +28,16 @@ namespace CocktailDebacle.Server.Service
             {
                 entity.HasKey(c => c.Id); 
                 entity.ToTable("Cocktails");
+            });
+
+            // Configurazione della tabella UserHistorySearch
+            modelBuilder.Entity<UserHistorySearch>(entity =>
+            {
+                entity.HasKey(u => u.Id);
+                entity.HasAlternateKey(u => u.UserName);
+                entity.Property(u => u.UserName).IsRequired();
+                entity.Property(u => u.SearchDate).IsRequired();
+                entity.Property(u => u.SearchText).IsRequired(false);
             });
         }
     }
