@@ -116,6 +116,7 @@ namespace CocktailDebacle.Server.Controllers
             [FromQuery] string alcoholic = "",
             [FromQuery] string description = "",
             [FromQuery] string username = "",
+            [FromQuery] string CompleteSearch = "",
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10
         )
@@ -149,8 +150,10 @@ namespace CocktailDebacle.Server.Controllers
             var user = await _context.DbUser.FirstOrDefaultAsync(u => u.UserName == username);
             if (user != null && user.UserName == Username && user.AcceptCookies == true)
             {
-                // ricerca personalizzata dei cocktail dell'utente che fa la ricerca
-
+                // logica per che mi restituisce i cocktail suggeriti per l'utente
+                if(!string.IsNullOrEmpty(CompleteSearch)){
+                    //se completo la ricerca dando un tipo di conferma aggirna la tabella per i suggerimenti per l'utente
+                }
             }
 
             if(!string.IsNullOrEmpty(nameCocktail))
