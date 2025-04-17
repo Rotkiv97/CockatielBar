@@ -189,9 +189,6 @@ namespace CocktailDebacle.Server.Migrations
                     b.Property<string>("StrVideo")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int");
-
                     b.Property<string>("UserNameCocktail")
                         .HasColumnType("nvarchar(max)");
 
@@ -200,9 +197,47 @@ namespace CocktailDebacle.Server.Migrations
 
                     b.HasKey("Id");
 
+                    b.ToTable("Cocktails", (string)null);
+                });
+
+            modelBuilder.Entity("CocktailDebacle.Server.Models.UserHistorySearch", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("SearchDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SearchText")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasAlternateKey("UserName");
+
+                    b.ToTable("DbUserHistorySearch");
+                });
+
+            modelBuilder.Entity("CocktailUser", b =>
+                {
+                    b.Property<int>("CocktailsLikeId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("CocktailsLikeId", "UserId");
+
                     b.HasIndex("UserId");
 
-                    b.ToTable("Cocktails", (string)null);
+                    b.ToTable("UserCocktailsLike", (string)null);
                 });
 
             modelBuilder.Entity("User", b =>
@@ -270,16 +305,19 @@ namespace CocktailDebacle.Server.Migrations
                     b.ToTable("DbUser");
                 });
 
-            modelBuilder.Entity("CocktailDebacle.Server.Models.Cocktail", b =>
+            modelBuilder.Entity("CocktailUser", b =>
                 {
-                    b.HasOne("User", null)
-                        .WithMany("CocktailsLike")
-                        .HasForeignKey("UserId");
-                });
+                    b.HasOne("CocktailDebacle.Server.Models.Cocktail", null)
+                        .WithMany()
+                        .HasForeignKey("CocktailsLikeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-            modelBuilder.Entity("User", b =>
-                {
-                    b.Navigation("CocktailsLike");
+                    b.HasOne("User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

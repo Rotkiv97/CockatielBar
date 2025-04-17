@@ -39,6 +39,11 @@ namespace CocktailDebacle.Server.Service
                 entity.Property(u => u.SearchDate).IsRequired();
                 entity.Property(u => u.SearchText).IsRequired(false);
             });
+
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.CocktailsLike)
+                .WithMany()
+                .UsingEntity(j => j.ToTable("UserCocktailsLike")); // Tabella di join per la relazione molti-a-molti
         }
     }
 }

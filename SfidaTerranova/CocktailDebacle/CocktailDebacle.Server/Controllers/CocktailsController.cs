@@ -116,15 +116,18 @@ namespace CocktailDebacle.Server.Controllers
             [FromQuery] string alcoholic = "",
             [FromQuery] string description = "",
             [FromQuery] string username = "",
-            [FromQuery] string CompleteSearch = "",
+            [FromQuery] string completeSearch = "",
+            [FromQuery] string cocktailLicke = "",
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10
         )
         {
             IQueryable<Cocktail> query = _context.DbCocktails.AsQueryable();
-
+            
+            // Verifica se ci sono filtri applicati
+            bool noFilter = string.IsNullOrEmpty(nameCocktail) && string.IsNullOrEmpty(glass) && string.IsNullOrEmpty(ingredient) && string.IsNullOrEmpty(category) && string.IsNullOrEmpty(alcoholic) && string.IsNullOrEmpty(description) && string.IsNullOrEmpty(username);
+            
             query = query.Where(c => c.PublicCocktail == true || c.PublicCocktail == null); // Filtra solo i cocktail pubblici
-
             if(!string.IsNullOrEmpty(glass))
             {
                 query = query.Where(c => c.StrGlass != null && c.StrGlass.ToLower().Contains(glass.ToLower()));
@@ -150,12 +153,72 @@ namespace CocktailDebacle.Server.Controllers
             var user = await _context.DbUser.FirstOrDefaultAsync(u => u.UserName == username);
             if (user != null && user.UserName == Username && user.AcceptCookies == true)
             {
-                // logica per che mi restituisce i cocktail suggeriti per l'utente
-                if(!string.IsNullOrEmpty(CompleteSearch)){
+                // logica per salvarmi la ricerca dell'utente
+                // se l'utente ha accettato i cookie e ha fatto una ricerca completa
+                if(!string.IsNullOrEmpty(completeSearch)){
                     //se completo la ricerca dando un tipo di conferma aggirna la tabella per i suggerimenti per l'utente
+                    _context.DbUserHistorySearch.Add(new UserHistorySearch { 
+                        UserName = user.UserName, 
+                        SearchText = completeSearch, 
+                        SearchDate = DateTime.UtcNow
+                    });
+                    await _context.SaveChangesAsync();
+                }
+                else if(!string.IsNullOrEmpty(cocktailLicke) && cocktailLicke.ToLower() == "true"){
+                    // mi ritorna i cocktail che l'utente ha messo nei preferiti
+                    var CocktailsLikeUser = await _context.DbUser.Include(u => u.CocktailsLike)
+                        .Where(u => u.UserName == username)
+                        .Select(u=> u.CocktailsLike.Select(u => u.Id))
+                        .FirstOrDefaultAsync();
+                    if (CocktailsLikeUser != null && CocktailsLikeUser.Any())
+                    {
+                        query = query.Where(c => CocktailsLikeUser.Contains(c.Id));
+                    }
+                    else
+                    {
+                        query = query.Where(c => c.Id == 0); // Se non ci sono cocktail preferiti, restituisci una lista vuota
+                    }
+                }
+                else{
+                    // logica per farmi ritornare i coctail suggeriti 
+                    var searchHistoryUser = await _context.DbUserHistorySearch
+                        .Where(s => s.UserName == user.UserName)
+                        .OrderByDescending(s => s.SearchDate)
+                        .Take(10) // Limita a 10 ricerche più recenti
+                        .Select(s => s.SearchText!.ToLower())
+                        .ToListAsync();
+                    var allCocktails = await _context.DbCocktails
+                        .Where(c => (c.PublicCocktail == true || c.PublicCocktail == null) && !user.CocktailsLike.Any(d => d.Id == c.Id)) // Filtra solo i cocktail pubblici ed esclude quelli già nei preferiti
+                        .ToListAsync();
+                    
+                    var cocktailScoresUser = allCocktails
+                        .Select(c => new
+                        {
+                            Cocktail = c,
+                            Score = GetSuggestionScore(c, user, searchHistoryUser, user.CocktailsLike.ToList())
+                        })
+                        .Where(c => c.Score > 0) // Filtra solo i cocktail con punteggio maggiore di 0
+                        .OrderByDescending(c => c.Score)
+                        .Select(c=> new CocktailDto
+                        {
+                            IdDrink = c.Cocktail.IdDrink ?? string.Empty,
+                            StrDrink = c.Cocktail.StrDrink ?? string.Empty,
+                            StrCategory = c.Cocktail.StrCategory ?? string.Empty,
+                            StrAlcoholic = c.Cocktail.StrAlcoholic ?? string.Empty,
+                            StrGlass = c.Cocktail.StrGlass ?? string.Empty,
+                            StrInstructions = c.Cocktail.StrInstructions ?? string.Empty,
+                            StrDrinkThumb = c.Cocktail.StrDrinkThumb ?? string.Empty
+                        })
+                        .ToList();
+                    return Ok(new {
+                        TotalResult = cocktailScoresUser.Count,
+                        TotalPages = 1,
+                        CurrentPage = 1,
+                        PageSize = cocktailScoresUser.Count,
+                        Cocktails = cocktailScoresUser
+                    });
                 }
             }
-
             if(!string.IsNullOrEmpty(nameCocktail))
             {
                 query = query.Where(c => c.StrDrink != null && c.StrDrink.ToLower().Contains(nameCocktail.ToLower()));
@@ -199,27 +262,45 @@ namespace CocktailDebacle.Server.Controllers
             {
                 query = query.OrderBy(c => c.StrDrink);
             }
-            var cocktails = await query
+            
+            var cocktailList = await query.ToListAsync();
+
+            var searchHistory = user != null
+                ? await _context.DbUserHistorySearch
+                    .Where(s => s.UserName == user.UserName)
+                    .OrderByDescending(s => s.SearchDate)
+                    .Take(10) // Limita a 10 ricerche più recenti
+                    .Select(s => s.SearchText!.ToLower())
+                    .ToListAsync()
+                : new List<string>();
+
+            var cocktailScores = cocktailList
+                .Select(c => new {
+                    Cocktail = c,
+                    Score = user != null ? GetSuggestionScore(c, user, searchHistory, user.CocktailsLike.ToList()) : 0
+                })
+                .Where(c => !noFilter || c.Score > 0) // Se hai usato filtri, accetti anche score 0. Se no, mostri solo suggeriti
+                .OrderByDescending(c => c.Score)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .Select(c => new CocktailDto
-                {
-                    IdDrink = c.IdDrink ?? string.Empty,
-                    StrDrink = c.StrDrink ?? string.Empty,
-                    StrCategory = c.StrCategory ?? string.Empty,
-                    StrAlcoholic = c.StrAlcoholic ?? string.Empty,
-                    StrGlass = c.StrGlass ?? string.Empty,
-                    StrInstructions = c.StrInstructions ?? string.Empty,
-                    StrDrinkThumb = c.StrDrinkThumb ?? string.Empty
+                .Select(c => new CocktailDto {
+                    IdDrink = c.Cocktail.IdDrink ?? string.Empty,
+                    StrDrink = c.Cocktail.StrDrink ?? string.Empty,
+                    StrCategory = c.Cocktail.StrCategory ?? string.Empty,
+                    StrAlcoholic = c.Cocktail.StrAlcoholic ?? string.Empty,
+                    StrGlass = c.Cocktail.StrGlass ?? string.Empty,
+                    StrInstructions = c.Cocktail.StrInstructions ?? string.Empty,
+                    StrDrinkThumb = c.Cocktail.StrDrinkThumb ?? string.Empty
                 })
-                .ToListAsync();
+                .ToList();
+
 
             return Ok( new {
                 TotalResult = totalItems,
                 TotalPages = totalPages,
                 CurrentPage = page < 1 ? 1 : page,
                 PageSize = pageSize < 1 ? 10 : (pageSize > 100 ? 100 : pageSize),
-                Cocktails = cocktails
+                Cocktails = cocktailScores
             });
         }
 
@@ -523,6 +604,37 @@ namespace CocktailDebacle.Server.Controllers
             });
         }
 
+
+        [Authorize]
+        [HttpPost("like/{Id}")]
+        public async Task<IActionResult> CocktailLicke(int Id){
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("User not authenticated.");
+
+            var cocktail = await _context.DbCocktails.FirstOrDefaultAsync(c => c.Id == Id && c.PublicCocktail == true);
+            if (cocktail == null)
+                return NotFound("Cocktail not found.");
+
+            var user = await _context.DbUser.Include(u=> u.CocktailsLike).FirstOrDefaultAsync(u => u.UserName == username);
+            if (user == null)
+                return NotFound("User not found.");
+
+            if (user.CocktailsLike.Any(c => c.Id == Id))
+            {
+                user.CocktailsLike.Remove(cocktail); // Rimuovi il cocktail dai preferiti
+                cocktail.Likes = Math.Max(0, cocktail.Likes - 1);
+            }
+            else
+            {
+                user.CocktailsLike.Add(cocktail); // Aggiungi il cocktail ai preferiti
+                cocktail.Likes += 1;
+            }
+            
+            await _context.SaveChangesAsync();
+            return Ok(new { Message = $"Cocktail like status updated successfully! NameCocktail {cocktail.StrDrink} = {cocktail.Likes} "});
+        }
+
         [HttpGet("ingredients")]
         public async Task<IActionResult> GetUniqueIngredients()
         {
@@ -600,12 +712,84 @@ namespace CocktailDebacle.Server.Controllers
 
                 if (string.IsNullOrWhiteSpace(ingredient) && !string.IsNullOrWhiteSpace(measure))
                 {
-                    return $"❌ Errore: la misura {i} è impostata ma manca l'ingrediente corrispondente.";
+                    return $"Errore: la misura {i} è impostata ma manca l'ingrediente corrispondente.";
                 }
             }
 
             return null;
         }
 
+
+        private int GetSuggestionScore(Cocktail c, User user, List<string> searchHistory, List<Cocktail> likedCocktails)
+        {
+            int score = 0;
+
+            var filterWeight = new Dictionary<SuggestionUser, int>{
+                { SuggestionUser.NameMatch, 4 },
+                { SuggestionUser.IngredientMatch, 2 },
+                { SuggestionUser.CategoryMatch, 2 },
+                { SuggestionUser.GlassMatch, 3 },
+                { SuggestionUser.DescriptionMatch, 2 },
+                { SuggestionUser.SearchHistoryMatch, 6 },
+                { SuggestionUser.likeCocktail, 7 }
+            };
+
+
+            // Ingredienti del cocktail
+            var ingredients = Enumerable.Range(1, 15)
+                .Select(i => typeof(Cocktail).GetProperty($"StrIngredient{i}")?.GetValue(c)?.ToString()?.ToLower())
+                .Where(i => !string.IsNullOrWhiteSpace(i))
+                .ToList();
+
+
+            // Ingredienti più presenti nei like
+            var topIngredientLikes = likedCocktails
+                .SelectMany(l => Enumerable.Range(1, 15)
+                    .Select(i => typeof(Cocktail).GetProperty($"StrIngredient{i}")?.GetValue(l)?.ToString()?.ToLower())
+                    .Where(i => !string.IsNullOrWhiteSpace(i)))
+                .GroupBy(i => i)
+                .OrderByDescending(g => g.Count())
+                .Take(5) // Prendi i primi 3 ingredienti più comuni
+                .Select(g => g.Key)
+                .ToList();
+
+            if(ingredients.Any(i => topIngredientLikes.Contains(i))) 
+                score += filterWeight[SuggestionUser.IngredientMatch];
+            // MATCH con LIKE
+            foreach (var liked in likedCocktails)
+            {
+                if (liked.Id == c.Id) {
+                    score += filterWeight[SuggestionUser.likeCocktail];
+                    continue; 
+                }
+                // Ingredient match
+                var likedIngredients = Enumerable.Range(1, 15)
+                    .Select(i => typeof(Cocktail).GetProperty($"StrIngredient{i}")?.GetValue(liked)?.ToString()?.ToLower())
+                    .Where(i => !string.IsNullOrWhiteSpace(i))
+                    .ToList();
+
+                if (ingredients.Any(i => likedIngredients.Contains(i))) 
+                    score +=  filterWeight[SuggestionUser.IngredientMatch];
+
+                // Categoria, bicchiere
+                if (!string.IsNullOrEmpty(c.StrCategory) && c.StrCategory == liked.StrCategory)
+                    score +=  filterWeight[SuggestionUser.CategoryMatch];;
+                if (!string.IsNullOrEmpty(c.StrGlass) && c.StrGlass == liked.StrGlass)
+                    score +=  filterWeight[SuggestionUser.GlassMatch];
+            }
+
+            // MATCH con ricerche recenti
+            if (searchHistory.Any(s => !string.IsNullOrEmpty(c.StrDrink) && c.StrDrink.ToLower().Contains(s)))
+                score +=  filterWeight[SuggestionUser.NameMatch];
+            if (searchHistory.Any(s => ingredients.Any(i => i != null && i.Contains(s))))
+                score +=  filterWeight[SuggestionUser.IngredientMatch];
+            if (searchHistory.Any(s => c.StrCategory?.ToLower().Contains(s) == true))
+                score +=  filterWeight[SuggestionUser.CategoryMatch];
+            if (searchHistory.Any(s => c.StrGlass?.ToLower().Contains(s) == true))
+                score +=  filterWeight[SuggestionUser.GlassMatch];
+            if (searchHistory.Any(s => c.StrInstructions?.ToLower().Contains(s) == true))
+                score +=  filterWeight[SuggestionUser.DescriptionMatch];
+            return score;
+        }
     }
 }
