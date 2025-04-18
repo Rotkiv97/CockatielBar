@@ -125,7 +125,13 @@ namespace CocktailDebacle.Server.Controllers
             IQueryable<Cocktail> query = _context.DbCocktails.AsQueryable();
             
             // Verifica se ci sono filtri applicati
-            bool noFilter = string.IsNullOrEmpty(nameCocktail) && string.IsNullOrEmpty(glass) && string.IsNullOrEmpty(ingredient) && string.IsNullOrEmpty(category) && string.IsNullOrEmpty(alcoholic) && string.IsNullOrEmpty(description) && string.IsNullOrEmpty(username);
+            bool noFilter = string.IsNullOrEmpty(nameCocktail) && 
+                string.IsNullOrEmpty(glass) && 
+                string.IsNullOrEmpty(ingredient) && 
+                string.IsNullOrEmpty(category) && 
+                string.IsNullOrEmpty(alcoholic) && 
+                string.IsNullOrEmpty(description) && 
+                string.IsNullOrEmpty(username);
             
             query = query.Where(c => c.PublicCocktail == true || c.PublicCocktail == null); // Filtra solo i cocktail pubblici
             if(!string.IsNullOrEmpty(glass))
@@ -735,7 +741,6 @@ namespace CocktailDebacle.Server.Controllers
             };
 
 
-            // Ingredienti del cocktail
             var ingredients = Enumerable.Range(1, 15)
                 .Select(i => typeof(Cocktail).GetProperty($"StrIngredient{i}")?.GetValue(c)?.ToString()?.ToLower())
                 .Where(i => !string.IsNullOrWhiteSpace(i))
