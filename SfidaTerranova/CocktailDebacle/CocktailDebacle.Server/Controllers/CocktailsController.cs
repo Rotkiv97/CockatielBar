@@ -77,18 +77,14 @@ namespace CocktailDebacle.Server.Controllers
         }
 
 
-        // http://localhost:5052/api/Cocktails/cocktail/11007
-        [Authorize]
-        [HttpGet("cocktail/by-id/{idDrink}")] // più descrittivo
+        //http://localhost:5052/api/Cocktails/cocktail/by-id?id=5
+        [HttpGet("cocktail/by-id")] // più descrittivo
         public async Task<IActionResult> GetCocktailById(int id){
-            var username = User.FindFirst(ClaimTypes.Name)?.Value;
-            if (string.IsNullOrEmpty(username))
-                return Unauthorized("User not authenticated.");
-            
             var cocktail = await _context.DbCocktails
-                .Where(c => c.Id == id && (c.PublicCocktail == true || c.UserNameCocktail == username)) // Filtra solo i cocktail pubblici o null
+                .Where(c => c.Id == id && c.PublicCocktail == true) // Filtra solo i cocktail pubblici o null
                 .Select(c => new CocktailDto
                 {
+                    Id = c.Id,
                     IdDrink = c.IdDrink ?? string.Empty,
                     StrDrink = c.StrDrink ?? string.Empty,
                     StrCategory = c.StrCategory ?? string.Empty,
@@ -207,6 +203,7 @@ namespace CocktailDebacle.Server.Controllers
                         .OrderByDescending(c => c.Score)
                         .Select(c=> new CocktailDto
                         {
+                            Id = c.Cocktail.Id,
                             IdDrink = c.Cocktail.IdDrink ?? string.Empty,
                             StrDrink = c.Cocktail.StrDrink ?? string.Empty,
                             StrCategory = c.Cocktail.StrCategory ?? string.Empty,
@@ -290,6 +287,7 @@ namespace CocktailDebacle.Server.Controllers
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .Select(c => new CocktailDto {
+                    Id = c.Cocktail.Id,
                     IdDrink = c.Cocktail.IdDrink ?? string.Empty,
                     StrDrink = c.Cocktail.StrDrink ?? string.Empty,
                     StrCategory = c.Cocktail.StrCategory ?? string.Empty,
@@ -691,7 +689,6 @@ namespace CocktailDebacle.Server.Controllers
                 if (unit.Contains("tbsp")) return value * 15;
                 if (unit.Contains("dash")) return value * 0.92;
             }
-
             return 0;
         }
 

@@ -69,6 +69,7 @@ namespace CocktailDebacle.Server.Controllers
             }
             _logger.LogDebug($"Token = {token}");
             user.Token = token;
+            user.TokenExpiration = DateTime.Now; // Imposta la scadenza del token a 1 ora
             await _context.SaveChangesAsync();
             // Se la password è corretta, restituisci i dati utente
             return Ok(new
@@ -101,30 +102,36 @@ namespace CocktailDebacle.Server.Controllers
 
         // http://localhost:5052/api/Users/check-token
         [HttpGet("check-token")]
-        [Authorize]
-        public async Task<IActionResult> CheckToken()
+        public async Task<IActionResult> CheckToken(string userName)
         {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            var user = await _context.DbUser.FirstOrDefaultAsync(u => u.Id.ToString() == userId);
+            var user = await _context.DbUser.FirstOrDefaultAsync(u => u.UserName == userName);
 
             if (user == null)
             {
                 return Unauthorized("Utente non trovato");
             }
-
-            if (string.IsNullOrEmpty(user.Token) || user.TokenExpiration < DateTime.UtcNow)
+            // Token mancante o TokenExpiration nullo => scaduto
+            if (string.IsNullOrEmpty(user.Token) || user.TokenExpiration == null)
             {
                 user.Token = string.Empty;
                 user.TokenExpiration = null;
                 await _context.SaveChangesAsync();
-                return Unauthorized("Token non valido o scaduto");
+                return Unauthorized("Token assente o scaduto");
+            }
+
+            // Token presente ma scaduto nel tempo
+            if (user.TokenExpiration < DateTime.Now)
+            {
+                user.Token = string.Empty;
+                user.TokenExpiration = null;
+                await _context.SaveChangesAsync();
+                return Unauthorized("Token scaduto");
             }
 
             return Ok(new
             {
                 Message = "Token valido",
-                UserId = userId,
-                user.UserName
+                UserName = userName,
             });
         }
 
