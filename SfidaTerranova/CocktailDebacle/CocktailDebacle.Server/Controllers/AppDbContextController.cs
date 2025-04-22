@@ -107,14 +107,16 @@ namespace CocktailDebacle.Server.Controllers
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var user = await _context.DbUser.FirstOrDefaultAsync(u => u.Id.ToString() == userId);
 
-            if (user == null || string.IsNullOrEmpty(user.Token) || user.TokenExpiration < DateTime.UtcNow)
+            if (user == null)
             {
-                if (user != null)
-                {
-                    user.Token = string.Empty;
-                    user.TokenExpiration = null;
-                    await _context.SaveChangesAsync();
-                }
+                return Unauthorized("Utente non trovato");
+            }
+
+            if (string.IsNullOrEmpty(user.Token) || user.TokenExpiration < DateTime.UtcNow)
+            {
+                user.Token = string.Empty;
+                user.TokenExpiration = null;
+                await _context.SaveChangesAsync();
                 return Unauthorized("Token non valido o scaduto");
             }
 
