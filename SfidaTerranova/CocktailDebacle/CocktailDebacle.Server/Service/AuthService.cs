@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using System.Security.Cryptography;
 using CocktailDebacle.Server.Service;
 
-
 namespace CocktailDebacle.Server.Models
 {
     public class AuthService : IAuthService 
@@ -21,37 +20,68 @@ namespace CocktailDebacle.Server.Models
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
 
-        public AuthService(AppDbContext context, IConfiguration configuration)
+        private readonly ICleanTokenHostedService _cleanTokenHostedService;
+
+        public AuthService(AppDbContext context, IConfiguration configuration, ICleanTokenHostedService cleanTokenHostedService)
         {
+            _cleanTokenHostedService = cleanTokenHostedService;
             _context = context;
             _configuration = configuration;
         }
 
-        public Task<string> AuthenticateUser(string UserName, string password, User user)
+        public async Task<string> AuthenticateUser(string userName, string password, User user)
         {
-            var tokenHandler = new JwtSecurityTokenHandler();
 
-            var jwtKey = _configuration["Jwt:Key"];
-            if (string.IsNullOrEmpty(jwtKey))
+            if (string.IsNullOrWhiteSpace(userName))
+                throw new ArgumentException("Username non valido", nameof(userName));
+
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            // Configurazione JWT
+            var jwtKey = _configuration["Jwt:Key"] ?? throw new ApplicationException("Chiave JWT non configurata. Configurala in appsettings.json");
+
+            var securityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(jwtKey));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature);
+
+            // Calcolo scadenza
+            var expiration = DateTime.UtcNow.AddMinutes(1);//DateTime.UtcNow.AddHours(1);
+            
+            // Creazione claims
+            var claims = new List<Claim>
             {
-                throw new Exception("Errore: la chiave JWT è mancante nella configurazione! Assicurati che sia presente in appsettings.json.");
-            }
-
-            var key = Encoding.ASCII.GetBytes(jwtKey);
-
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new[]
-                {
-                    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                    new Claim(ClaimTypes.Name, user.UserName)
-                }),
-                Expires = DateTime.UtcNow.AddHours(1),//DateTime.UtcNow.AddMinutes(1)
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)
             };
 
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return Task.FromResult(tokenHandler.WriteToken(token));
+            // Aggiungi altri claim se presenti
+            if (!string.IsNullOrEmpty(user.Email))
+                claims.Add(new Claim(JwtRegisteredClaimNames.Email, user.Email));
+
+            // Creazione token
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = expiration,
+                SigningCredentials = credentials,
+                Issuer = _configuration["Jwt:Issuer"],
+                Audience = _configuration["Jwt:Audience"]
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var securityToken = tokenHandler.CreateToken(tokenDescriptor);
+            var tokenString = tokenHandler.WriteToken(securityToken);
+
+            // Aggiornamento utente e tracking scadenza
+            user.Token = tokenString;
+            user.TokenExpiration = expiration;
+            
+            // Registra per invalidazione automatica
+            await _cleanTokenHostedService.TrackToken(user, expiration);
+
+            return tokenString;
         }
     }
 }

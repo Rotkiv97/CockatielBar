@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using CocktailDebacle.Server.Service;
+using Microsoft.AspNetCore.Authorization;
 
 
 /*
@@ -73,8 +74,10 @@ builder.Services.Configure<CloudinarySettings>(
 );
 
 builder.Services.AddSingleton<CloudinaryService>();
-builder.Services.AddScoped<IAuthService, AuthService>(); // aggiungi cocketail service
-builder.Services.AddHttpClient<CocktailImportService>(); // aggiungi cocketail service
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddSingleton<ICleanTokenHostedService>();
+builder.Services.AddHostedService(provider => provider.GetRequiredService<ICleanTokenHostedService>());
+builder.Services.AddHttpClient<CocktailImportService>();
 
 
 var app = builder.Build();
@@ -106,6 +109,26 @@ using (var scope = app.Services.CreateScope())
         Console.WriteLine($"An error occurred while migrating the database: {ex.Message}");
     }
 }
+
+app.Use(async (context, next) => {
+    var endpoint = context.GetEndpoint();
+    if(endpoint?.Metadata.GetMetadata<IAuthorizeData>() != null)
+    {
+        var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+        if (string.IsNullOrEmpty(token))
+        {
+            var Dbcontext = context.RequestServices.GetRequiredService<AppDbContext>();
+            var user = await Dbcontext.DbUser.FirstOrDefaultAsync(u => u.Token == token);
+            if (user?.TokenExpiration > DateTime.UtcNow)
+            {
+                context.Response.StatusCode = 401;
+                return;
+            }
+        }
+
+    }
+    await next();
+});
 
 app.UseDefaultFiles();
 app.UseStaticFiles();

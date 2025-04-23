@@ -79,6 +79,7 @@ namespace CocktailDebacle.Server.Controllers
 
         //http://localhost:5052/api/Cocktails/cocktail/by-id?id=5
         [HttpGet("cocktail/by-id")] // più descrittivo
+        [AllowAnonymous]
         public async Task<IActionResult> GetCocktailById(int id){
             var cocktail = await _context.DbCocktails
                 .Where(c => c.Id == id && c.PublicCocktail == true) // Filtra solo i cocktail pubblici o null
