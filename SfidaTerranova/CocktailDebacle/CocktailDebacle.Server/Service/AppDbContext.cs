@@ -42,7 +42,7 @@ namespace CocktailDebacle.Server.Service
 
             modelBuilder.Entity<User>()
                 .HasMany(u => u.CocktailsLike)
-                .WithMany()
+                .WithMany(c => c.UsersLiked)
                 .UsingEntity(j => j.ToTable("UserCocktailsLike")); // Tabella di join per la relazione molti-a-molti
         }
     }

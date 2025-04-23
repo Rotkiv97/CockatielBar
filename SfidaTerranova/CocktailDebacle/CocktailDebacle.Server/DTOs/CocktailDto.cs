@@ -18,6 +18,8 @@ namespace CocktailDebacle.Server.DTOs
 
         public List<string> Ingredients { get; set; } = new List<string>();
         public List<string> Measures { get; set; } = new List<string>();
+
+        public List<string> UserLikes { get; set; } = new List<string>();
         public string StrTags { get; set; } = string.Empty;
     }
 }

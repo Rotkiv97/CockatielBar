@@ -14,6 +14,8 @@ namespace CocktailDebacle.Server.Models
         public DateTime? dateCreated { get; set; } = DateTime.Now; // Data di creazione del cocktail
         public int Likes { get; set; } = 0; // Indica il numero di like ricevuti dal cocktail
 
+        public ICollection<User> UsersLiked { get; set; } = new List<User>(); // Collezione di utenti che hanno messo like al cocktail
+
         public string? IdDrink { get; set; } = string.Empty;
         public string? StrDrink { get; set; } = string.Empty;
 
