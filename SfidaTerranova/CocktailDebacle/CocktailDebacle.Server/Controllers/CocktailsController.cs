@@ -24,7 +24,6 @@ namespace CocktailDebacle.Server.Controllers
     {
        
         private readonly AppDbContext _context;
-        private readonly CocktailImportService _cocktailImportService;
         private readonly HttpClient _httpClient;
 
         private readonly Dictionary<string, int> _glassCapacity = new Dictionary<string, int>
@@ -47,11 +46,10 @@ namespace CocktailDebacle.Server.Controllers
         };
 
         private readonly CloudinaryService _cloudinaryService; // Aggiungi questa riga per il servizio Cloudinary
-        public CocktailsController(AppDbContext context, CocktailImportService cocktailImportService, HttpClient httpClient, CloudinaryService cloudinaryService)
+        public CocktailsController(AppDbContext context, HttpClient httpClient, CloudinaryService cloudinaryService)
         {
             _context = context;
             _cloudinaryService = cloudinaryService;
-            _cocktailImportService = cocktailImportService;
             _httpClient = httpClient;
         }
 
@@ -75,16 +73,15 @@ namespace CocktailDebacle.Server.Controllers
                         c.StrIngredient1 ?? string.Empty, c.StrIngredient2 ?? string.Empty, c.StrIngredient3 ?? string.Empty, c.StrIngredient4 ?? string.Empty, c.StrIngredient5 ?? string.Empty,
                         c.StrIngredient6 ?? string.Empty, c.StrIngredient7 ?? string.Empty, c.StrIngredient8 ?? string.Empty, c.StrIngredient9 ?? string.Empty, c.StrIngredient10 ?? string.Empty,
                         c.StrIngredient11 ?? string.Empty, c.StrIngredient12 ?? string.Empty, c.StrIngredient13 ?? string.Empty, c.StrIngredient14 ?? string.Empty, c.StrIngredient15 ?? string.Empty
-                    }.Where(i => !string.IsNullOrWhiteSpace(i)).ToList(),
+                    },
                     Measures = new List<string>
                     {
                         c.StrMeasure1 ?? string.Empty, c.StrMeasure2 ?? string.Empty, c.StrMeasure3 ?? string.Empty, c.StrMeasure4 ?? string.Empty, c.StrMeasure5 ?? string.Empty,
                         c.StrMeasure6 ?? string.Empty, c.StrMeasure7 ?? string.Empty, c.StrMeasure8 ?? string.Empty, c.StrMeasure9 ?? string.Empty, c.StrMeasure10 ?? string.Empty,
                         c.StrMeasure11 ?? string.Empty, c.StrMeasure12 ?? string.Empty, c.StrMeasure13 ?? string.Empty, c.StrMeasure14 ?? string.Empty, c.StrMeasure15 ?? string.Empty
-                    }.Where(m => !string.IsNullOrWhiteSpace(m)).ToList(),
+                    },
                 })
                 .ToListAsync();
-
             return Ok(cocktails);
         }
 
@@ -92,8 +89,7 @@ namespace CocktailDebacle.Server.Controllers
         //http://localhost:5052/api/Cocktails/cocktail/by-id?id=5
         [HttpGet("cocktail/by-id")] // più descrittivo
         [AllowAnonymous]
-        [Authorize]
-        public async Task<IActionResult> GetCocktailById(int id, string Username){
+        public async Task<IActionResult> GetCocktailById(int id){
             var cocktail = await _context.DbCocktails
                 .Where(c => c.Id == id && c.PublicCocktail == true) // Filtra solo i cocktail pubblici o null
                 .Select(c => new CocktailDto
@@ -120,6 +116,7 @@ namespace CocktailDebacle.Server.Controllers
                     }.Where(m => !string.IsNullOrWhiteSpace(m)).ToList(),
                 })
                 .FirstOrDefaultAsync();
+
             if (User.Identity?.IsAuthenticated == true)
             {
                 var userNameFromToken = User.FindFirst(ClaimTypes.Name)?.Value;
@@ -539,7 +536,7 @@ namespace CocktailDebacle.Server.Controllers
             cocktail.PublicCocktail = updatedCocktail.PublicCocktail;
             cocktail.DateModified = DateTime.Now.ToString("yyyy-MM-dd");
             cocktail.StrDrinkThumb = updatedCocktail.StrDrinkThumb;
-            
+
 
             // Ingredienti e misure
             for (int i = 1; i <= 15; i++)

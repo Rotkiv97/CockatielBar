@@ -34,7 +34,6 @@ namespace CocktailDebacle.Server.Service
             modelBuilder.Entity<UserHistorySearch>(entity =>
             {
                 entity.HasKey(u => u.Id);
-                entity.HasAlternateKey(u => u.UserName);
                 entity.Property(u => u.UserName).IsRequired();
                 entity.Property(u => u.SearchDate).IsRequired();
                 entity.Property(u => u.SearchText).IsRequired(false);
