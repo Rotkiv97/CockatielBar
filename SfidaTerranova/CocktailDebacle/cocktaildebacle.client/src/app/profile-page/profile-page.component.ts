@@ -9,6 +9,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatTabsModule } from '@angular/material/tabs';
 import { UserService } from '../services/user.service';
+import { FormsModule } from '@angular/forms';
 
 interface Cocktail {
   id: string;
@@ -20,6 +21,7 @@ interface Cocktail {
 @Component({
   selector: 'app-profile-page',
   standalone: true,
+  encapsulation: ViewEncapsulation.None,
   imports: [
     CommonModule,
     RouterModule,
@@ -29,12 +31,14 @@ interface Cocktail {
     MatToolbarModule,
     MatMenuModule,
     MatSnackBarModule,
-    MatTabsModule
+    MatTabsModule,
+    FormsModule,
   ],
   templateUrl: './profile-page.component.html',
   styleUrls: ['./profile-page.component.css']
 })
 export class ProfilePageComponent implements OnInit {
+  searchQuery: string = '';
   isLoggedIn = false;
   Token: string = '';
   username: string = '';
@@ -47,6 +51,7 @@ export class ProfilePageComponent implements OnInit {
   activeTab: 'cocktails' | 'liked' | 'friends' = 'cocktails';
   Bio: string = "";
   Bio_link: string = "";
+  Language:string = "it";
 
   constructor(
     private userService: UserService,
@@ -66,11 +71,12 @@ export class ProfilePageComponent implements OnInit {
 
   private async checkAuthStatus(): Promise<void> {
     const user = this.userService.getUser();
-    
+    console.log(user, "negro")
     if (user) {
       this.Token = await this.userService.isLoggedIn(user);
-      if (this.Token === null) {
+      if (this.Token === "" || this.Token === null) {
         this.handleUnauthorizedAccess();
+        return;
       } else {
         this.isLoggedIn = true;
         this.username = user.userName;
@@ -92,7 +98,7 @@ export class ProfilePageComponent implements OnInit {
     this.myCocktails = [];
   }
 
-  private handleUnauthorizedAccess(message: string = 'Accesso non autorizzato'): void {
+  private handleUnauthorizedAccess(message: string = 'Session time out'): void {
     this.snackBar.open(message, 'OK', { duration: 3000 });
     this.router.navigate(['/login-signup']);
   }
@@ -121,13 +127,10 @@ export class ProfilePageComponent implements OnInit {
     this.parallaxImage = imageUrl;
     // Add logic to save preference if needed
   }
+  handleSearch() {
+    console.log("HEY RETURNING SEARCH QUERY: ", this.searchQuery);
+  }
+  
 
 
 }
-@Component({
-  selector: 'app-tabs',
-  templateUrl: './tabs.component.html',
-  styleUrls: ['./tabs.component.scss'],
-  encapsulation: ViewEncapsulation.None, // <--- QUESTO è IL TRUCCO
-})
-export class TabsComponent { }

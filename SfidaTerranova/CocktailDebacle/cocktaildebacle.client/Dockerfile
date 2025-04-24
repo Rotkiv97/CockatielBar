@@ -2,13 +2,12 @@ FROM node:20 AS build
 WORKDIR /app
 
 # 1. Copia SOLO i file necessari per l'installazione
-COPY package.json package-lock.json ./
+COPY package.json package-lock.json ./ 
 
-# 2. Fix MIRACOLOSO (2 righe aggiuntive)
+# 2. Esegui npm install una sola volta
 RUN npm install --legacy-peer-deps --force
-RUN npm install @angular/animations@19.2.2 @angular/core@19.2.2 --no-audit --fund=false
 
-# 3. Copia tutto il resto
+# 3. Copia tutto il resto del codice
 COPY . .
 
 # 4. Build con la tua configurazione originale

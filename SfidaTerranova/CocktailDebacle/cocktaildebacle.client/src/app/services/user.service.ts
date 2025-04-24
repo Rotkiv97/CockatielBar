@@ -17,7 +17,7 @@ export interface User {
   Language?: string;
   ImgProfile?: string;
   ProfileParallaxImg?: string;
-  Token?: string;
+  token?: string;
   Bio?: string;
   Bio_link?: string;
 }
@@ -103,7 +103,7 @@ export class UserService {
   
     return this.http.get(url, { responseType: 'text' }).pipe(
       tap(response => console.log('Token ricevuto:', response)),
-      map(response => response ?? 'failed'), // Se `response` è undefined, restituisce 'failed'
+      map(response => response ?? 'failed'), 
       catchError(error => {
         console.error('Errore durante la verifica del login:', error);
         return of('failed');
@@ -111,14 +111,9 @@ export class UserService {
     ).toPromise() as Promise<string>; // Forziamo il tipo per evitare l'errore TypeScript
   }
   
-  
-
-  
-  
-  
 
   getToken(): string | null {
-    return this.currentUserSubject.value?.Token || null;
+    return this.currentUserSubject.value?.token || null;
   }
 
   getUser(): User | null {

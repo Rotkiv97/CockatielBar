@@ -1,4 +1,20 @@
-/* You can add global styles to this file, and also import other style files */
-@import '@angular/material/prebuilt-themes/indigo-pink.css';
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Lora:wght@400;700&display=swap');
+
+html, body {
+  font-family: 'Roboto', sans-serif; /* Default font */
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+    
+
+}
+
+body.cocktail-gradient-bg, html.cocktail-gradient-bg {
+  background-color: rgb(184, 157, 76) !important;
+}
+
+h1, h2, h3 {
+  font-family: 'Lora', serif;
+}

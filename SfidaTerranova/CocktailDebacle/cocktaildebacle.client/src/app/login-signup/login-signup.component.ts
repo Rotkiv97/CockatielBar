@@ -1,20 +1,25 @@
-import { Component } from '@angular/core';
+import { Component, AfterViewInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common'; // Importa CommonModule per le direttive comuni
 import { RouterModule, Router } from '@angular/router'; // Importa RouterModule per il routing
 import { UserService } from '../services/user.service'; // Importa il servizio utente
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { initLoginAnimations } from './cartoon';
+
+
+var armL: HTMLElement | null;
+var armR: HTMLElement | null;
 
 @Component({
+  
   selector: 'app-login-signup', 
   standalone: true, 
   imports: [ReactiveFormsModule, CommonModule, RouterModule], 
   templateUrl: './login-signup.component.html', 
   styleUrls: ['./login-signup.component.css'] 
 })
-export class LoginSignupComponent {
+export class LoginSignupComponent  implements AfterViewInit{
   loginForm: FormGroup; // Definisce il form reattivo
-
   constructor(
     private fb: FormBuilder, 
     private userService: UserService, 
@@ -28,6 +33,9 @@ export class LoginSignupComponent {
     });
   }
 
+  ngAfterViewInit(): void {
+    initLoginAnimations();
+  }
   // Metodo chiamato alla submit del form
   onSubmit() {
     if (this.loginForm.valid) {
@@ -67,3 +75,10 @@ export class LoginSignupComponent {
     }
   }
 }
+
+
+
+
+
+
+

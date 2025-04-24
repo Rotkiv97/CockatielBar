@@ -4,6 +4,8 @@ import { LoginSignupComponent } from './login-signup/login-signup.component';
 import { SignUpComponent } from './sign-up/sign-up.component';
 import { PrivacyPolicyComponent } from './privacy-policy/privacy-policy.component';
 import { ProfilePageComponent } from './profile-page/profile-page.component';
+import { CocktailsComponent } from './cocktails/cocktails.component';
+
 export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'home', component: HomeComponent },
@@ -12,4 +14,5 @@ export const routes: Routes = [
   { path: 'sign-up', component: SignUpComponent },
   { path: 'privacy-policy', component: PrivacyPolicyComponent },
   { path: 'profile', component: ProfilePageComponent },
+  { path: 'cocktails', component: CocktailsComponent },
 ];

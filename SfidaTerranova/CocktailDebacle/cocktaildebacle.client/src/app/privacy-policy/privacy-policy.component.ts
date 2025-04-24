@@ -9,5 +9,7 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./privacy-policy.component.css']
 })
 export class PrivacyPolicyComponent {
-  // Logica del componente (se necessaria)
+  goBack() {
+    window.history.back(); // Torna alla pagina precedente
+  }
 }
