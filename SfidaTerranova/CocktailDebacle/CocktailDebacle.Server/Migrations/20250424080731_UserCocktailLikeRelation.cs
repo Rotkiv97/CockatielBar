@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace CocktailDebacle.Server.Migrations
 {
     /// <inheritdoc />
-    public partial class Iniziale : Migration
+    public partial class UserCocktailLikeRelation : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -110,14 +110,13 @@ namespace CocktailDebacle.Server.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserName = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     SearchText = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     SearchDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_DbUserHistorySearch", x => x.Id);
-                    table.UniqueConstraint("AK_DbUserHistorySearch_UserName", x => x.UserName);
                 });
 
             migrationBuilder.CreateTable(
@@ -125,11 +124,11 @@ namespace CocktailDebacle.Server.Migrations
                 columns: table => new
                 {
                     CocktailsLikeId = table.Column<int>(type: "int", nullable: false),
-                    UserId = table.Column<int>(type: "int", nullable: false)
+                    UsersLikedId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserCocktailsLike", x => new { x.CocktailsLikeId, x.UserId });
+                    table.PrimaryKey("PK_UserCocktailsLike", x => new { x.CocktailsLikeId, x.UsersLikedId });
                     table.ForeignKey(
                         name: "FK_UserCocktailsLike_Cocktails_CocktailsLikeId",
                         column: x => x.CocktailsLikeId,
@@ -137,17 +136,17 @@ namespace CocktailDebacle.Server.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_UserCocktailsLike_DbUser_UserId",
-                        column: x => x.UserId,
+                        name: "FK_UserCocktailsLike_DbUser_UsersLikedId",
+                        column: x => x.UsersLikedId,
                         principalTable: "DbUser",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserCocktailsLike_UserId",
+                name: "IX_UserCocktailsLike_UsersLikedId",
                 table: "UserCocktailsLike",
-                column: "UserId");
+                column: "UsersLikedId");
         }
 
         /// <inheritdoc />

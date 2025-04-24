@@ -216,11 +216,9 @@ namespace CocktailDebacle.Server.Migrations
 
                     b.Property<string>("UserName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasAlternateKey("UserName");
 
                     b.ToTable("DbUserHistorySearch");
                 });

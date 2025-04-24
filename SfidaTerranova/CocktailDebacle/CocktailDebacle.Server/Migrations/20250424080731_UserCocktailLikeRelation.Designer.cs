@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CocktailDebacle.Server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250423125805_UserCocktailLikeRelation")]
+    [Migration("20250424080731_UserCocktailLikeRelation")]
     partial class UserCocktailLikeRelation
     {
         /// <inheritdoc />
@@ -219,11 +219,9 @@ namespace CocktailDebacle.Server.Migrations
 
                     b.Property<string>("UserName")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasAlternateKey("UserName");
 
                     b.ToTable("DbUserHistorySearch");
                 });

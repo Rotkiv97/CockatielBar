@@ -87,36 +87,44 @@ namespace CocktailDebacle.Server.Controllers
 
 
         //http://localhost:5052/api/Cocktails/cocktail/by-id?id=5
-        [HttpGet("cocktail/by-id")] // più descrittivo
+        [HttpGet("cocktail/by-id")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetCocktailById(int id){
-            var cocktail = await _context.DbCocktails
-                .Where(c => c.Id == id && c.PublicCocktail == true) // Filtra solo i cocktail pubblici o null
-                .Select(c => new CocktailDto
-                {
-                    Id = c.Id,
-                    IdDrink = c.IdDrink ?? string.Empty,
-                    StrDrink = c.StrDrink ?? string.Empty,
-                    StrCategory = c.StrCategory ?? string.Empty,
-                    StrAlcoholic = c.StrAlcoholic ?? string.Empty,
-                    StrGlass = c.StrGlass ?? string.Empty,
-                    StrInstructions = c.StrInstructions ?? string.Empty,
-                    StrDrinkThumb = c.StrDrinkThumb ?? string.Empty,
-                    Ingredients = new List<string>
-                    {
-                        c.StrIngredient1 ?? string.Empty, c.StrIngredient2 ?? string.Empty, c.StrIngredient3 ?? string.Empty, c.StrIngredient4 ?? string.Empty, c.StrIngredient5 ?? string.Empty,
-                        c.StrIngredient6 ?? string.Empty, c.StrIngredient7 ?? string.Empty, c.StrIngredient8 ?? string.Empty, c.StrIngredient9 ?? string.Empty, c.StrIngredient10 ?? string.Empty,
-                        c.StrIngredient11 ?? string.Empty, c.StrIngredient12 ?? string.Empty, c.StrIngredient13 ?? string.Empty, c.StrIngredient14 ?? string.Empty, c.StrIngredient15 ?? string.Empty
-                    }.Where(i => !string.IsNullOrWhiteSpace(i)).ToList(),
-                    Measures = new List<string>
-                    {
-                        c.StrMeasure1 ?? string.Empty, c.StrMeasure2 ?? string.Empty, c.StrMeasure3 ?? string.Empty, c.StrMeasure4 ?? string.Empty, c.StrMeasure5 ?? string.Empty,
-                        c.StrMeasure6 ?? string.Empty, c.StrMeasure7 ?? string.Empty, c.StrMeasure8 ?? string.Empty, c.StrMeasure9 ?? string.Empty, c.StrMeasure10 ?? string.Empty,
-                        c.StrMeasure11 ?? string.Empty, c.StrMeasure12 ?? string.Empty, c.StrMeasure13 ?? string.Empty, c.StrMeasure14 ?? string.Empty, c.StrMeasure15 ?? string.Empty
-                    }.Where(m => !string.IsNullOrWhiteSpace(m)).ToList(),
-                })
+        public async Task<IActionResult> GetCocktailById(int id)
+        {
+            var cocktailEntity = await _context.DbCocktails
+                .Where(c => c.Id == id && c.PublicCocktail == true)
                 .FirstOrDefaultAsync();
 
+            if (cocktailEntity == null)
+                return NotFound("Cocktail not found.");
+
+            var cocktail = new CocktailDto
+            {
+                Id = cocktailEntity.Id,
+                IdDrink = cocktailEntity.IdDrink ?? string.Empty,
+                StrDrink = cocktailEntity.StrDrink ?? string.Empty,
+                StrCategory = cocktailEntity.StrCategory ?? string.Empty,
+                StrAlcoholic = cocktailEntity.StrAlcoholic ?? string.Empty,
+                StrGlass = cocktailEntity.StrGlass ?? string.Empty,
+                StrInstructions = cocktailEntity.StrInstructions ?? string.Empty,
+                StrDrinkThumb = cocktailEntity.StrDrinkThumb ?? string.Empty,
+                Ingredients = new List<string>
+                {
+                    cocktailEntity.StrIngredient1, cocktailEntity.StrIngredient2, cocktailEntity.StrIngredient3,
+                    cocktailEntity.StrIngredient4, cocktailEntity.StrIngredient5, cocktailEntity.StrIngredient6,
+                    cocktailEntity.StrIngredient7, cocktailEntity.StrIngredient8, cocktailEntity.StrIngredient9,
+                    cocktailEntity.StrIngredient10, cocktailEntity.StrIngredient11, cocktailEntity.StrIngredient12,
+                    cocktailEntity.StrIngredient13, cocktailEntity.StrIngredient14, cocktailEntity.StrIngredient15
+                }.Where(i => !string.IsNullOrWhiteSpace(i)).ToList(),
+                Measures = new List<string>
+                {
+                    cocktailEntity.StrMeasure1, cocktailEntity.StrMeasure2, cocktailEntity.StrMeasure3,
+                    cocktailEntity.StrMeasure4, cocktailEntity.StrMeasure5, cocktailEntity.StrMeasure6,
+                    cocktailEntity.StrMeasure7, cocktailEntity.StrMeasure8, cocktailEntity.StrMeasure9,
+                    cocktailEntity.StrMeasure10, cocktailEntity.StrMeasure11, cocktailEntity.StrMeasure12,
+                    cocktailEntity.StrMeasure13, cocktailEntity.StrMeasure14, cocktailEntity.StrMeasure15
+                }.Where(m => !string.IsNullOrWhiteSpace(m)).ToList()
+            };
             if (User.Identity?.IsAuthenticated == true)
             {
                 var userNameFromToken = User.FindFirst(ClaimTypes.Name)?.Value;
@@ -142,11 +150,9 @@ namespace CocktailDebacle.Server.Controllers
                     }
                 }
             }
-
-            if (cocktail == null)
-                return NotFound("Cocktail not found.");
-            return Ok(cocktail);        
+            return Ok(cocktail);
         }
+
 
 
         // chiamata ipa e come impostarla 
@@ -155,52 +161,67 @@ namespace CocktailDebacle.Server.Controllers
         [HttpGet("search")]
         public async Task<ActionResult<IEnumerable<CocktailDto>>> SearchCoctktail(
             [FromQuery] string nameCocktail = "",
-            [FromQuery] string glass = "", //es : "shot glass" "Martini glass" "Highball glass" "Old-fashioned glass" "Collins glass" "Whiskey sour glass"
+            [FromQuery] string glass = "",
             [FromQuery] string ingredient = "",
             [FromQuery] string category = "",
             [FromQuery] string alcoholic = "",
             [FromQuery] string description = "",
             [FromQuery] string completeSearch = "",
             [FromQuery] string cocktailLicke = "",
-            [FromQuery] string UsernameCreateCocktail = "", // nome dei cocktail dell'utente che ha creato il cocktail
+            [FromQuery] string UsernameCreateCocktail = "",
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10
         )
         {
             IQueryable<Cocktail> query = _context.DbCocktails.AsQueryable();
-            
+
             // Verifica se ci sono filtri applicati
-            bool noFilter = string.IsNullOrEmpty(nameCocktail) && 
-                string.IsNullOrEmpty(glass) && 
-                string.IsNullOrEmpty(ingredient) && 
-                string.IsNullOrEmpty(category) && 
-                string.IsNullOrEmpty(alcoholic) && 
-                string.IsNullOrEmpty(description) && 
+            bool noFilter = string.IsNullOrEmpty(nameCocktail) &&
+                string.IsNullOrEmpty(glass) &&
+                string.IsNullOrEmpty(ingredient) &&
+                string.IsNullOrEmpty(category) &&
+                string.IsNullOrEmpty(alcoholic) &&
+                string.IsNullOrEmpty(description) &&
                 string.IsNullOrEmpty(UsernameCreateCocktail);
-            
-            query = query.Where(c => c.PublicCocktail == true || c.PublicCocktail == null); // Filtra solo i cocktail pubblici
-            if(!string.IsNullOrEmpty(glass))
-            {
+
+            // Solo cocktail pubblici
+            query = query.Where(c => c.PublicCocktail == true || c.PublicCocktail == null);
+
+            if (!string.IsNullOrEmpty(glass))
                 query = query.Where(c => c.StrGlass != null && c.StrGlass.ToLower().Contains(glass.ToLower()));
-            }
 
-            if(!string.IsNullOrEmpty(category))
-            {
+            if (!string.IsNullOrEmpty(category))
                 query = query.Where(c => c.StrCategory != null && c.StrCategory.ToLower().Contains(category.ToLower()));
-            }
 
-            if(!string.IsNullOrEmpty(alcoholic))
-            {
+            if (!string.IsNullOrEmpty(alcoholic))
                 query = query.Where(c => c.StrAlcoholic != null && c.StrAlcoholic.ToLower().Contains(alcoholic.ToLower()));
-            }
 
-            if(!string.IsNullOrEmpty(UsernameCreateCocktail))
-            {
-                // filtrai i cocktail di quel utente
+            if (!string.IsNullOrEmpty(UsernameCreateCocktail))
                 query = query.Where(c => c.UserNameCocktail != null && c.UserNameCocktail.ToLower().Contains(UsernameCreateCocktail.ToLower()));
-            }
 
-            
+            if (!string.IsNullOrEmpty(nameCocktail))
+                query = query.Where(c => c.StrDrink != null && c.StrDrink.ToLower().Contains(nameCocktail.ToLower()));
+            else if (!string.IsNullOrEmpty(ingredient))
+                query = query.Where(
+                    c => (c.StrIngredient1 != null && c.StrIngredient1.ToLower().Contains(ingredient.ToLower())) ||
+                        (c.StrIngredient2 != null && c.StrIngredient2.ToLower().Contains(ingredient.ToLower())) ||
+                        (c.StrIngredient3 != null && c.StrIngredient3.ToLower().Contains(ingredient.ToLower())) ||
+                        (c.StrIngredient4 != null && c.StrIngredient4.ToLower().Contains(ingredient.ToLower())) ||
+                        (c.StrIngredient5 != null && c.StrIngredient5.ToLower().Contains(ingredient.ToLower())) ||
+                        (c.StrIngredient6 != null && c.StrIngredient6.ToLower().Contains(ingredient.ToLower())) ||
+                        (c.StrIngredient7 != null && c.StrIngredient7.ToLower().Contains(ingredient.ToLower())) ||
+                        (c.StrIngredient8 != null && c.StrIngredient8.ToLower().Contains(ingredient.ToLower())) ||
+                        (c.StrIngredient9 != null && c.StrIngredient9.ToLower().Contains(ingredient.ToLower())) ||
+                        (c.StrIngredient10 != null && c.StrIngredient10.ToLower().Contains(ingredient.ToLower())) ||
+                        (c.StrIngredient11 != null && c.StrIngredient11.ToLower().Contains(ingredient.ToLower())) ||
+                        (c.StrIngredient12 != null && c.StrIngredient12.ToLower().Contains(ingredient.ToLower())) ||
+                        (c.StrIngredient13 != null && c.StrIngredient13.ToLower().Contains(ingredient.ToLower())) ||
+                        (c.StrIngredient14 != null && c.StrIngredient14.ToLower().Contains(ingredient.ToLower())) ||
+                        (c.StrIngredient15 != null && c.StrIngredient15.ToLower().Contains(ingredient.ToLower()))
+                );
+            if (!string.IsNullOrEmpty(description))
+                query = query.Where(c => c.StrInstructions != null && c.StrInstructions.ToLower().Contains(description.ToLower()));
+
             User? user = null;
             if (User.Identity?.IsAuthenticated == true)
             {
@@ -208,128 +229,41 @@ namespace CocktailDebacle.Server.Controllers
                 user = await _context.DbUser
                     .Include(u => u.CocktailsLike)
                     .FirstOrDefaultAsync(u => u.UserName == userNameFromToken && u.AcceptCookies == true);
-                if (user != null)
+
+                // Salva lo storico delle ricerche solo se è una ricerca completa
+                if (user != null && !string.IsNullOrEmpty(completeSearch))
                 {
-                    if (!string.IsNullOrEmpty(completeSearch))
+                    bool alreadyInHistory = await _context.DbUserHistorySearch
+                        .AnyAsync(h => h.UserName == user.UserName && h.SearchText == completeSearch);
+                    if (!alreadyInHistory)
                     {
-                        bool alreadyInHistory = await _context.DbUserHistorySearch
-                            .AnyAsync(h => h.UserName == user.UserName && h.SearchText == completeSearch);
-                        if (!alreadyInHistory)
+                        _context.DbUserHistorySearch.Add(new UserHistorySearch
                         {
-                            _context.DbUserHistorySearch.Add(new UserHistorySearch
-                            {
-                                UserName = user.UserName,
-                                SearchText = completeSearch,
-                                SearchDate = DateTime.UtcNow
-                            });
-                            await _context.SaveChangesAsync();
-                        }
-                    }
-                    else if (!string.IsNullOrEmpty(cocktailLicke) && cocktailLicke.ToLower() == "true")
-                    {
-                        var likedCocktailIds = user.CocktailsLike.Select(c => c.Id).ToList();
-                        if (likedCocktailIds.Any())
-                        {
-                            query = query.Where(c => likedCocktailIds.Contains(c.Id));
-                        }
-                        else
-                        {
-                            query = query.Where(c => c.Id == 0); 
-                        }
-                    }
-                    else
-                    {
-                        var searchHistoryUser = await _context.DbUserHistorySearch
-                            .Where(s => s.UserName == user.UserName)
-                            .OrderByDescending(s => s.SearchDate)
-                            .Take(10)
-                            .Select(s => s.SearchText!.ToLower())
-                            .ToListAsync();
-
-                        var likedIds = user.CocktailsLike.Select(d => d.Id).ToList();
-
-                        var allCocktails = await _context.DbCocktails
-                            .Where(c => (c.PublicCocktail == true || c.PublicCocktail == null) &&
-                                        !likedIds.Contains(c.Id))
-                            .ToListAsync();
-
-                        var cocktailScoresUser = allCocktails
-                            .Select(c => new
-                            {
-                                Cocktail = c,
-                                Score = GetSuggestionScore(c, user, searchHistoryUser, user.CocktailsLike.ToList())
-                            })
-                            .Where(c => c.Score > 0)
-                            .OrderByDescending(c => c.Score)
-                            .Select(c => new CocktailDto
-                            {
-                                Id = c.Cocktail.Id,
-                                IdDrink = c.Cocktail.IdDrink ?? string.Empty,
-                                StrDrink = c.Cocktail.StrDrink ?? string.Empty,
-                                StrCategory = c.Cocktail.StrCategory ?? string.Empty,
-                                StrAlcoholic = c.Cocktail.StrAlcoholic ?? string.Empty,
-                                StrGlass = c.Cocktail.StrGlass ?? string.Empty,
-                                StrInstructions = c.Cocktail.StrInstructions ?? string.Empty,
-                                StrDrinkThumb = c.Cocktail.StrDrinkThumb ?? string.Empty,
-                                Ingredients = new List<string>
-                                {
-                                    c.Cocktail.StrIngredient1 ?? string.Empty, c.Cocktail.StrIngredient2 ?? string.Empty, c.Cocktail.StrIngredient3 ?? string.Empty, c.Cocktail.StrIngredient4 ?? string.Empty, c.Cocktail.StrIngredient5 ?? string.Empty,
-                                    c.Cocktail.StrIngredient6 ?? string.Empty, c.Cocktail.StrIngredient7 ?? string.Empty, c.Cocktail.StrIngredient8 ?? string.Empty, c.Cocktail.StrIngredient9 ?? string.Empty, c.Cocktail.StrIngredient10 ?? string.Empty,
-                                    c.Cocktail.StrIngredient11 ?? string.Empty, c.Cocktail.StrIngredient12 ?? string.Empty, c.Cocktail.StrIngredient13 ?? string.Empty, c.Cocktail.StrIngredient14 ?? string.Empty, c.Cocktail.StrIngredient15 ?? string.Empty
-                                }.Where(i => !string.IsNullOrWhiteSpace(i)).ToList(),
-                                Measures = new List<string>
-                                {
-                                    c.Cocktail.StrMeasure1 ?? string.Empty, c.Cocktail.StrMeasure2 ?? string.Empty, c.Cocktail.StrMeasure3 ?? string.Empty, c.Cocktail.StrMeasure4 ?? string.Empty, c.Cocktail.StrMeasure5 ?? string.Empty,
-                                    c.Cocktail.StrMeasure6 ?? string.Empty, c.Cocktail.StrMeasure7 ?? string.Empty, c.Cocktail.StrMeasure8 ?? string.Empty, c.Cocktail.StrMeasure9 ?? string.Empty, c.Cocktail.StrMeasure10 ?? string.Empty,
-                                    c.Cocktail.StrMeasure11 ?? string.Empty, c.Cocktail.StrMeasure12 ?? string.Empty, c.Cocktail.StrMeasure13 ?? string.Empty, c.Cocktail.StrMeasure14 ?? string.Empty, c.Cocktail.StrMeasure15 ?? string.Empty
-                                }.Where(m => !string.IsNullOrWhiteSpace(m)).ToList(),
-                                StrTags = c.Cocktail.StrTags ?? string.Empty
-                                }).ToList();
-
-                        return Ok(new
-                        {
-                            TotalResult = cocktailScoresUser.Count,
-                            TotalPages = 1,
-                            CurrentPage = 1,
-                            PageSize = cocktailScoresUser.Count,
-                            Cocktails = cocktailScoresUser
+                            UserName = user.UserName,
+                            SearchText = completeSearch,
+                            SearchDate = DateTime.UtcNow
                         });
+                        await _context.SaveChangesAsync();
                     }
+                }
+
+                // Se si richiedono solo i like, override sulla query (niente consigli, solo quelli likati)
+                if (!string.IsNullOrEmpty(cocktailLicke) && cocktailLicke.ToLower() == "true")
+                {
+                    var likedCocktailIds = user?.CocktailsLike.Select(c => c.Id).ToList();
+                    
+                    if (likedCocktailIds != null && likedCocktailIds.Any())
+                        query = query.Where(c => likedCocktailIds.Contains(c.Id));
+                    else
+                        query = query.Where(c => c.Id == 0);
                 }
             }
 
-            if(!string.IsNullOrEmpty(nameCocktail))
-            {
-                query = query.Where(c => c.StrDrink != null && c.StrDrink.ToLower().Contains(nameCocktail.ToLower()));
-            }
-            else if(!string.IsNullOrEmpty(ingredient))
-            {
-                query = query.Where(c => c.StrIngredient1 != null && c.StrIngredient1.ToLower().Contains(ingredient.ToLower()) ||
-                                         c.StrIngredient2 != null && c.StrIngredient2.ToLower().Contains(ingredient.ToLower()) ||
-                                         c.StrIngredient3 != null && c.StrIngredient3.ToLower().Contains(ingredient.ToLower()) ||
-                                         c.StrIngredient4 != null && c.StrIngredient4.ToLower().Contains(ingredient.ToLower()) ||
-                                         c.StrIngredient5 != null && c.StrIngredient5.ToLower().Contains(ingredient.ToLower()) ||
-                                         c.StrIngredient6 != null && c.StrIngredient6.ToLower().Contains(ingredient.ToLower()) ||
-                                         c.StrIngredient7 != null && c.StrIngredient7.ToLower().Contains(ingredient.ToLower()) ||
-                                         c.StrIngredient8 != null && c.StrIngredient8.ToLower().Contains(ingredient.ToLower()) ||
-                                         c.StrIngredient9 != null && c.StrIngredient9.ToLower().Contains(ingredient.ToLower()) ||
-                                         c.StrIngredient10 != null && c.StrIngredient10.ToLower().Contains(ingredient.ToLower()) ||
-                                         c.StrIngredient11 != null && c.StrIngredient11.ToLower().Contains(ingredient.ToLower()) ||
-                                         c.StrIngredient12 != null && c.StrIngredient12.ToLower().Contains(ingredient.ToLower()) ||
-                                         c.StrIngredient13 != null && c.StrIngredient13.ToLower().Contains(ingredient.ToLower()) ||
-                                         c.StrIngredient14 != null && c.StrIngredient14.ToLower().Contains(ingredient.ToLower()) ||
-                                         c.StrIngredient15 != null && c.StrIngredient15.ToLower().Contains(ingredient.ToLower())
-                                    );
-            }
-            if(!string.IsNullOrEmpty(description))
-            {
-                query = query.Where(c => c.StrInstructions != null && c.StrInstructions.ToLower().Contains(description.ToLower()));
-            }
-
+            // Calcolo risultati dopo i filtri
             var totalItems = await query.CountAsync();
             var totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
-            //query = query.OrderBy(c => c.StrDrink); // Ordina i cocktail per nome
 
+            // Ordinamento per nome, con precedenza se inizia con il testo cercato
             if (!string.IsNullOrEmpty(nameCocktail))
             {
                 string name = nameCocktail.ToLower();
@@ -341,9 +275,10 @@ namespace CocktailDebacle.Server.Controllers
             {
                 query = query.OrderBy(c => c.StrDrink);
             }
-            
+
             var cocktailList = await query.ToListAsync();
 
+            // Calcolo lo score per ogni cocktail (solo se autenticato)
             var searchHistory = user != null
                 ? await _context.DbUserHistorySearch
                     .Where(s => s.UserName == user.UserName)
@@ -352,17 +287,21 @@ namespace CocktailDebacle.Server.Controllers
                     .Select(s => s.SearchText!.ToLower())
                     .ToListAsync()
                 : new List<string>();
+            var likedList = user != null ? user.CocktailsLike.ToList() : new List<Cocktail>();
 
             var cocktailScores = cocktailList
                 .Select(c => new {
                     Cocktail = c,
-                    Score = user != null ? GetSuggestionScore(c, user, searchHistory, user.CocktailsLike.ToList()) : 0
+                    Score = user != null ? GetSuggestionScore(c, user, searchHistory, likedList) : 0
                 })
-                .Where(c => !noFilter || c.Score > 0) // Se hai usato filtri, accetti anche score 0. Se no, mostri solo suggeriti
+                // SE sei autenticato e non hai filtri, mostra solo i consigliati (score > 0)
+                // SE ci sono filtri, mostra tutto ma ordinato per score
+                .Where(c => !noFilter || c.Score > 0)
                 .OrderByDescending(c => c.Score)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .Select(c => new CocktailDto {
+                .Select(c => new CocktailDto
+                {
                     Id = c.Cocktail.Id,
                     IdDrink = c.Cocktail.IdDrink ?? string.Empty,
                     StrDrink = c.Cocktail.StrDrink ?? string.Empty,
@@ -384,10 +323,11 @@ namespace CocktailDebacle.Server.Controllers
                         c.Cocktail.StrMeasure11 ?? string.Empty, c.Cocktail.StrMeasure12 ?? string.Empty, c.Cocktail.StrMeasure13 ?? string.Empty, c.Cocktail.StrMeasure14 ?? string.Empty, c.Cocktail.StrMeasure15 ?? string.Empty
                     }.Where(m => !string.IsNullOrWhiteSpace(m)).ToList(),
                     StrTags = c.Cocktail.StrTags ?? string.Empty
-                    }).ToList();
+                })
+                .ToList();
 
-
-            return Ok( new {
+            return Ok(new
+            {
                 TotalResult = totalItems,
                 TotalPages = totalPages,
                 CurrentPage = page < 1 ? 1 : page,
@@ -395,6 +335,7 @@ namespace CocktailDebacle.Server.Controllers
                 Cocktails = cocktailScores
             });
         }
+
 
         // Cocktail Create o Modificati (User)
 
@@ -727,6 +668,7 @@ namespace CocktailDebacle.Server.Controllers
             await _context.SaveChangesAsync();
             return Ok(new { Message = $"Cocktail like status updated successfully! NameCocktail {cocktail.StrDrink} = {cocktail.Likes} "});
         }
+
 
         [HttpGet("GetUserCocktailLikes")]
         public async Task<IActionResult> GetUserCocktailLikes(int id)

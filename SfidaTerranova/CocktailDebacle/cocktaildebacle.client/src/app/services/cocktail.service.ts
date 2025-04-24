@@ -63,8 +63,15 @@ export interface CocktailDetails{
     searchCocktails(Query:string)
     {
         this.apiUrl = "http://localhost:5052/api/cocktails/search?" + this.filter;
-        return this.http.get(this.apiUrl + Query, { responseType: 'text' }).pipe(
+
+        
+        const headers = new HttpHeaders({
+            'Authorization': 'Bearer ' + this.userService.getToken()
+        });
+
+        return this.http.get(this.apiUrl + Query, {headers: headers, responseType: 'text' }).pipe(
             map(response => {
+                console.log("Waaa Ci siamo", response);
                  // <-- Aggiunto log
                 return response ?? 'failed';
               }), 
