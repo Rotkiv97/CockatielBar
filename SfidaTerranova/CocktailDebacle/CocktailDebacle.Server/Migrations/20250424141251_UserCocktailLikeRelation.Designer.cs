@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CocktailDebacle.Server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250424080731_UserCocktailLikeRelation")]
+    [Migration("20250424141251_UserCocktailLikeRelation")]
     partial class UserCocktailLikeRelation
     {
         /// <inheritdoc />
@@ -306,6 +306,21 @@ namespace CocktailDebacle.Server.Migrations
                     b.ToTable("DbUser");
                 });
 
+            modelBuilder.Entity("UserUser", b =>
+                {
+                    b.Property<int>("Followed_UsersId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Followers_UsersId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Followed_UsersId", "Followers_UsersId");
+
+                    b.HasIndex("Followers_UsersId");
+
+                    b.ToTable("UserUser");
+                });
+
             modelBuilder.Entity("CocktailUser", b =>
                 {
                     b.HasOne("CocktailDebacle.Server.Models.Cocktail", null)
@@ -318,6 +333,21 @@ namespace CocktailDebacle.Server.Migrations
                         .WithMany()
                         .HasForeignKey("UsersLikedId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("UserUser", b =>
+                {
+                    b.HasOne("User", null)
+                        .WithMany()
+                        .HasForeignKey("Followed_UsersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("User", null)
+                        .WithMany()
+                        .HasForeignKey("Followers_UsersId")
+                        .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
                 });
 #pragma warning restore 612, 618

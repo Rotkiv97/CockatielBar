@@ -40,6 +40,10 @@ public class User
 
     public string? Bio_link { get; set; } = string.Empty; // da levare forse
     public ICollection<Cocktail> CocktailsLike { get; set; } = new List<Cocktail>();
-    public string Language { get; set; } = "en";    
+
+    public ICollection<User> Followed_Users { get; set; } = new List<User>(); // utenti seguiti
+
+    public ICollection<User> Followers_Users { get; set; } = new List<User>(); // utenti che ti seguono
+    public string Language { get; set; } = "en";
 }
 

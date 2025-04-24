@@ -143,10 +143,38 @@ namespace CocktailDebacle.Server.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "UserUser",
+                columns: table => new
+                {
+                    Followed_UsersId = table.Column<int>(type: "int", nullable: false),
+                    Followers_UsersId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserUser", x => new { x.Followed_UsersId, x.Followers_UsersId });
+                    table.ForeignKey(
+                        name: "FK_UserUser_DbUser_Followed_UsersId",
+                        column: x => x.Followed_UsersId,
+                        principalTable: "DbUser",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserUser_DbUser_Followers_UsersId",
+                        column: x => x.Followers_UsersId,
+                        principalTable: "DbUser",
+                        principalColumn: "Id");
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_UserCocktailsLike_UsersLikedId",
                 table: "UserCocktailsLike",
                 column: "UsersLikedId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserUser_Followers_UsersId",
+                table: "UserUser",
+                column: "Followers_UsersId");
         }
 
         /// <inheritdoc />
@@ -157,6 +185,9 @@ namespace CocktailDebacle.Server.Migrations
 
             migrationBuilder.DropTable(
                 name: "UserCocktailsLike");
+
+            migrationBuilder.DropTable(
+                name: "UserUser");
 
             migrationBuilder.DropTable(
                 name: "Cocktails");

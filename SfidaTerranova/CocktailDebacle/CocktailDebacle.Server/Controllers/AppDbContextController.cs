@@ -434,6 +434,160 @@ namespace CocktailDebacle.Server.Controllers
             }
             return Ok(cocktailDtos);
         }
+
+        [Authorize]
+        [HttpPost("FollowedNewUser")]
+        public async Task<IActionResult> FollowedNewUser([FromBody] string followedUserName)
+        {
+            var userName = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(userName))
+            {
+                return Unauthorized("Utente non autenticato.");
+            }
+
+            var user = await _context.DbUser.FirstOrDefaultAsync(u => u.UserName == userName);
+            if (user == null)
+            {
+                return NotFound("Utente non trovato.");
+            }
+
+            var followedUser = await _context.DbUser.FirstOrDefaultAsync(u => u.UserName == followedUserName);
+            if (followedUser == null)
+            {
+                return NotFound("Utente seguito non trovato.");
+            }
+
+            if (user.Followed_Users.Contains(followedUser))
+            {
+                user.Followed_Users.Remove(followedUser);
+                followedUser.Followers_Users.Remove(user);
+                await _context.SaveChangesAsync();
+                return Ok(new { Message = $"Non segui piu questo utente = {followedUserName}" });
+            }
+            else{
+                user.Followed_Users.Add(followedUser);
+                followedUser.Followers_Users.Add(user);
+                await _context.SaveChangesAsync();
+                return Ok(new { Message = $"Ora segui questo utente = {followedUserName}" });
+            }
+        }
+
+        [Authorize]
+        [HttpGet("GetFollowedUsers")]
+        public async Task<IActionResult> GetFollowedUsers()
+        {
+            var userName = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(userName))
+            {
+                return Unauthorized("Utente non autenticato.");
+            }
+
+            var user = await _context.DbUser
+                .Include(u => u.Followed_Users)
+                .FirstOrDefaultAsync(u => u.UserName == userName);
+
+            if (user == null)
+            {
+                return NotFound("Utente non trovato.");
+            }
+
+            var followedUsers = user.Followed_Users.Select(u => new
+            {
+                u.Id,
+                u.UserName,
+                u.Name,
+                u.LastName,
+                u.Email,
+                u.ImgProfileUrl
+            }).ToList();
+
+            return Ok(followedUsers);
+        }
+
+        [Authorize]
+        [HttpGet("GetFollowersUsers")]
+        public async Task<IActionResult> GetFollowersUsers()
+        {
+            var userName = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(userName))
+            {
+                return Unauthorized("Utente non autenticato.");
+            }
+
+            var user = await _context.DbUser
+                .Include(u => u.Followers_Users)
+                .FirstOrDefaultAsync(u => u.UserName == userName);
+
+            if (user == null)
+            {
+                return NotFound("Utente non trovato.");
+            }
+
+            var followersUsers = user.Followers_Users.Select(u => new
+            {
+                u.Id,
+                u.UserName,
+                u.Name,
+                u.LastName,
+                u.Email,
+                u.ImgProfileUrl
+            }).ToList();
+
+            return Ok(followersUsers);
+        }
+
+        [Authorize]
+        [HttpGet("Get_Cocktail_for_Followed_Users")] // api per ottenere i cocktail degli utenti seguiti
+        public async Task<IActionResult> GetCocktailForFollowedUsers()
+        {
+            var userName = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(userName))
+            {
+                return Unauthorized("Utente non autenticato.");
+            }
+
+            var user = await _context.DbUser
+                .Include(u => u.Followed_Users)
+                .ThenInclude(f => f.CocktailsLike)
+                .FirstOrDefaultAsync(u => u.UserName == userName);
+
+            if (user == null)
+            {
+                return NotFound("Utente non trovato.");
+            }
+
+            var cocktailDtos = user.Followed_Users.SelectMany(f => f.CocktailsLike)
+                .Select(c => new CocktailDto
+                {
+                    Id = c.Id,
+                    IdDrink = c.IdDrink ?? string.Empty,
+                    StrDrink = c.StrDrink ?? string.Empty,
+                    StrCategory = c.StrCategory ?? string.Empty,
+                    StrAlcoholic = c.StrAlcoholic ?? string.Empty,
+                    StrGlass = c.StrGlass ?? string.Empty,
+                    StrInstructions = c.StrInstructions ?? string.Empty,
+                    StrDrinkThumb = c.StrDrinkThumb ?? string.Empty,
+                    Ingredients = new List<string>
+                    {
+                        c.StrIngredient1 ?? string.Empty, c.StrIngredient2 ?? string.Empty, c.StrIngredient3 ?? string.Empty, c.StrIngredient4 ?? string.Empty, c.StrIngredient5 ?? string.Empty,
+                        c.StrIngredient6 ?? string.Empty, c.StrIngredient7 ?? string.Empty, c.StrIngredient8 ?? string.Empty, c.StrIngredient9 ?? string.Empty, c.StrIngredient10 ?? string.Empty,
+                        c.StrIngredient11 ?? string.Empty, c.StrIngredient12 ?? string.Empty, c.StrIngredient13 ?? string.Empty, c.StrIngredient14 ?? string.Empty, c.StrIngredient15 ?? string.Empty
+                    }.Where(i => !string.IsNullOrWhiteSpace(i)).ToList(),
+                    Measures = new List<string>
+                    {
+                        c.StrMeasure1 ?? string.Empty, c.StrMeasure2 ?? string.Empty, c.StrMeasure3 ?? string.Empty, c.StrMeasure4 ?? string.Empty, c.StrMeasure5 ?? string.Empty,
+                        c.StrMeasure6 ?? string.Empty, c.StrMeasure7 ?? string.Empty, c.StrMeasure8 ?? string.Empty, c.StrMeasure9 ?? string.Empty, c.StrMeasure10 ?? string.Empty,
+                        c.StrMeasure11 ?? string.Empty, c.StrMeasure12 ?? string.Empty,
+                        c.StrMeasure13 ?? string.Empty, c.StrMeasure14 ?? string.Empty, c.StrMeasure15 ?? string.Empty
+                    }.Where(m => !string.IsNullOrWhiteSpace(m)).ToList(),
+                    StrTags = c.StrTags ?? string.Empty
+                }).ToList();
+            if (!cocktailDtos.Any())
+            {
+                return NotFound("Nessun cocktail trovato.");
+            }
+            return Ok(cocktailDtos);
+        }
     }
 
     public class LoginRequest

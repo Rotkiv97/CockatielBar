@@ -161,6 +161,7 @@ namespace CocktailDebacle.Server.Controllers
         [HttpGet("search")]
         public async Task<ActionResult<IEnumerable<CocktailDto>>> SearchCoctktail(
             [FromQuery] string nameCocktail = "",
+            [FromQuery] string UserSearch = "",
             [FromQuery] string glass = "",
             [FromQuery] string ingredient = "",
             [FromQuery] string category = "",
@@ -183,10 +184,59 @@ namespace CocktailDebacle.Server.Controllers
                 string.IsNullOrEmpty(alcoholic) &&
                 string.IsNullOrEmpty(description) &&
                 string.IsNullOrEmpty(UsernameCreateCocktail);
+            
+            if(!string.IsNullOrEmpty(UserSearch) && noFilter == true && nameCocktail == "")
+            {
+                string? userNameFromToken = null;
+                if (User.Identity?.IsAuthenticated == true)
+                    userNameFromToken = User.FindFirst(ClaimTypes.Name)?.Value;
 
+                var users = await _context.DbUser
+                    .Where(u => u.UserName.ToLower().StartsWith(UserSearch.ToLower())
+                                && u.AcceptCookies == true
+                                && (userNameFromToken == null || u.UserName != userNameFromToken))
+                    .Select(u => new UserDto
+                    {
+                        Id = u.Id,
+                        UserName = u.UserName,
+                        Name = u.Name,
+                        LastName = u.LastName,
+                        Email = u.Email,
+                        ImgProfileUrl = u.ImgProfileUrl
+                    })
+                    .ToListAsync();
+
+                // Se non trova niente, cerca chi contiene la stringa
+                if (users == null || users.Count == 0)
+                {
+                    users = await _context.DbUser
+                        .Where(u => u.UserName.ToLower().Contains(UserSearch.ToLower())
+                                    && u.AcceptCookies == true
+                                    && (userNameFromToken == null || u.UserName != userNameFromToken))
+                        .Select(u => new UserDto
+                        {
+                            Id = u.Id,
+                            UserName = u.UserName,
+                            Name = u.Name,
+                            LastName = u.LastName,
+                            Email = u.Email,
+                            ImgProfileUrl = u.ImgProfileUrl
+                        })
+                        .ToListAsync();
+                }
+                return Ok(new
+                {
+                    TotalResult = users.Count,
+                    TotalPages = 1,
+                    CurrentPage = 1,
+                    PageSize = 10,
+                    Users = users
+                });
+            }
+            
             // Solo cocktail pubblici
             query = query.Where(c => c.PublicCocktail == true || c.PublicCocktail == null);
-
+            
             if (!string.IsNullOrEmpty(glass))
                 query = query.Where(c => c.StrGlass != null && c.StrGlass.ToLower().Contains(glass.ToLower()));
 
@@ -646,7 +696,7 @@ namespace CocktailDebacle.Server.Controllers
             if (string.IsNullOrEmpty(username))
                 return Unauthorized("User not authenticated.");
 
-            var cocktail = await _context.DbCocktails.FirstOrDefaultAsync(c => c.Id == Id && c.PublicCocktail == true);
+            var cocktail = await _context.DbCocktails.Include(c => c.UsersLiked).FirstOrDefaultAsync(c => c.Id == Id && c.PublicCocktail == true);
             if (cocktail == null)
                 return NotFound("Cocktail not found.");
 
@@ -656,12 +706,14 @@ namespace CocktailDebacle.Server.Controllers
 
             if (user.CocktailsLike.Any(c => c.Id == Id))
             {
-                user.CocktailsLike.Remove(cocktail); // Rimuovi il cocktail dai preferiti
+                user.CocktailsLike.Remove(cocktail); 
+                cocktail.UsersLiked.Remove(user);
                 cocktail.Likes = Math.Max(0, cocktail.Likes - 1);
             }
             else
             {
-                user.CocktailsLike.Add(cocktail); // Aggiungi il cocktail ai preferiti
+                user.CocktailsLike.Add(cocktail);
+                cocktail.UsersLiked.Add(user);
                 cocktail.Likes += 1;
             }
             
@@ -712,6 +764,55 @@ namespace CocktailDebacle.Server.Controllers
                 .ToList();
 
             return Ok(ingredienti);
+        }
+
+        [Authorize]
+        [HttpGet("SearchUser/{username}")]
+        public async Task<IActionResult> SearchUser(string username)
+        {
+            var userNameFromToken = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(userNameFromToken))
+                return Unauthorized("User not authenticated.");
+            var userFromToken = await _context.DbUser
+                .FirstOrDefaultAsync(u => u.UserName == userNameFromToken && u.AcceptCookies == true);
+            if (userFromToken == null)
+                return NotFound("User not found.");
+
+            if (string.IsNullOrEmpty(username))
+                return BadRequest("Username cannot be empty.");
+            
+            // 
+            var users = await _context.DbUser
+            .Where(u => u.UserName.ToLower().StartsWith(username.ToLower())
+                        && u.AcceptCookies == true
+                        && u.UserName != userNameFromToken)
+            .Select(u => new UserDto
+            {
+                Id = u.Id,
+                UserName = u.UserName,
+                Name = u.Name,
+                LastName = u.LastName,
+                ImgProfileUrl = u.ImgProfileUrl
+            })
+            .ToListAsync();
+
+            if (users == null || users.Count == 0)
+            {
+                users = await _context.DbUser
+                    .Where(u => u.UserName.ToLower().Contains(username.ToLower())
+                                && u.AcceptCookies == true
+                                && u.UserName != userNameFromToken)
+                    .Select(u => new UserDto
+                    {
+                        Id = u.Id,
+                        UserName = u.UserName,
+                        Name = u.Name,
+                        LastName = u.LastName,
+                        ImgProfileUrl = u.ImgProfileUrl
+                    })
+                    .ToListAsync();
+            }
+            return Ok(users);
         }
 
         private double ConvertToMilliliters(string? measure)
