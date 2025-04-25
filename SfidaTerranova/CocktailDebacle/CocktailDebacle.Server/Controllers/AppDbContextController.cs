@@ -39,6 +39,33 @@ namespace CocktailDebacle.Server.Controllers
             _logger.LogInformation("CloudinaryService initialized.✅");
         }
 
+        [Authorize]
+        [HttpGet("GetUser/{UserName}")]
+        public async Task<ActionResult<UserDto>> GetUser(string username)
+        {
+            var userName = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(userName))
+            {
+                return Unauthorized("Utente non autenticato.");
+            }
+            var user = await _context.DbUser.FirstOrDefaultAsync(u => u.UserName == username);
+            if (user == null)
+            {
+                return NotFound("Utente non trovato.");
+            }
+
+            var userDto = new UserDto
+            {
+                Id = user.Id,
+                UserName = user.UserName,
+                Name = user.Name,
+                LastName = user.LastName,
+                Email = user.Email,
+                ImgProfileUrl = user.ImgProfileUrl ?? string.Empty
+            };
+            return Ok(userDto);
+        }
+
 
         // http://localhost:5052/api/Users/login + body -> row {"userNameRequest": ="" "passwordRequest": ""}
         [HttpPost("login")]
@@ -491,14 +518,14 @@ namespace CocktailDebacle.Server.Controllers
                 return NotFound("Utente non trovato.");
             }
 
-            var followedUsers = user.Followed_Users.Select(u => new
+            var followedUsers = user.Followed_Users.Select(u => new UserDto
             {
-                u.Id,
-                u.UserName,
-                u.Name,
-                u.LastName,
-                u.Email,
-                u.ImgProfileUrl
+                Id = u.Id,
+                UserName = u.UserName,
+                Name = u.Name,
+                LastName = u.LastName,
+                Email = u.Email,
+                ImgProfileUrl = u.ImgProfileUrl ?? string.Empty
             }).ToList();
 
             return Ok(followedUsers);
@@ -523,14 +550,14 @@ namespace CocktailDebacle.Server.Controllers
                 return NotFound("Utente non trovato.");
             }
 
-            var followersUsers = user.Followers_Users.Select(u => new
+            var followersUsers = user.Followers_Users.Select(u => new UserDto
             {
-                u.Id,
-                u.UserName,
-                u.Name,
-                u.LastName,
-                u.Email,
-                u.ImgProfileUrl
+                Id = u.Id,
+                UserName = u.UserName,
+                Name = u.Name,
+                LastName = u.LastName,
+                Email = u.Email,
+                ImgProfileUrl = u.ImgProfileUrl ?? string.Empty
             }).ToList();
 
             return Ok(followersUsers);

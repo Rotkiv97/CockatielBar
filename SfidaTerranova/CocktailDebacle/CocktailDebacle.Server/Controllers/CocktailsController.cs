@@ -792,7 +792,7 @@ namespace CocktailDebacle.Server.Controllers
                 UserName = u.UserName,
                 Name = u.Name,
                 LastName = u.LastName,
-                ImgProfileUrl = u.ImgProfileUrl
+                ImgProfileUrl = u.ImgProfileUrl ?? string.Empty
             })
             .ToListAsync();
 
@@ -808,7 +808,7 @@ namespace CocktailDebacle.Server.Controllers
                         UserName = u.UserName,
                         Name = u.Name,
                         LastName = u.LastName,
-                        ImgProfileUrl = u.ImgProfileUrl
+                        ImgProfileUrl = u.ImgProfileUrl ?? string.Empty
                     })
                     .ToListAsync();
             }
