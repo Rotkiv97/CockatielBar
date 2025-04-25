@@ -40,7 +40,7 @@ namespace CocktailDebacle.Server.Controllers
         }
 
         [Authorize]
-        [HttpGet("GetUser/{UserName}")]
+        [HttpGet("GetUser/{username}")]
         public async Task<ActionResult<UserDto>> GetUser(string username)
         {
             var userName = User.FindFirst(ClaimTypes.Name)?.Value;
@@ -63,6 +63,7 @@ namespace CocktailDebacle.Server.Controllers
                 Email = user.Email,
                 ImgProfileUrl = user.ImgProfileUrl ?? string.Empty
             };
+
             return Ok(userDto);
         }
 
