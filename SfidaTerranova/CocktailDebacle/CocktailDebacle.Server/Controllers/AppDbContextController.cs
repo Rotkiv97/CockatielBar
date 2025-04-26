@@ -10,12 +10,12 @@ using System.Text;
 using System;
 using Microsoft.AspNetCore.RateLimiting;
 using CocktailDebacle.Server.DTOs;
-
 using BCrypt.Net;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using CloudinaryDotNet;
+using CocktailDebacle.Server.Utils;
 
 namespace CocktailDebacle.Server.Controllers
 {
@@ -212,9 +212,16 @@ namespace CocktailDebacle.Server.Controllers
 
         // PUT: api/Users/{id} - Modifica un utente esistente
         // http://localhost:5052/api/Users/1 + body -> row {"userName": ="" "name": ="" "lastName": ="" "email": ="" "passwordHash": ="" "acceptCookies": =""}
+        
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutUser(int id, User updatedUser)
         {
+            var userName = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(userName))
+            {
+                return Unauthorized("Utente non autenticato.");
+            }
             // Trova l'utente nel database
             var user = await _context.DbUser.FindAsync(id);
             if (user == null)
@@ -222,16 +229,11 @@ namespace CocktailDebacle.Server.Controllers
                 return NotFound("Utente non trovato.");
             }
 
-            // Aggiorna solo i campi modificabili
             user.UserName = updatedUser.UserName;
             user.Name = updatedUser.Name;
             user.LastName = updatedUser.LastName;
             user.Email = updatedUser.Email;
             user.AcceptCookies = updatedUser.AcceptCookies;
-            //user.Online = updatedUser.Online;
-            // user.PersonalizedExperience = updatedUser.PersonalizedExperience;
-            // user.Leanguage = updatedUser.Leanguage;
-            // user.ImgProfile = updatedUser.ImgProfile;
 
             // Se la password viene cambiata, aggiorna l'hash
             if (!string.IsNullOrEmpty(updatedUser.PasswordHash) && updatedUser.PasswordHash != user.PasswordHash)
@@ -252,9 +254,15 @@ namespace CocktailDebacle.Server.Controllers
         }
 
         // http://localhost:5052/api/Users/{id} - Elimina un utente
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
+            var userName = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(userName))
+            {
+                return Unauthorized("Utente non autenticato.");
+            }
             var user = await _context.DbUser.FindAsync(id);
             if (user == null)
             {
@@ -300,10 +308,15 @@ namespace CocktailDebacle.Server.Controllers
         ///         ▸ Key: file (tipo = File)
         ///         ▸ Value: selezionare immagine dal disco
         /// </remarks>
-
+        [Authorize]
         [HttpPost("{UserName}/upload-profile-image-local")]
         public async Task<IActionResult> UploadProfileImageLocal(string UserName, IFormFile file)
         {
+            var userName = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(userName))
+            {
+                return Unauthorized("Utente non autenticato.");
+            }
             if (file == null || file.Length == 0)
             {
                 return BadRequest("Nessun file caricato.");
@@ -464,35 +477,39 @@ namespace CocktailDebacle.Server.Controllers
         }
 
         [Authorize]
-        [HttpPost("FollowedNewUser")]
-        public async Task<IActionResult> FollowedNewUser([FromBody] string followedUserName)
+        [HttpPost("FollowedNewUser/{followedUserName}")]
+        public async Task<IActionResult> FollowedNewUser(string followedUserName)
         {
             var userName = User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(userName))
-            {
                 return Unauthorized("Utente non autenticato.");
-            }
 
-            var user = await _context.DbUser.FirstOrDefaultAsync(u => u.UserName == userName);
+            var user = await _context.DbUser
+                .Include(u => u.Followed_Users)
+                .FirstOrDefaultAsync(u => u.UserName == userName);
             if (user == null)
-            {
                 return NotFound("Utente non trovato.");
-            }
 
-            var followedUser = await _context.DbUser.FirstOrDefaultAsync(u => u.UserName == followedUserName);
+            var followedUser = await _context.DbUser
+                .Include(u => u.Followers_Users)
+                .FirstOrDefaultAsync(u => u.UserName == followedUserName);
             if (followedUser == null)
-            {
                 return NotFound("Utente seguito non trovato.");
+            
+            bool FollowingUser = user.Followed_Users.Any(u => u.Id == followedUser.Id);
+            if(followedUserName == userName)
+            {
+                return BadRequest("Non puoi seguire te stesso.");
             }
-
-            if (user.Followed_Users.Contains(followedUser))
+            else if (FollowingUser)
             {
                 user.Followed_Users.Remove(followedUser);
                 followedUser.Followers_Users.Remove(user);
                 await _context.SaveChangesAsync();
-                return Ok(new { Message = $"Non segui piu questo utente = {followedUserName}" });
+                return Ok(new { Message = $"Non segui più questo utente = {followedUserName}" });
             }
-            else{
+            else
+            {
                 user.Followed_Users.Add(followedUser);
                 followedUser.Followers_Users.Add(user);
                 await _context.SaveChangesAsync();
@@ -500,10 +517,16 @@ namespace CocktailDebacle.Server.Controllers
             }
         }
 
+
         [Authorize]
-        [HttpGet("GetFollowedUsers")]
-        public async Task<IActionResult> GetFollowedUsers()
+        [HttpGet("GetFollowedUsers/{UserName}")]
+        public async Task<IActionResult> GetFollowedUsers(string UserName)
         {
+            if(string.IsNullOrEmpty(UserName))
+            {
+                return BadRequest("Nome utente non valido.");
+            }
+
             var userName = User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(userName))
             {
@@ -512,31 +535,29 @@ namespace CocktailDebacle.Server.Controllers
 
             var user = await _context.DbUser
                 .Include(u => u.Followed_Users)
-                .FirstOrDefaultAsync(u => u.UserName == userName);
+                .FirstOrDefaultAsync(u => u.UserName == UserName);
 
             if (user == null)
             {
                 return NotFound("Utente non trovato.");
             }
 
-            var followedUsers = user.Followed_Users.Select(u => new UserDto
-            {
-                Id = u.Id,
-                UserName = u.UserName,
-                Name = u.Name,
-                LastName = u.LastName,
-                Email = u.Email,
-                ImgProfileUrl = u.ImgProfileUrl ?? string.Empty
-            }).ToList();
+            var followedUsers = user?.Followed_Users.Select(UtilsUserController.UserToDto).ToList();
 
             return Ok(followedUsers);
         }
 
         [Authorize]
-        [HttpGet("GetFollowersUsers")]
-        public async Task<IActionResult> GetFollowersUsers()
+        [HttpGet("GetFollowersUsers/{UserName}")]
+        public async Task<IActionResult> GetFollowersUsers(string UserName)
         {
+            if(string.IsNullOrEmpty(UserName))
+            {
+                return BadRequest("Nome utente non valido.");
+            }
+
             var userName = User.FindFirst(ClaimTypes.Name)?.Value;
+
             if (string.IsNullOrEmpty(userName))
             {
                 return Unauthorized("Utente non autenticato.");
@@ -544,23 +565,14 @@ namespace CocktailDebacle.Server.Controllers
 
             var user = await _context.DbUser
                 .Include(u => u.Followers_Users)
-                .FirstOrDefaultAsync(u => u.UserName == userName);
+                .FirstOrDefaultAsync(u => u.UserName == UserName);
 
             if (user == null)
             {
                 return NotFound("Utente non trovato.");
             }
 
-            var followersUsers = user.Followers_Users.Select(u => new UserDto
-            {
-                Id = u.Id,
-                UserName = u.UserName,
-                Name = u.Name,
-                LastName = u.LastName,
-                Email = u.Email,
-                ImgProfileUrl = u.ImgProfileUrl ?? string.Empty
-            }).ToList();
-
+            var followersUsers = user.Followers_Users.Select(UtilsUserController.UserToDto).ToList();
             return Ok(followersUsers);
         }
 
@@ -595,19 +607,8 @@ namespace CocktailDebacle.Server.Controllers
                     StrGlass = c.StrGlass ?? string.Empty,
                     StrInstructions = c.StrInstructions ?? string.Empty,
                     StrDrinkThumb = c.StrDrinkThumb ?? string.Empty,
-                    Ingredients = new List<string>
-                    {
-                        c.StrIngredient1 ?? string.Empty, c.StrIngredient2 ?? string.Empty, c.StrIngredient3 ?? string.Empty, c.StrIngredient4 ?? string.Empty, c.StrIngredient5 ?? string.Empty,
-                        c.StrIngredient6 ?? string.Empty, c.StrIngredient7 ?? string.Empty, c.StrIngredient8 ?? string.Empty, c.StrIngredient9 ?? string.Empty, c.StrIngredient10 ?? string.Empty,
-                        c.StrIngredient11 ?? string.Empty, c.StrIngredient12 ?? string.Empty, c.StrIngredient13 ?? string.Empty, c.StrIngredient14 ?? string.Empty, c.StrIngredient15 ?? string.Empty
-                    }.Where(i => !string.IsNullOrWhiteSpace(i)).ToList(),
-                    Measures = new List<string>
-                    {
-                        c.StrMeasure1 ?? string.Empty, c.StrMeasure2 ?? string.Empty, c.StrMeasure3 ?? string.Empty, c.StrMeasure4 ?? string.Empty, c.StrMeasure5 ?? string.Empty,
-                        c.StrMeasure6 ?? string.Empty, c.StrMeasure7 ?? string.Empty, c.StrMeasure8 ?? string.Empty, c.StrMeasure9 ?? string.Empty, c.StrMeasure10 ?? string.Empty,
-                        c.StrMeasure11 ?? string.Empty, c.StrMeasure12 ?? string.Empty,
-                        c.StrMeasure13 ?? string.Empty, c.StrMeasure14 ?? string.Empty, c.StrMeasure15 ?? string.Empty
-                    }.Where(m => !string.IsNullOrWhiteSpace(m)).ToList(),
+                    Ingredients = UtilsCocktail.IngredientToList(c),
+                    Measures = UtilsCocktail.MeasureToList(c),
                     StrTags = c.StrTags ?? string.Empty
                 }).ToList();
             if (!cocktailDtos.Any())

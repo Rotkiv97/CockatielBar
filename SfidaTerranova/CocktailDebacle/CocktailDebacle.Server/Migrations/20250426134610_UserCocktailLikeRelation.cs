@@ -147,23 +147,23 @@ namespace CocktailDebacle.Server.Migrations
                 name: "UserUser",
                 columns: table => new
                 {
-                    Followed_UsersId = table.Column<int>(type: "int", nullable: false),
-                    Followers_UsersId = table.Column<int>(type: "int", nullable: false)
+                    Followed_UsersUserName = table.Column<string>(type: "nvarchar(50)", nullable: false),
+                    Followers_UsersUserName = table.Column<string>(type: "nvarchar(50)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserUser", x => new { x.Followed_UsersId, x.Followers_UsersId });
+                    table.PrimaryKey("PK_UserUser", x => new { x.Followed_UsersUserName, x.Followers_UsersUserName });
                     table.ForeignKey(
-                        name: "FK_UserUser_DbUser_Followed_UsersId",
-                        column: x => x.Followed_UsersId,
+                        name: "FK_UserUser_DbUser_Followed_UsersUserName",
+                        column: x => x.Followed_UsersUserName,
                         principalTable: "DbUser",
-                        principalColumn: "Id",
+                        principalColumn: "UserName");
+                    table.ForeignKey(
+                        name: "FK_UserUser_DbUser_Followers_UsersUserName",
+                        column: x => x.Followers_UsersUserName,
+                        principalTable: "DbUser",
+                        principalColumn: "UserName",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_UserUser_DbUser_Followers_UsersId",
-                        column: x => x.Followers_UsersId,
-                        principalTable: "DbUser",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateIndex(
@@ -172,9 +172,9 @@ namespace CocktailDebacle.Server.Migrations
                 column: "UsersLikedId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserUser_Followers_UsersId",
+                name: "IX_UserUser_Followers_UsersUserName",
                 table: "UserUser",
-                column: "Followers_UsersId");
+                column: "Followers_UsersUserName");
         }
 
         /// <inheritdoc />

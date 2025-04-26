@@ -298,22 +298,20 @@ namespace CocktailDebacle.Server.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasAlternateKey("UserName");
-
                     b.ToTable("DbUser");
                 });
 
             modelBuilder.Entity("UserUser", b =>
                 {
-                    b.Property<int>("Followed_UsersId")
-                        .HasColumnType("int");
+                    b.Property<string>("Followed_UsersUserName")
+                        .HasColumnType("nvarchar(50)");
 
-                    b.Property<int>("Followers_UsersId")
-                        .HasColumnType("int");
+                    b.Property<string>("Followers_UsersUserName")
+                        .HasColumnType("nvarchar(50)");
 
-                    b.HasKey("Followed_UsersId", "Followers_UsersId");
+                    b.HasKey("Followed_UsersUserName", "Followers_UsersUserName");
 
-                    b.HasIndex("Followers_UsersId");
+                    b.HasIndex("Followers_UsersUserName");
 
                     b.ToTable("UserUser");
                 });
@@ -337,14 +335,16 @@ namespace CocktailDebacle.Server.Migrations
                 {
                     b.HasOne("User", null)
                         .WithMany()
-                        .HasForeignKey("Followed_UsersId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("Followed_UsersUserName")
+                        .HasPrincipalKey("UserName")
+                        .OnDelete(DeleteBehavior.ClientCascade)
                         .IsRequired();
 
                     b.HasOne("User", null)
                         .WithMany()
-                        .HasForeignKey("Followers_UsersId")
-                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .HasForeignKey("Followers_UsersUserName")
+                        .HasPrincipalKey("UserName")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 #pragma warning restore 612, 618

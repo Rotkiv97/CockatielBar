@@ -43,6 +43,18 @@ namespace CocktailDebacle.Server.Service
                 .HasMany(u => u.CocktailsLike)
                 .WithMany(c => c.UsersLiked)
                 .UsingEntity(j => j.ToTable("UserCocktailsLike")); // Tabella di join per la relazione molti-a-molti
+
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.Followed_Users)
+                .WithMany(u => u.Followers_Users)
+                .UsingEntity<Dictionary<string, object>>(
+                    "UserUser",
+                    r => r.HasOne<User>().WithMany().HasForeignKey("Followers_UsersUserName").HasPrincipalKey("UserName"),
+                    l => l.HasOne<User>().WithMany().HasForeignKey("Followed_UsersUserName").HasPrincipalKey("UserName"),
+                    je =>
+                    {
+                        je.HasKey("Followed_UsersUserName", "Followers_UsersUserName");
+                    });
         }
     }
 }
