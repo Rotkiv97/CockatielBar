@@ -11,7 +11,7 @@ namespace CocktailDebacle.Server.Models
         
         public bool? PublicCocktail { get; set; } = true; // Indica se il cocktail è pubblico o privato
 
-        public DateTime? dateCreated { get; set; } = DateTime.Now; // Data di creazione del cocktail
+        public DateTime? dateCreated { get; set; } = DateTime.UtcNow; // Data di creazione del cocktail
         public int Likes { get; set; } = 0; // Indica il numero di like ricevuti dal cocktail
 
         public ICollection<User> UsersLiked { get; set; } = new List<User>(); // Collezione di utenti che hanno messo like al cocktail

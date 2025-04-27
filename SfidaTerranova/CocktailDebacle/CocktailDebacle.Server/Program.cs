@@ -75,8 +75,9 @@ builder.Services.Configure<CloudinarySettings>(
 
 builder.Services.AddSingleton<CloudinaryService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddSingleton<ICleanTokenHostedService>();
-builder.Services.AddHostedService(provider => provider.GetRequiredService<ICleanTokenHostedService>());
+builder.Services.AddSingleton<ICleanTokenHostedService, CleanTokenHostedService>();
+builder.Services.AddHostedService(provider => 
+    provider.GetRequiredService<ICleanTokenHostedService>());
 builder.Services.AddHttpClient<CocktailImportService>();
 
 
@@ -90,7 +91,6 @@ using (var scope = app.Services.CreateScope())
     {
         var dbContext = services.GetRequiredService<AppDbContext>();
         
-        // Attendi che SQL Server sia pronto (solo in ambiente Docker)
         if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
         {
             await WaitForSqlServer(dbContext);
@@ -99,14 +99,13 @@ using (var scope = app.Services.CreateScope())
         dbContext.Database.Migrate();
         Console.WriteLine("Database migrated successfully.");
 
-        // Importa i cocktail
         var cocktailImportService = services.GetRequiredService<CocktailImportService>();
         await cocktailImportService.ImportCocktailsAsync();
         Console.WriteLine("Cocktails imported successfully.");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"An error occurred while migrating the database: {ex.Message}");
+        Console.WriteLine($"An error occurred: {ex.Message}");
     }
 }
 
@@ -115,17 +114,16 @@ app.Use(async (context, next) => {
     if(endpoint?.Metadata.GetMetadata<IAuthorizeData>() != null)
     {
         var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
-        if (string.IsNullOrEmpty(token))
+        if (!string.IsNullOrEmpty(token))
         {
             var Dbcontext = context.RequestServices.GetRequiredService<AppDbContext>();
             var user = await Dbcontext.DbUser.FirstOrDefaultAsync(u => u.Token == token);
-            if (user?.TokenExpiration > DateTime.UtcNow)
+            if (user == null || user.TokenExpiration == null || user.TokenExpiration <= DateTime.UtcNow)
             {
                 context.Response.StatusCode = 401;
                 return;
             }
         }
-
     }
     await next();
 });

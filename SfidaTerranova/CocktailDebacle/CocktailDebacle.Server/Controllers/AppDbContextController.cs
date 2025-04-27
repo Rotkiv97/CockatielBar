@@ -97,7 +97,7 @@ namespace CocktailDebacle.Server.Controllers
             }
             _logger.LogDebug($"Token = {token}");
             user.Token = token;
-            user.TokenExpiration = DateTime.Now; // Imposta la scadenza del token a 1 ora
+            user.TokenExpiration = DateTime.UtcNow; // Imposta la scadenza del token a 1 ora
             await _context.SaveChangesAsync();
             // Se la password è corretta, restituisci i dati utente
             return Ok(new
@@ -148,7 +148,7 @@ namespace CocktailDebacle.Server.Controllers
             }
 
             // Token presente ma scaduto nel tempo
-            if (user.TokenExpiration < DateTime.Now)
+            if (user.TokenExpiration < DateTime.UtcNow)
             {
                 user.Token = string.Empty;
                 user.TokenExpiration = null;

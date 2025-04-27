@@ -45,7 +45,7 @@ namespace CocktailDebacle.Server.Models
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature);
 
             // Calcolo scadenza
-            var expiration = DateTime.UtcNow.AddHours(1);//DateTime.UtcNow.AddMinutes(1);
+            var expiration = DateTime.UtcNow.AddMinutes(1);// DateTime.UtcNow.AddHours(1);
             
             // Creazione claims
             var claims = new List<Claim>

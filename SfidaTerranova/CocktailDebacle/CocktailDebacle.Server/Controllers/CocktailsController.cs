@@ -427,7 +427,7 @@ namespace CocktailDebacle.Server.Controllers
             {
                 UserNameCocktail = username,
                 PublicCocktail = cocktailCreate.PublicCocktail,
-                dateCreated = DateTime.Now,
+                dateCreated = DateTime.UtcNow,
                 Likes = 0,
                 IdDrink = cocktailCreate.IdDrink,
                 StrDrink = cocktailCreate.StrDrink,
@@ -526,7 +526,7 @@ namespace CocktailDebacle.Server.Controllers
             cocktail.StrInstructions = updatedCocktail.StrInstructions;
             cocktail.StrTags = updatedCocktail.StrTags;
             cocktail.PublicCocktail = updatedCocktail.PublicCocktail;
-            cocktail.DateModified = DateTime.Now.ToString("yyyy-MM-dd");
+            cocktail.DateModified = DateTime.UtcNow.ToString("yyyy-MM-dd");
             cocktail.StrDrinkThumb = updatedCocktail.StrDrinkThumb;
 
 
