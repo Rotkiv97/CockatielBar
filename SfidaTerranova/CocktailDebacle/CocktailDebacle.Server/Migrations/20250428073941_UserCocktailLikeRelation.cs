@@ -124,11 +124,11 @@ namespace CocktailDebacle.Server.Migrations
                 columns: table => new
                 {
                     CocktailsLikeId = table.Column<int>(type: "int", nullable: false),
-                    UsersLikedId = table.Column<int>(type: "int", nullable: false)
+                    UserLikesId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserCocktailsLike", x => new { x.CocktailsLikeId, x.UsersLikedId });
+                    table.PrimaryKey("PK_UserCocktailsLike", x => new { x.CocktailsLikeId, x.UserLikesId });
                     table.ForeignKey(
                         name: "FK_UserCocktailsLike_Cocktails_CocktailsLikeId",
                         column: x => x.CocktailsLikeId,
@@ -136,8 +136,8 @@ namespace CocktailDebacle.Server.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_UserCocktailsLike_DbUser_UsersLikedId",
-                        column: x => x.UsersLikedId,
+                        name: "FK_UserCocktailsLike_DbUser_UserLikesId",
+                        column: x => x.UserLikesId,
                         principalTable: "DbUser",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -167,9 +167,9 @@ namespace CocktailDebacle.Server.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserCocktailsLike_UsersLikedId",
+                name: "IX_UserCocktailsLike_UserLikesId",
                 table: "UserCocktailsLike",
-                column: "UsersLikedId");
+                column: "UserLikesId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserUser_Followers_UsersUserName",

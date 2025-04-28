@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
+using System.ComponentModel.DataAnnotations;
 
 namespace CocktailDebacle.Server.Controllers
 {
@@ -26,25 +27,6 @@ namespace CocktailDebacle.Server.Controllers
        
         private readonly AppDbContext _context;
         private readonly HttpClient _httpClient;
-
-        private readonly Dictionary<string, int> _glassCapacity = new Dictionary<string, int>
-        {
-            { "Highball glass", 350 },
-            { "Cocktail glass", 150 },
-            { "Old-fashioned glass", 300 },
-            { "Collins glass", 400 },
-            { "Margarita glass", 300 },
-            { "Pint glass", 500 },
-            { "Shot glass", 50 },
-            { "Whiskey sour glass", 250 },
-            { "Hurricane glass", 400 },
-            { "Champagne flute", 200 },
-            { "Beer mug", 500 },
-            { "Brandy snifter", 300 },
-            { "Cordial glass", 100 },
-            { "Copper mug", 350 },
-            { "Irish coffee cup", 300 }
-        };
 
         private readonly CloudinaryService _cloudinaryService; // Aggiungi questa riga per il servizio Cloudinary
         public CocktailsController(AppDbContext context, HttpClient httpClient, CloudinaryService cloudinaryService)
@@ -60,29 +42,7 @@ namespace CocktailDebacle.Server.Controllers
         public async Task<ActionResult<IEnumerable<CocktailDto>>> GetCocktailsList()
         {
             var cocktails = await _context.DbCocktails
-                .Select(c => new CocktailDto
-                {
-                    IdDrink = c.IdDrink ?? string.Empty,
-                    StrDrink = c.StrDrink ?? string.Empty,
-                    StrCategory = c.StrCategory ?? string.Empty,
-                    StrAlcoholic = c.StrAlcoholic ?? string.Empty,
-                    StrGlass = c.StrGlass ?? string.Empty,
-                    StrInstructions = c.StrInstructions ?? string.Empty,
-                    StrDrinkThumb = c.StrDrinkThumb ?? string.Empty,
-                    Ingredients = new List<string>
-                    {
-                        c.StrIngredient1 ?? string.Empty, c.StrIngredient2 ?? string.Empty, c.StrIngredient3 ?? string.Empty, c.StrIngredient4 ?? string.Empty, c.StrIngredient5 ?? string.Empty,
-                        c.StrIngredient6 ?? string.Empty, c.StrIngredient7 ?? string.Empty, c.StrIngredient8 ?? string.Empty, c.StrIngredient9 ?? string.Empty, c.StrIngredient10 ?? string.Empty,
-                        c.StrIngredient11 ?? string.Empty, c.StrIngredient12 ?? string.Empty, c.StrIngredient13 ?? string.Empty, c.StrIngredient14 ?? string.Empty, c.StrIngredient15 ?? string.Empty
-                    },
-                    Measures = new List<string>
-                    {
-                        c.StrMeasure1 ?? string.Empty, c.StrMeasure2 ?? string.Empty, c.StrMeasure3 ?? string.Empty, c.StrMeasure4 ?? string.Empty, c.StrMeasure5 ?? string.Empty,
-                        c.StrMeasure6 ?? string.Empty, c.StrMeasure7 ?? string.Empty, c.StrMeasure8 ?? string.Empty, c.StrMeasure9 ?? string.Empty, c.StrMeasure10 ?? string.Empty,
-                        c.StrMeasure11 ?? string.Empty, c.StrMeasure12 ?? string.Empty, c.StrMeasure13 ?? string.Empty, c.StrMeasure14 ?? string.Empty, c.StrMeasure15 ?? string.Empty
-                    },
-                })
-                .ToListAsync();
+                .Select(c => UtilsCocktail.CocktailToDto(c)).ToListAsync();
             return Ok(cocktails);
         }
 
@@ -99,33 +59,8 @@ namespace CocktailDebacle.Server.Controllers
             if (cocktailEntity == null)
                 return NotFound("Cocktail not found.");
 
-            var cocktail = new CocktailDto
-            {
-                Id = cocktailEntity.Id,
-                IdDrink = cocktailEntity.IdDrink ?? string.Empty,
-                StrDrink = cocktailEntity.StrDrink ?? string.Empty,
-                StrCategory = cocktailEntity.StrCategory ?? string.Empty,
-                StrAlcoholic = cocktailEntity.StrAlcoholic ?? string.Empty,
-                StrGlass = cocktailEntity.StrGlass ?? string.Empty,
-                StrInstructions = cocktailEntity.StrInstructions ?? string.Empty,
-                StrDrinkThumb = cocktailEntity.StrDrinkThumb ?? string.Empty,
-                Ingredients = new List<string>
-                {
-                    cocktailEntity.StrIngredient1, cocktailEntity.StrIngredient2, cocktailEntity.StrIngredient3,
-                    cocktailEntity.StrIngredient4, cocktailEntity.StrIngredient5, cocktailEntity.StrIngredient6,
-                    cocktailEntity.StrIngredient7, cocktailEntity.StrIngredient8, cocktailEntity.StrIngredient9,
-                    cocktailEntity.StrIngredient10, cocktailEntity.StrIngredient11, cocktailEntity.StrIngredient12,
-                    cocktailEntity.StrIngredient13, cocktailEntity.StrIngredient14, cocktailEntity.StrIngredient15
-                }.Where(i => !string.IsNullOrWhiteSpace(i)).ToList(),
-                Measures = new List<string>
-                {
-                    cocktailEntity.StrMeasure1, cocktailEntity.StrMeasure2, cocktailEntity.StrMeasure3,
-                    cocktailEntity.StrMeasure4, cocktailEntity.StrMeasure5, cocktailEntity.StrMeasure6,
-                    cocktailEntity.StrMeasure7, cocktailEntity.StrMeasure8, cocktailEntity.StrMeasure9,
-                    cocktailEntity.StrMeasure10, cocktailEntity.StrMeasure11, cocktailEntity.StrMeasure12,
-                    cocktailEntity.StrMeasure13, cocktailEntity.StrMeasure14, cocktailEntity.StrMeasure15
-                }.Where(m => !string.IsNullOrWhiteSpace(m)).ToList()
-            };
+            var cocktail = UtilsCocktail.CocktailToDto(cocktailEntity);
+
             if (User.Identity?.IsAuthenticated == true)
             {
                 var userNameFromToken = User.FindFirst(ClaimTypes.Name)?.Value;
@@ -196,16 +131,7 @@ namespace CocktailDebacle.Server.Controllers
                     .Where(u => u.UserName.ToLower().StartsWith(UserSearch.ToLower())
                                 && u.AcceptCookies == true
                                 && (userNameFromToken == null || u.UserName != userNameFromToken))
-                    .Select(u => new UserDto
-                    {
-                        Id = u.Id,
-                        UserName = u.UserName,
-                        Name = u.Name,
-                        LastName = u.LastName,
-                        Email = u.Email,
-                        ImgProfileUrl = u.ImgProfileUrl
-                    })
-                    .ToListAsync();
+                    .Select(u => UtilsUserController.UserToDto(u)).ToListAsync();
 
                 // Se non trova niente, cerca chi contiene la stringa
                 if (users == null || users.Count == 0)
@@ -214,16 +140,7 @@ namespace CocktailDebacle.Server.Controllers
                         .Where(u => u.UserName.ToLower().Contains(UserSearch.ToLower())
                                     && u.AcceptCookies == true
                                     && (userNameFromToken == null || u.UserName != userNameFromToken))
-                        .Select(u => new UserDto
-                        {
-                            Id = u.Id,
-                            UserName = u.UserName,
-                            Name = u.Name,
-                            LastName = u.LastName,
-                            Email = u.Email,
-                            ImgProfileUrl = u.ImgProfileUrl
-                        })
-                        .ToListAsync();
+                        .Select(u => UtilsUserController.UserToDto(u)).ToListAsync();
                 }
                 return Ok(new
                 {
@@ -343,7 +260,7 @@ namespace CocktailDebacle.Server.Controllers
             var cocktailScores = cocktailList
                 .Select(c => new {
                     Cocktail = c,
-                    Score = user != null ? GetSuggestionScore(c, user, searchHistory, likedList) : 0
+                    Score = user != null ? UtilsCocktail.GetSuggestionScore(c, user, searchHistory, likedList) : 0
                 })
                 // SE sei autenticato e non hai filtri, mostra solo i consigliati (score > 0)
                 // SE ci sono filtri, mostra tutto ma ordinato per score
@@ -351,31 +268,7 @@ namespace CocktailDebacle.Server.Controllers
                 .OrderByDescending(c => c.Score)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
-                .Select(c => new CocktailDto
-                {
-                    Id = c.Cocktail.Id,
-                    IdDrink = c.Cocktail.IdDrink ?? string.Empty,
-                    StrDrink = c.Cocktail.StrDrink ?? string.Empty,
-                    StrCategory = c.Cocktail.StrCategory ?? string.Empty,
-                    StrAlcoholic = c.Cocktail.StrAlcoholic ?? string.Empty,
-                    StrGlass = c.Cocktail.StrGlass ?? string.Empty,
-                    StrInstructions = c.Cocktail.StrInstructions ?? string.Empty,
-                    StrDrinkThumb = c.Cocktail.StrDrinkThumb ?? string.Empty,
-                    Ingredients = new List<string>
-                    {
-                        c.Cocktail.StrIngredient1 ?? string.Empty, c.Cocktail.StrIngredient2 ?? string.Empty, c.Cocktail.StrIngredient3 ?? string.Empty, c.Cocktail.StrIngredient4 ?? string.Empty, c.Cocktail.StrIngredient5 ?? string.Empty,
-                        c.Cocktail.StrIngredient6 ?? string.Empty, c.Cocktail.StrIngredient7 ?? string.Empty, c.Cocktail.StrIngredient8 ?? string.Empty, c.Cocktail.StrIngredient9 ?? string.Empty, c.Cocktail.StrIngredient10 ?? string.Empty,
-                        c.Cocktail.StrIngredient11 ?? string.Empty, c.Cocktail.StrIngredient12 ?? string.Empty, c.Cocktail.StrIngredient13 ?? string.Empty, c.Cocktail.StrIngredient14 ?? string.Empty, c.Cocktail.StrIngredient15 ?? string.Empty
-                    }.Where(i => !string.IsNullOrWhiteSpace(i)).ToList(),
-                    Measures = new List<string>
-                    {
-                        c.Cocktail.StrMeasure1 ?? string.Empty, c.Cocktail.StrMeasure2 ?? string.Empty, c.Cocktail.StrMeasure3 ?? string.Empty, c.Cocktail.StrMeasure4 ?? string.Empty, c.Cocktail.StrMeasure5 ?? string.Empty,
-                        c.Cocktail.StrMeasure6 ?? string.Empty, c.Cocktail.StrMeasure7 ?? string.Empty, c.Cocktail.StrMeasure8 ?? string.Empty, c.Cocktail.StrMeasure9 ?? string.Empty, c.Cocktail.StrMeasure10 ?? string.Empty,
-                        c.Cocktail.StrMeasure11 ?? string.Empty, c.Cocktail.StrMeasure12 ?? string.Empty, c.Cocktail.StrMeasure13 ?? string.Empty, c.Cocktail.StrMeasure14 ?? string.Empty, c.Cocktail.StrMeasure15 ?? string.Empty
-                    }.Where(m => !string.IsNullOrWhiteSpace(m)).ToList(),
-                    StrTags = c.Cocktail.StrTags ?? string.Empty
-                })
-                .ToList();
+                .Select(c => UtilsCocktail.CocktailToDto(c.Cocktail)).ToList();
 
             return Ok(new
             {
@@ -423,72 +316,17 @@ namespace CocktailDebacle.Server.Controllers
                 return BadRequest("Cocktail already exists.");
             }
             
-            var newcocktail = new Cocktail
-            {
-                UserNameCocktail = username,
-                PublicCocktail = cocktailCreate.PublicCocktail,
-                dateCreated = DateTime.UtcNow,
-                Likes = 0,
-                IdDrink = cocktailCreate.IdDrink,
-                StrDrink = cocktailCreate.StrDrink,
-                StrDrinkAlternate = cocktailCreate.StrDrinkAlternate,
-                StrTags = cocktailCreate.StrTags,
-                StrVideo = cocktailCreate.StrVideo,
-                StrCategory = cocktailCreate.StrCategory,
-                StrIBA = cocktailCreate.StrIBA,
-                StrAlcoholic = cocktailCreate.StrAlcoholic,
-                StrGlass = cocktailCreate.StrGlass,
-                StrInstructions = cocktailCreate.StrInstructions,
-                StrInstructionsES = cocktailCreate.StrInstructionsES,
-                StrInstructionsDE = cocktailCreate.StrInstructionsDE,
-                StrInstructionsFR = cocktailCreate.StrInstructionsFR,
-                StrInstructionsIT = cocktailCreate.StrInstructionsIT,
-                StrInstructionsZH_HANS = cocktailCreate.StrInstructionsZH_HANS,
-                StrInstructionsZH_HANT = cocktailCreate.StrInstructionsZH_HANT,
-                StrDrinkThumb = cocktailCreate.StrDrinkThumb,
-
-                // Aggiungi gli ingredienti e le misure
-                StrIngredient1 = cocktailCreate.StrIngredient1,
-                StrIngredient2 = cocktailCreate.StrIngredient2,
-                StrIngredient3 = cocktailCreate.StrIngredient3,
-                StrIngredient4 = cocktailCreate.StrIngredient4,
-                StrIngredient5 = cocktailCreate.StrIngredient5,
-                StrIngredient6 = cocktailCreate.StrIngredient6,
-                StrIngredient7 = cocktailCreate.StrIngredient7,
-                StrIngredient8 = cocktailCreate.StrIngredient8,
-                StrIngredient9 = cocktailCreate.StrIngredient9,
-                StrIngredient10 = cocktailCreate.StrIngredient10,
-                StrIngredient11 = cocktailCreate.StrIngredient11,
-                StrIngredient12 = cocktailCreate.StrIngredient12,
-                StrIngredient13 = cocktailCreate.StrIngredient13,
-                StrIngredient14 = cocktailCreate.StrIngredient14,
-                StrIngredient15 = cocktailCreate.StrIngredient15,
-                StrMeasure1 = cocktailCreate.StrMeasure1,
-                StrMeasure2 = cocktailCreate.StrMeasure2,
-                StrMeasure3 = cocktailCreate.StrMeasure3,
-                StrMeasure4 = cocktailCreate.StrMeasure4,
-                StrMeasure5 = cocktailCreate.StrMeasure5,
-                StrMeasure6 = cocktailCreate.StrMeasure6,
-                StrMeasure7 = cocktailCreate.StrMeasure7,
-                StrMeasure8 = cocktailCreate.StrMeasure8,
-                StrMeasure9 = cocktailCreate.StrMeasure9,
-                StrMeasure10 = cocktailCreate.StrMeasure10,
-                StrMeasure11 = cocktailCreate.StrMeasure11,
-                StrMeasure12 = cocktailCreate.StrMeasure12,
-                StrMeasure13 = cocktailCreate.StrMeasure13,
-                StrMeasure14 = cocktailCreate.StrMeasure14,
-                StrMeasure15 = cocktailCreate.StrMeasure15
-            };
+            var newcocktail = UtilsCocktail.CreateNewCocktail(cocktailCreate, username);
 
             // Validazione della coerenza tra ingredienti e misure
-            var validationError = ValidateIngredientMeasureConsistency(newcocktail);
+            var validationError = UtilsCocktail.ValidateIngredientMeasureConsistency(newcocktail);
             if (validationError != null)
             {
                 return BadRequest(validationError);
             }
 
             // Validazione della classe di volume del cocktail
-            var volumeError = ValidateVolumeClassCocktail(newcocktail);
+            var volumeError = UtilsCocktail.ValidateVolumeClassCocktail(newcocktail, UtilsCocktail.GlassCapacity);
             if (volumeError != null)
             {
                 return BadRequest(volumeError);
@@ -502,6 +340,66 @@ namespace CocktailDebacle.Server.Controllers
             {
                 return BadRequest($"Error creating cocktail : {ex.Message}");
             }
+        }
+
+        [Authorize]
+        [HttpGet("IngedientSearch")]
+        public async Task<IActionResult> GetIngredientSearch(
+            [FromQuery] string UserName = "",
+            [FromQuery] string ingredient = "",
+            [FromQuery] int max = 10
+        ){
+            if (string.IsNullOrEmpty(ingredient))
+                return BadRequest("Ingredient cannot be empty.");
+            if (string.IsNullOrEmpty(UserName))
+                return BadRequest("UserName cannot be empty.");
+
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("User not found.");
+            var user = await _context.DbUser
+                .FirstOrDefaultAsync(u => u.UserName == UserName && u.AcceptCookies == true);
+            if (user == null)
+                return NotFound("User not found.");
+            
+
+            var isAdult = user.IsOfMajorityAge == true;
+            var listIngredient = isAdult
+            ? UtilsCocktail.SearchIngredients(ingredient, max)
+            : UtilsCocktail.SearchNonAlcoholicIngredients(ingredient, max);
+            
+            return Ok(new
+            {
+                isAdult,
+                ingredients = listIngredient
+            });
+        }
+
+        [Authorize]
+        [HttpGet("SearchMeasureType")]
+        public async Task<IActionResult> GetMeasureTypeSearch(
+            [FromQuery] string UserName = "", 
+            [FromQuery] string measure = "",
+            [FromQuery] int max = 10
+        ){
+            if (string.IsNullOrEmpty(measure))
+                return BadRequest("Measure cannot be empty.");
+
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(username))
+                return Unauthorized("User not found.");
+
+            var user = await _context.DbUser
+                .FirstOrDefaultAsync(u => u.UserName == UserName && u.AcceptCookies == true);
+            if (user == null)
+                return NotFound("User not found.");
+
+            var listMeasure = UtilsCocktail.SearchMeasureType(measure, max);
+            
+            return Ok(new
+            {
+                measureTypes = listMeasure
+            });
         }
 
         // Cocktail Update (User)
@@ -519,35 +417,16 @@ namespace CocktailDebacle.Server.Controllers
             if (cocktail == null)
                 return NotFound("Cocktail not found or does not belong to you.");
 
-            cocktail.StrDrink = updatedCocktail.StrDrink;
-            cocktail.StrCategory = updatedCocktail.StrCategory;
-            cocktail.StrAlcoholic = updatedCocktail.StrAlcoholic;
-            cocktail.StrGlass = updatedCocktail.StrGlass;
-            cocktail.StrInstructions = updatedCocktail.StrInstructions;
-            cocktail.StrTags = updatedCocktail.StrTags;
-            cocktail.PublicCocktail = updatedCocktail.PublicCocktail;
-            cocktail.DateModified = DateTime.UtcNow.ToString("yyyy-MM-dd");
-            cocktail.StrDrinkThumb = updatedCocktail.StrDrinkThumb;
-
-
-            // Ingredienti e misure
-            for (int i = 1; i <= 15; i++)
-            {
-                typeof(Cocktail).GetProperty($"StrIngredient{i}")?.SetValue(cocktail, 
-                    typeof(CocktailCreate).GetProperty($"StrIngredient{i}")?.GetValue(updatedCocktail));
-
-                typeof(Cocktail).GetProperty($"StrMeasure{i}")?.SetValue(cocktail, 
-                    typeof(CocktailCreate).GetProperty($"StrMeasure{i}")?.GetValue(updatedCocktail));
-            }
+           UtilsCocktail.UpdateCocktail(cocktail, updatedCocktail);
 
             // Validazione della coerenza tra ingredienti e misure
-            var validationError = ValidateIngredientMeasureConsistency(cocktail);
+            var validationError = UtilsCocktail.ValidateIngredientMeasureConsistency(cocktail);
             if (validationError != null)
             {
                 return BadRequest(validationError);
             }
             // Validazione della classe di volume del cocktail
-            var volumeError = ValidateVolumeClassCocktail(cocktail);
+            var volumeError = UtilsCocktail.ValidateVolumeClassCocktail(cocktail, UtilsCocktail.GlassCapacity);
             if (volumeError != null)
             {
                 return BadRequest(volumeError);
@@ -697,7 +576,7 @@ namespace CocktailDebacle.Server.Controllers
             if (string.IsNullOrEmpty(username))
                 return Unauthorized("User not authenticated.");
 
-            var cocktail = await _context.DbCocktails.Include(c => c.UsersLiked).FirstOrDefaultAsync(c => c.Id == Id && c.PublicCocktail == true);
+            var cocktail = await _context.DbCocktails.Include(c => c.UserLikes).FirstOrDefaultAsync(c => c.Id == Id && c.PublicCocktail == true);
             if (cocktail == null)
                 return NotFound("Cocktail not found.");
 
@@ -708,13 +587,13 @@ namespace CocktailDebacle.Server.Controllers
             if (user.CocktailsLike.Any(c => c.Id == Id))
             {
                 user.CocktailsLike.Remove(cocktail); 
-                cocktail.UsersLiked.Remove(user);
+                cocktail.UserLikes.Remove(user);
                 cocktail.Likes = Math.Max(0, cocktail.Likes - 1);
             }
             else
             {
                 user.CocktailsLike.Add(cocktail);
-                cocktail.UsersLiked.Add(user);
+                cocktail.UserLikes.Add(user);
                 cocktail.Likes += 1;
             }
             
@@ -727,21 +606,13 @@ namespace CocktailDebacle.Server.Controllers
         public async Task<IActionResult> GetUserCocktailLikes(int id)
         {
             var cocktail = await _context.DbCocktails
-                .Include(c => c.UsersLiked)
+                .Include(c => c.UserLikes)
                 .FirstOrDefaultAsync(c => c.Id == id);
             if (cocktail == null)
                 return NotFound("Cocktail not found.");
             
-            var users = cocktail.UsersLiked
-                .Select(u => new {
-                    u.Id, 
-                    u.UserName,
-                    u.Name,
-                    u.LastName,
-                    u.ImgProfileUrl,
-                    u.Email 
-                })
-                .ToList();
+            var users = cocktail.UserLikes
+                .Select(u => UtilsUserController.UserToDto(u)).ToList();
            
             if (users == null || !users.Any())
                 return NotFound("No users liked this cocktail.");
@@ -767,6 +638,7 @@ namespace CocktailDebacle.Server.Controllers
             return Ok(ingredienti);
         }
 
+
         [Authorize]
         [HttpGet("SearchUser/{username}")]
         public async Task<IActionResult> SearchUser(string username)
@@ -787,15 +659,7 @@ namespace CocktailDebacle.Server.Controllers
             .Where(u => u.UserName.ToLower().StartsWith(username.ToLower())
                         && u.AcceptCookies == true
                         && u.UserName != userNameFromToken)
-            .Select(u => new UserDto
-            {
-                Id = u.Id,
-                UserName = u.UserName,
-                Name = u.Name,
-                LastName = u.LastName,
-                ImgProfileUrl = u.ImgProfileUrl ?? string.Empty
-            })
-            .ToListAsync();
+            .Select(u => UtilsUserController.UserToDto(u)).ToListAsync();
 
             if (users == null || users.Count == 0)
             {
@@ -803,154 +667,9 @@ namespace CocktailDebacle.Server.Controllers
                     .Where(u => u.UserName.ToLower().Contains(username.ToLower())
                                 && u.AcceptCookies == true
                                 && u.UserName != userNameFromToken)
-                    .Select(u => new UserDto
-                    {
-                        Id = u.Id,
-                        UserName = u.UserName,
-                        Name = u.Name,
-                        LastName = u.LastName,
-                        ImgProfileUrl = u.ImgProfileUrl ?? string.Empty
-                    })
-                    .ToListAsync();
+                    .Select(u => UtilsUserController.UserToDto(u)).ToListAsync();
             }
             return Ok(users);
-        }
-
-        private double ConvertToMilliliters(string? measure)
-        {
-            if (string.IsNullOrWhiteSpace(measure)) return 0;
-
-            measure = measure.ToLower().Trim();
-            double value = 0;
-
-            var parts = measure.Split(' ');
-            if (parts.Length == 2)
-            {
-                // Parse quantity
-                if (double.TryParse(parts[0], out double parsed))
-                    value = parsed;
-                else if (parts[0].Contains('/'))
-                {
-                    var frac = parts[0].Split('/');
-                    if (frac.Length == 2 &&
-                        double.TryParse(frac[0], out double num) &&
-                        double.TryParse(frac[1], out double denom))
-                        value = num / denom;
-                }
-
-                // Convert unit
-                var unit = parts[1];
-                if (unit.Contains("ml")) return value;
-                if (unit.Contains("oz")) return value * 29.57;
-                if (unit.Contains("cl")) return value * 10;
-                if (unit.Contains("cup")) return value * 240;
-                if (unit.Contains("tsp")) return value * 5;
-                if (unit.Contains("tbsp")) return value * 15;
-                if (unit.Contains("dash")) return value * 0.92;
-            }
-            return 0;
-        }
-
-        private string? ValidateVolumeClassCocktail(Cocktail cocktail) {
-             double totalMl = 0;
-            for (int i = 1; i <= 15; i++){
-                var misure = typeof(Cocktail).GetProperty($"StrMeasure{i}")?.GetValue(cocktail)?.ToString();
-                totalMl += ConvertToMilliliters(misure);
-            }
-            var glass  = cocktail.StrGlass ?? "Cocktail glass";
-            int maxCapacity = _glassCapacity.TryGetValue(glass, out var ml)? _glassCapacity[glass] : 250;
-            if (totalMl > maxCapacity) {
-                return $"Il cocktail supera la capacità massima del bicchiere ({maxCapacity} ml).";
-            } 
-            return null;
-        }
-
-        private string? ValidateIngredientMeasureConsistency(Cocktail cocktail)
-        {
-            for (int i = 1; i <= 15; i++)
-            {
-                var ingredient = typeof(Cocktail).GetProperty($"StrIngredient{i}")?.GetValue(cocktail)?.ToString();
-                var measure = typeof(Cocktail).GetProperty($"StrMeasure{i}")?.GetValue(cocktail)?.ToString();
-
-                if (string.IsNullOrWhiteSpace(ingredient) && !string.IsNullOrWhiteSpace(measure))
-                {
-                    return $"Errore: la misura {i} è impostata ma manca l'ingrediente corrispondente.";
-                }
-            }
-
-            return null;
-        }
-
-
-        private int GetSuggestionScore(Cocktail c, User user, List<string> searchHistory, List<Cocktail> likedCocktails)
-        {
-            int score = 0;
-
-            var filterWeight = new Dictionary<SuggestionUser, int>{
-                { SuggestionUser.NameMatch, 4 },
-                { SuggestionUser.IngredientMatch, 2 },
-                { SuggestionUser.CategoryMatch, 2 },
-                { SuggestionUser.GlassMatch, 3 },
-                { SuggestionUser.DescriptionMatch, 2 },
-                { SuggestionUser.SearchHistoryMatch, 6 },
-                { SuggestionUser.likeCocktail, 7 }
-            };
-
-
-            var ingredients = Enumerable.Range(1, 15)
-                .Select(i => typeof(Cocktail).GetProperty($"StrIngredient{i}")?.GetValue(c)?.ToString()?.ToLower())
-                .Where(i => !string.IsNullOrWhiteSpace(i))
-                .ToList();
-
-
-            // Ingredienti più presenti nei like
-            var topIngredientLikes = likedCocktails
-                .SelectMany(l => Enumerable.Range(1, 15)
-                    .Select(i => typeof(Cocktail).GetProperty($"StrIngredient{i}")?.GetValue(l)?.ToString()?.ToLower())
-                    .Where(i => !string.IsNullOrWhiteSpace(i)))
-                .GroupBy(i => i)
-                .OrderByDescending(g => g.Count())
-                .Take(5) // Prendi i primi 3 ingredienti più comuni
-                .Select(g => g.Key)
-                .ToList();
-
-            if(ingredients.Any(i => topIngredientLikes.Contains(i))) 
-                score += filterWeight[SuggestionUser.IngredientMatch];
-            // MATCH con LIKE
-            foreach (var liked in likedCocktails)
-            {
-                if (liked.Id == c.Id) {
-                    score += filterWeight[SuggestionUser.likeCocktail];
-                    continue; 
-                }
-                // Ingredient match
-                var likedIngredients = Enumerable.Range(1, 15)
-                    .Select(i => typeof(Cocktail).GetProperty($"StrIngredient{i}")?.GetValue(liked)?.ToString()?.ToLower())
-                    .Where(i => !string.IsNullOrWhiteSpace(i))
-                    .ToList();
-
-                if (ingredients.Any(i => likedIngredients.Contains(i))) 
-                    score +=  filterWeight[SuggestionUser.IngredientMatch];
-
-                // Categoria, bicchiere
-                if (!string.IsNullOrEmpty(c.StrCategory) && c.StrCategory == liked.StrCategory)
-                    score +=  filterWeight[SuggestionUser.CategoryMatch];;
-                if (!string.IsNullOrEmpty(c.StrGlass) && c.StrGlass == liked.StrGlass)
-                    score +=  filterWeight[SuggestionUser.GlassMatch];
-            }
-
-            // MATCH con ricerche recenti
-            if (searchHistory.Any(s => !string.IsNullOrEmpty(c.StrDrink) && c.StrDrink.ToLower().Contains(s)))
-                score +=  filterWeight[SuggestionUser.NameMatch];
-            if (searchHistory.Any(s => ingredients.Any(i => i != null && i.Contains(s))))
-                score +=  filterWeight[SuggestionUser.IngredientMatch];
-            if (searchHistory.Any(s => c.StrCategory?.ToLower().Contains(s) == true))
-                score +=  filterWeight[SuggestionUser.CategoryMatch];
-            if (searchHistory.Any(s => c.StrGlass?.ToLower().Contains(s) == true))
-                score +=  filterWeight[SuggestionUser.GlassMatch];
-            if (searchHistory.Any(s => c.StrInstructions?.ToLower().Contains(s) == true))
-                score +=  filterWeight[SuggestionUser.DescriptionMatch];
-            return score;
         }
     }
 }

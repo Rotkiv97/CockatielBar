@@ -1,13 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using System.Security.Claims;
 using CocktailDebacle.Server.Models;
 using CocktailDebacle.Server.DTOs;
 
 namespace CocktailDebacle.Server.Utils
 {
-    public class UtilsUserController
+    public static class UtilsUserController
     {
         public static UserDto UserToDto(User user)
         {

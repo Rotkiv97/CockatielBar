@@ -44,6 +44,9 @@ public class User
     public ICollection<User> Followed_Users { get; set; } = new List<User>(); // utenti seguiti
 
     public ICollection<User> Followers_Users { get; set; } = new List<User>(); // utenti che ti seguono
+    
+    public bool? IsOfMajorityAge { get; set; } = true; // per la registrazione, se l'utente ha piu di 18 anni
+
     public string Language { get; set; } = "en";
 }
 

@@ -228,12 +228,12 @@ namespace CocktailDebacle.Server.Migrations
                     b.Property<int>("CocktailsLikeId")
                         .HasColumnType("int");
 
-                    b.Property<int>("UsersLikedId")
+                    b.Property<int>("UserLikesId")
                         .HasColumnType("int");
 
-                    b.HasKey("CocktailsLikeId", "UsersLikedId");
+                    b.HasKey("CocktailsLikeId", "UserLikesId");
 
-                    b.HasIndex("UsersLikedId");
+                    b.HasIndex("UserLikesId");
 
                     b.ToTable("UserCocktailsLike", (string)null);
                 });
@@ -326,7 +326,7 @@ namespace CocktailDebacle.Server.Migrations
 
                     b.HasOne("User", null)
                         .WithMany()
-                        .HasForeignKey("UsersLikedId")
+                        .HasForeignKey("UserLikesId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

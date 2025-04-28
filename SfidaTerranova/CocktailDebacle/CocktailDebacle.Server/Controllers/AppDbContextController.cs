@@ -54,15 +54,16 @@ namespace CocktailDebacle.Server.Controllers
                 return NotFound("Utente non trovato.");
             }
 
-            var userDto = new UserDto
-            {
-                Id = user.Id,
-                UserName = user.UserName,
-                Name = user.Name,
-                LastName = user.LastName,
-                Email = user.Email,
-                ImgProfileUrl = user.ImgProfileUrl ?? string.Empty
-            };
+            var userDto = UtilsUserController.UserToDto(user); 
+            // new UserDto
+            // {
+            //     Id = user.Id,
+            //     UserName = user.UserName,
+            //     Name = user.Name,
+            //     LastName = user.LastName,
+            //     Email = user.Email,
+            //     ImgProfileUrl = user.ImgProfileUrl ?? string.Empty
+            // };
 
             return Ok(userDto);
         }
@@ -438,36 +439,13 @@ namespace CocktailDebacle.Server.Controllers
             }
 
             var cocktailLike = await _context.DbCocktails
-                .Where(c => c.UsersLiked.Any(u => u.UserName == userName))
+                .Where(c => c.UserLikes.Any(u => u.UserName == userName))
                 .ToListAsync();
             if (cocktailLike == null || cocktailLike.Count == 0)
             {
                 return NotFound("Nessun cocktail trovato.");
             }
-            var cocktailDtos = cocktailLike.Select(c => new CocktailDto
-            {
-                Id = c.Id,
-                IdDrink = c.IdDrink?? string.Empty,
-                StrDrink = c.StrDrink ?? string.Empty,
-                StrCategory = c.StrCategory ?? string.Empty,
-                StrAlcoholic = c.StrAlcoholic ?? string.Empty,
-                StrGlass = c.StrGlass ?? string.Empty,
-                StrInstructions = c.StrInstructions ?? string.Empty,
-                StrDrinkThumb = c.StrDrinkThumb ?? string.Empty,
-                Ingredients = new List<string>
-                {
-                    c.StrIngredient1 ?? string.Empty, c.StrIngredient2 ?? string.Empty, c.StrIngredient3 ?? string.Empty, c.StrIngredient4 ?? string.Empty, c.StrIngredient5 ?? string.Empty,
-                    c.StrIngredient6 ?? string.Empty, c.StrIngredient7 ?? string.Empty, c.StrIngredient8 ?? string.Empty, c.StrIngredient9 ?? string.Empty, c.StrIngredient10 ?? string.Empty,
-                    c.StrIngredient11 ?? string.Empty, c.StrIngredient12 ?? string.Empty, c.StrIngredient13 ?? string.Empty, c.StrIngredient14 ?? string.Empty, c.StrIngredient15 ?? string.Empty
-                }.Where(i => !string.IsNullOrWhiteSpace(i)).ToList(),
-                Measures = new List<string>
-                {
-                    c.StrMeasure1 ?? string.Empty, c.StrMeasure2 ?? string.Empty, c.StrMeasure3 ?? string.Empty, c.StrMeasure4 ?? string.Empty, c.StrMeasure5 ?? string.Empty,
-                    c.StrMeasure6 ?? string.Empty, c.StrMeasure7 ?? string.Empty, c.StrMeasure8 ?? string.Empty, c.StrMeasure9 ?? string.Empty, c.StrMeasure10 ?? string.Empty,
-                    c.StrMeasure11 ?? string.Empty, c.StrMeasure12 ?? string.Empty, c.StrMeasure13 ?? string.Empty, c.StrMeasure14 ?? string.Empty, c.StrMeasure15 ?? string.Empty
-                }.Where(m => !string.IsNullOrWhiteSpace(m)).ToList(),
-                StrTags = c.StrTags ?? string.Empty
-            }).ToList();
+            var cocktailDtos = cocktailLike.Select(c => UtilsCocktail.CocktailToDto(c)).ToList();
 
             if(!cocktailDtos.Any())
             {
