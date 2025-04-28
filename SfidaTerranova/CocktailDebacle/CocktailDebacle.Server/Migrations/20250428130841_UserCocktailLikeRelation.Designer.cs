@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CocktailDebacle.Server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250428073941_UserCocktailLikeRelation")]
+    [Migration("20250428130841_UserCocktailLikeRelation")]
     partial class UserCocktailLikeRelation
     {
         /// <inheritdoc />
@@ -264,6 +264,9 @@ namespace CocktailDebacle.Server.Migrations
 
                     b.Property<string>("ImgProfileUrl")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool?>("IsOfMajorityAge")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Language")
                         .IsRequired()

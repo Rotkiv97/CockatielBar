@@ -198,6 +198,7 @@ namespace CocktailDebacle.Server.Controllers
                 LastName = userDto.LastName,
                 Email = userDto.Email,
                 PasswordHash = HashPassword(userDto.PasswordHash),
+                IsOfMajorityAge = userDto.IsOfMajorityAge,
                 AcceptCookies = userDto.AcceptCookies
             };
 

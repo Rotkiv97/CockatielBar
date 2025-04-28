@@ -262,6 +262,9 @@ namespace CocktailDebacle.Server.Migrations
                     b.Property<string>("ImgProfileUrl")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool?>("IsOfMajorityAge")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Language")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");

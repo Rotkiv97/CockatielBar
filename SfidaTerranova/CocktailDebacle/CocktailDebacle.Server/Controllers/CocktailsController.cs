@@ -73,7 +73,7 @@ namespace CocktailDebacle.Server.Controllers
                         bool exists = await _context.DbUserHistorySearch
                             .AnyAsync(h => h.UserName == user.UserName 
                             && cocktail != null && h.SearchText == cocktail.StrDrink);
-                            if (!exists && !string.IsNullOrEmpty(cocktail?.StrDrink))
+                            if (!exists && !string.IsNullOrEmpty(cocktail?.StrDrink) && user.AcceptCookies == true)
                             {
                                 _context.DbUserHistorySearch.Add(new UserHistorySearch
                                 {
@@ -112,6 +112,25 @@ namespace CocktailDebacle.Server.Controllers
         {
             IQueryable<Cocktail> query = _context.DbCocktails.AsQueryable();
 
+            var isAdult = true;
+            if (User.Identity?.IsAuthenticated == true)
+            {
+                var userNameFromToken = User.FindFirst(ClaimTypes.Name)?.Value;
+                if (!string.IsNullOrEmpty(userNameFromToken))
+                {
+                    var usertmp = await _context.DbUser
+                        .FirstOrDefaultAsync(u => u.UserName == userNameFromToken && u.AcceptCookies == true);
+                    if (usertmp != null)
+                    {
+                        isAdult = usertmp.IsOfMajorityAge == true;
+                    }
+                }
+            }
+
+            if (!isAdult)
+            {
+                query = query.Where(c => c.StrAlcoholic != null && c.StrAlcoholic.Equals("Non alcoholic", StringComparison.OrdinalIgnoreCase));
+            }
             // Verifica se ci sono filtri applicati
             bool noFilter = string.IsNullOrEmpty(nameCocktail) &&
                 string.IsNullOrEmpty(glass) &&
@@ -203,7 +222,7 @@ namespace CocktailDebacle.Server.Controllers
                 {
                     bool alreadyInHistory = await _context.DbUserHistorySearch
                         .AnyAsync(h => h.UserName == user.UserName && h.SearchText == completeSearch);
-                    if (!alreadyInHistory)
+                    if (!alreadyInHistory && user.AcceptCookies == true)
                     {
                         _context.DbUserHistorySearch.Add(new UserHistorySearch
                         {
@@ -301,11 +320,18 @@ namespace CocktailDebacle.Server.Controllers
 
         [Authorize]
         [HttpPost("CocktailCreate")]
-        public async Task<IActionResult> CreateCoctail([FromBody] CocktailCreate cocktailCreate){
+        public async Task<IActionResult> CreateCoctail([FromBody] CocktailCreate cocktailCreate)
+        {
             var username = User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(username))
             {
                 return Unauthorized("User not found.");
+            }
+
+            var user = await _context.DbUser.FirstOrDefaultAsync(u => u.UserName == username && u.AcceptCookies == true);
+            if (user == null)
+            {
+                return Unauthorized("User not found or not accepted cookies.");
             }
 
             var cocktail = await _context.DbCocktails
@@ -315,8 +341,21 @@ namespace CocktailDebacle.Server.Controllers
             {
                 return BadRequest("Cocktail already exists.");
             }
-            
+
             var newcocktail = UtilsCocktail.CreateNewCocktail(cocktailCreate, username);
+
+            var ingredientList = UtilsCocktail.IngredientToList(newcocktail);
+            bool haIngredientiAlcolici = UtilsCocktail.CocktailIsAlcoholic(ingredientList);
+
+            if (!user.IsOfMajorityAge.GetValueOrDefault(true))
+            {
+                // Solo analcolici permessi per i minorenni
+                if (cocktailCreate.StrAlcoholic != "Non alcoholic")
+                    return BadRequest("Se sei minorenne puoi creare solo cocktail analcolici!");
+
+                if (haIngredientiAlcolici)
+                    return BadRequest("Se sei minorenne non puoi inserire ingredienti alcolici!");
+            }
 
             // Validazione della coerenza tra ingredienti e misure
             var validationError = UtilsCocktail.ValidateIngredientMeasureConsistency(newcocktail);
@@ -331,16 +370,18 @@ namespace CocktailDebacle.Server.Controllers
             {
                 return BadRequest(volumeError);
             }
-            try{
+            try
+            {
                 _context.DbCocktails.Add(newcocktail);
                 await _context.SaveChangesAsync();
-                return Ok(new { id = newcocktail.IdDrink, Message = "Cocktail creato con successo !!!" , newcocktail});
+                return Ok(new { id = newcocktail.IdDrink, Message = "Cocktail creato con successo !!!", newcocktail });
             }
             catch (Exception ex)
             {
-                return BadRequest($"Error creating cocktail : {ex.Message}");
+                return BadRequest($"Error creating cocktail: {ex.Message}");
             }
         }
+
 
         [Authorize]
         [HttpGet("IngedientSearch")]
@@ -351,12 +392,12 @@ namespace CocktailDebacle.Server.Controllers
         ){
             if (string.IsNullOrEmpty(ingredient))
                 return BadRequest("Ingredient cannot be empty.");
-            if (string.IsNullOrEmpty(UserName))
-                return BadRequest("UserName cannot be empty.");
-
-            var username = User.FindFirst(ClaimTypes.Name)?.Value;
-            if (string.IsNullOrEmpty(username))
+            var usernamebytoken = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(usernamebytoken))
                 return Unauthorized("User not found.");
+
+            if (string.IsNullOrEmpty(UserName) || UserName != usernamebytoken)
+                return BadRequest("UserName not match.");
             var user = await _context.DbUser
                 .FirstOrDefaultAsync(u => u.UserName == UserName && u.AcceptCookies == true);
             if (user == null)

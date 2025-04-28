@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Reflection;
+using System.Globalization;
 using CocktailDebacle.Server.DTOs;
 using CocktailDebacle.Server.Models;
 
@@ -400,45 +401,74 @@ namespace CocktailDebacle.Server.Utils
             measure = measure.ToLower().Trim();
             double value = 0;
 
-            var parts = measure.Split(' ');
-            if (parts.Length == 2)
+            // Supporto per formati come "1/2 oz", "1.5 cl", "2 cups"
+            var parts = measure.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
+            
+            if (parts.Length >= 1)
             {
-                // Parse quantity
-                if (double.TryParse(parts[0], out double parsed))
+                // Parse quantity (supporta frazioni e decimali)
+                if (double.TryParse(parts[0], NumberStyles.Any, CultureInfo.InvariantCulture, out double parsed))
+                {
                     value = parsed;
+                }
                 else if (parts[0].Contains('/'))
                 {
-                    var frac = parts[0].Split('/');
-                    if (frac.Length == 2 &&
-                        double.TryParse(frac[0], out double num) &&
-                        double.TryParse(frac[1], out double denom))
-                        value = num / denom;
+                    var fractionParts = parts[0].Split('/');
+                    if (fractionParts.Length == 2 &&
+                        double.TryParse(fractionParts[0], out double numerator) &&
+                        double.TryParse(fractionParts[1], out double denominator) &&
+                        denominator != 0)
+                    {
+                        value = numerator / denominator;
+                    }
                 }
 
-                // Convert unit
-                var unit = parts[1];
+                // Se non c'è unità, assumiamo ml
+                if (parts.Length == 1)
+                {
+                    return value;
+                }
+
+                // Convert unit (cerca l'unità nelle parti rimanenti)
+                string unit = string.Join(" ", parts.Skip(1)).ToLower();
+
                 if (unit.Contains("ml")) return value;
-                if (unit.Contains("oz")) return value * 29.57;
+                if (unit.Contains("oz") || unit.Contains("ounce")) return value * 29.5735;
                 if (unit.Contains("cl")) return value * 10;
                 if (unit.Contains("cup")) return value * 240;
-                if (unit.Contains("tsp")) return value * 5;
-                if (unit.Contains("tbsp")) return value * 15;
+                if (unit.Contains("tsp") || unit.Contains("teaspoon")) return value * 5;
+                if (unit.Contains("tbsp") || unit.Contains("tablespoon")) return value * 15;
                 if (unit.Contains("dash")) return value * 0.92;
+                if (unit.Contains("shot")) return value * 30; // 1 shot ≈ 30ml
+                if (unit.Contains("part")) return value * 30; // 1 part ≈ 30ml (standard in mixology)
             }
-            return 0;
+
+            return 0; // Formato non riconosciuto
         }
 
-        public static string? ValidateVolumeClassCocktail(Cocktail cocktail, Dictionary<string, int> glassCapacity) {
-             double totalMl = 0;
-            for (int i = 1; i <= 15; i++){
-                var misure = typeof(Cocktail).GetProperty($"StrMeasure{i}")?.GetValue(cocktail)?.ToString();
-                totalMl += ConvertToMilliliters(misure);
+        public static string? ValidateVolumeClassCocktail(Cocktail cocktail, Dictionary<string, int> glassCapacity)
+        {
+            double totalMl = 0;
+            for (int i = 1; i <= 15; i++)
+            {
+                var measure = typeof(Cocktail).GetProperty($"StrMeasure{i}")?.GetValue(cocktail)?.ToString();
+                var ml = ConvertToMilliliters(measure);
+                
+                if (ml <= 0 && !string.IsNullOrEmpty(measure))
+                {
+                    return $"Invalid measure format for ingredient {i}: '{measure}'. Please use ml or a convertible unit.";
+                }
+                totalMl += ml;
             }
-            var glass  = cocktail.StrGlass ?? "Cocktail glass";
-            int maxCapacity = glassCapacity.TryGetValue(glass, out var ml)? glassCapacity[glass] : 250;
-            if (totalMl > maxCapacity) {
-                return $"Il cocktail supera la capacità massima del bicchiere ({maxCapacity} ml).";
-            } 
+
+            var glass = cocktail.StrGlass ?? "Cocktail glass";
+            int maxCapacity = glassCapacity.TryGetValue(glass, out var capacity) ? capacity : 250;
+            
+            if (totalMl > maxCapacity * 1.1) // 10% di tolleranza
+            {
+                return $"The cocktail exceeds the maximum glass capacity ({maxCapacity} ml). Total: {totalMl:F1} ml";
+            }
+            
             return null;
         }
 

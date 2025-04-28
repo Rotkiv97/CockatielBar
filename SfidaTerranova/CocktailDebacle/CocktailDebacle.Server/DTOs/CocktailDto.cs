@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 
 namespace CocktailDebacle.Server.DTOs
@@ -11,6 +12,8 @@ namespace CocktailDebacle.Server.DTOs
         public string IdDrink { get; set; } = string.Empty;
         public string StrDrink { get; set; } = string.Empty;
         public string StrCategory { get; set; } = string.Empty;
+        [Required]
+        [RegularExpression("^(Alcoholic|Non alcoholic|Optional alcohol)$", ErrorMessage = "Must be 'Alcoholic', 'Non alcoholic' or 'Optional alcohol'")]
         public string StrAlcoholic { get; set; } = string.Empty;
         public string StrGlass { get; set; } = string.Empty;
         public string StrInstructions { get; set; } = string.Empty;

@@ -41,15 +41,15 @@ namespace CocktailDebacle.Server.Service
             using var scope = _services.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             
-            // Pulisci eventuali token già scaduti all'avvio 
-            // var expiredUsers = await dbContext.DbUser
-            //     .Where(u => u.TokenExpiration != null && u.TokenExpiration <= DateTime.UtcNow)
-            //     .ToListAsync();
+            //Pulisci eventuali token già scaduti all'avvio 
+            var expiredUsers = await dbContext.DbUser
+                .Where(u => u.TokenExpiration != null && u.TokenExpiration <= DateTime.UtcNow)
+                .ToListAsync();
             
             // elimina tutti i totken (da utilizzare per testing)
-            var expiredUsers = await dbContext.DbUser
-                .Where(u => u.TokenExpiration != null)
-                .ToListAsync();
+            // var expiredUsers = await dbContext.DbUser
+            //     .Where(u => u.TokenExpiration != null)
+            //     .ToListAsync();
 
             // Console.WriteLine($"UTC now: {DateTime.UtcNow}");
             // Console.WriteLine($"Local now: {DateTime.Now}");

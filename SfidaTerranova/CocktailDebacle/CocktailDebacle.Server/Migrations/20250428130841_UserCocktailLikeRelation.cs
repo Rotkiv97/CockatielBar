@@ -96,6 +96,7 @@ namespace CocktailDebacle.Server.Migrations
                     ProfileParallaxImg = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Bio = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Bio_link = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsOfMajorityAge = table.Column<bool>(type: "bit", nullable: true),
                     Language = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
