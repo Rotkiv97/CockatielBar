@@ -103,7 +103,6 @@ namespace CocktailDebacle.Server.Controllers
             [FromQuery] string category = "",
             [FromQuery] string alcoholic = "",
             [FromQuery] string description = "",
-            [FromQuery] string completeSearch = "",
             [FromQuery] string cocktailLicke = "",
             [FromQuery] string UsernameCreateCocktail = "",
             [FromQuery] bool CustomSearch = false,
@@ -113,14 +112,14 @@ namespace CocktailDebacle.Server.Controllers
         {
             IQueryable<Cocktail> query = _context.DbCocktails.AsQueryable();
 
-            var isAdult = true;
+            var isAdult = false;
             if (User.Identity?.IsAuthenticated == true)
             {
                 var userNameFromToken = User.FindFirst(ClaimTypes.Name)?.Value;
                 if (!string.IsNullOrEmpty(userNameFromToken))
                 {
                     var usertmp = await _context.DbUser
-                        .FirstOrDefaultAsync(u => u.UserName == userNameFromToken && u.AcceptCookies == true);
+                        .FirstOrDefaultAsync(u => u.UserName == userNameFromToken);
                     if (usertmp != null)
                     {
                         isAdult = usertmp.IsOfMajorityAge == true;
@@ -128,9 +127,44 @@ namespace CocktailDebacle.Server.Controllers
                 }
             }
 
-            if (!isAdult)
+            if (!string.IsNullOrEmpty(UserSearch) && string.IsNullOrEmpty(nameCocktail))
             {
-                query = query.Where(c => c.StrAlcoholic != null && c.StrAlcoholic.Equals("Non alcoholic", StringComparison.OrdinalIgnoreCase));
+                string? userNameFromToken = null;
+                if (User.Identity?.IsAuthenticated == true)
+                    userNameFromToken = User.FindFirst(ClaimTypes.Name)?.Value?.ToLower();
+
+                var userSearchLower = UserSearch.ToLower();
+
+                var users = await _context.DbUser
+                    .Where(u =>
+                        u.UserName.ToLower().StartsWith(userSearchLower) &&
+                        (userNameFromToken == null || u.UserName.ToLower() != userNameFromToken))
+                    .Select(u => UtilsUserController.UserToDto(u))
+                    .ToListAsync();
+
+                if (users.Count == 0)
+                {
+                    users = await _context.DbUser
+                        .Where(u =>
+                            u.UserName.ToLower().Contains(userSearchLower) &&
+                            (userNameFromToken == null || u.UserName.ToLower() != userNameFromToken))
+                        .Select(u => UtilsUserController.UserToDto(u))
+                        .ToListAsync();
+                }
+
+                return Ok(new
+                {
+                    TotalResult = users.Count,
+                    TotalPages = 1,
+                    CurrentPage = 1,
+                    PageSize = 10,
+                    Users = users
+                });
+            }
+
+            if (!isAdult && string.IsNullOrEmpty(UserSearch))
+            {
+               query = query.Where(c => c.StrAlcoholic != null && c.StrAlcoholic.ToLower().Contains("Non alcoholic"));
             }
             // Verifica se ci sono filtri applicati
             bool noFilter = string.IsNullOrEmpty(nameCocktail) &&
@@ -141,36 +175,6 @@ namespace CocktailDebacle.Server.Controllers
                 string.IsNullOrEmpty(description) &&
                 string.IsNullOrEmpty(UsernameCreateCocktail);
             
-            if(!string.IsNullOrEmpty(UserSearch) && noFilter == true && nameCocktail == "")
-            {
-                string? userNameFromToken = null;
-                if (User.Identity?.IsAuthenticated == true)
-                    userNameFromToken = User.FindFirst(ClaimTypes.Name)?.Value;
-
-                var users = await _context.DbUser
-                    .Where(u => u.UserName.ToLower().StartsWith(UserSearch.ToLower())
-                                && u.AcceptCookies == true
-                                && (userNameFromToken == null || u.UserName != userNameFromToken))
-                    .Select(u => UtilsUserController.UserToDto(u)).ToListAsync();
-
-                // Se non trova niente, cerca chi contiene la stringa
-                if (users == null || users.Count == 0)
-                {
-                    users = await _context.DbUser
-                        .Where(u => u.UserName.ToLower().Contains(UserSearch.ToLower())
-                                    && u.AcceptCookies == true
-                                    && (userNameFromToken == null || u.UserName != userNameFromToken))
-                        .Select(u => UtilsUserController.UserToDto(u)).ToListAsync();
-                }
-                return Ok(new
-                {
-                    TotalResult = users.Count,
-                    TotalPages = 1,
-                    CurrentPage = 1,
-                    PageSize = 10,
-                    Users = users
-                });
-            }
             
             // Solo cocktail pubblici
             query = query.Where(c => c.PublicCocktail == true || c.PublicCocktail == null);
@@ -217,23 +221,6 @@ namespace CocktailDebacle.Server.Controllers
                 user = await _context.DbUser
                     .Include(u => u.CocktailsLike)
                     .FirstOrDefaultAsync(u => u.UserName == userNameFromToken);
-
-                // Salvataggio delle ricerche solo se è una ricerca completa
-                // if (user != null && !string.IsNullOrEmpty(completeSearch))
-                // {
-                //     bool alreadyInHistory = await _context.DbUserHistorySearch
-                //         .AnyAsync(h => h.UserName == user.UserName && h.SearchText == completeSearch);
-                //     if (!alreadyInHistory && user.AcceptCookies == true) // aggiungere una logica per la
-                //     {
-                //         _context.DbUserHistorySearch.Add(new UserHistorySearch
-                //         {
-                //             UserName = user.UserName,
-                //             SearchText = completeSearch,
-                //             SearchDate = DateTime.UtcNow
-                //         });
-                //         await _context.SaveChangesAsync();
-                //     }
-                // }
 
                 // Se si richiedono solo i like, override sulla query (niente consigli, solo quelli likati)
                 if (!string.IsNullOrEmpty(cocktailLicke) && cocktailLicke.ToLower() == "true")
@@ -333,7 +320,7 @@ namespace CocktailDebacle.Server.Controllers
                 return Unauthorized("User not found.");
             }
 
-            var user = await _context.DbUser.FirstOrDefaultAsync(u => u.UserName == username && u.AcceptCookies == true);
+            var user = await _context.DbUser.FirstOrDefaultAsync(u => u.UserName == username);
             if (user == null)
             {
                 return Unauthorized("User not found or not accepted cookies.");
@@ -389,7 +376,7 @@ namespace CocktailDebacle.Server.Controllers
 
 
         [Authorize]
-        [HttpGet("IngedientSearch")]
+        [HttpGet("IngedientSearch/SearchIngredient")]
         public async Task<IActionResult> GetIngredientSearch(
             [FromQuery] string UserName = "",
             [FromQuery] string ingredient = "",
@@ -404,7 +391,7 @@ namespace CocktailDebacle.Server.Controllers
             if (string.IsNullOrEmpty(UserName) || UserName != usernamebytoken)
                 return BadRequest("UserName not match.");
             var user = await _context.DbUser
-                .FirstOrDefaultAsync(u => u.UserName == UserName && u.AcceptCookies == true);
+                .FirstOrDefaultAsync(u => u.UserName == UserName);
             if (user == null)
                 return NotFound("User not found.");
             
@@ -422,7 +409,7 @@ namespace CocktailDebacle.Server.Controllers
         }
 
         [Authorize]
-        [HttpGet("SearchMeasureType")]
+        [HttpGet("SearchMeasureType/searchMeasure")]
         public async Task<IActionResult> GetMeasureTypeSearch(
             [FromQuery] string UserName = "", 
             [FromQuery] string measure = "",
@@ -696,7 +683,7 @@ namespace CocktailDebacle.Server.Controllers
             if (string.IsNullOrEmpty(userNameFromToken))
                 return Unauthorized("User not authenticated.");
             var userFromToken = await _context.DbUser
-                .FirstOrDefaultAsync(u => u.UserName == userNameFromToken && u.AcceptCookies == true);
+                .FirstOrDefaultAsync(u => u.UserName == userNameFromToken);
             if (userFromToken == null)
                 return NotFound("User not found.");
 
@@ -705,16 +692,13 @@ namespace CocktailDebacle.Server.Controllers
             
             // 
             var users = await _context.DbUser
-            .Where(u => u.UserName.ToLower().StartsWith(username.ToLower())
-                        && u.AcceptCookies == true
-                        && u.UserName != userNameFromToken)
+            .Where(u => u.UserName.ToLower().StartsWith(username.ToLower()) && u.UserName != userNameFromToken)
             .Select(u => UtilsUserController.UserToDto(u)).ToListAsync();
 
             if (users == null || users.Count == 0)
             {
                 users = await _context.DbUser
                     .Where(u => u.UserName.ToLower().Contains(username.ToLower())
-                                && u.AcceptCookies == true
                                 && u.UserName != userNameFromToken)
                     .Select(u => UtilsUserController.UserToDto(u)).ToListAsync();
             }
