@@ -97,8 +97,8 @@ namespace CocktailDebacle.Server.Controllers
                 return Unauthorized($"Invalid token = {token}");
             }
             _logger.LogDebug($"Token = {token}");
-            user.Token = token;
-            user.TokenExpiration = DateTime.UtcNow; // Imposta la scadenza del token a 1 ora
+            //user.Token = token;
+            //user.TokenExpiration = DateTime.UtcNow; // Imposta la scadenza del token a 1 ora
             await _context.SaveChangesAsync();
             // Se la password è corretta, restituisci i dati utente
             return Ok(new

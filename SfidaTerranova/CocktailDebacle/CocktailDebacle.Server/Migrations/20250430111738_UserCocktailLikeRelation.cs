@@ -90,6 +90,7 @@ namespace CocktailDebacle.Server.Migrations
                     Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     AcceptCookies = table.Column<bool>(type: "bit", nullable: true),
+                    CustomSearch = table.Column<bool>(type: "bit", nullable: true),
                     Token = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     TokenExpiration = table.Column<DateTime>(type: "datetime2", nullable: true),
                     ImgProfileUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),

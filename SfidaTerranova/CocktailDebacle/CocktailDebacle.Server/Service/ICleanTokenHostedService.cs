@@ -16,9 +16,9 @@ namespace CocktailDebacle.Server.Service
 
     public class CleanTokenHostedService : ICleanTokenHostedService, IDisposable
     {
-        private readonly IServiceProvider _services;
-        private readonly PriorityQueue<User, DateTime> _expirationQueue = new();
-        private readonly ILogger<CleanTokenHostedService> _logger;
+        private readonly IServiceProvider _services; // servizio per accedere al contesto del database
+        private readonly PriorityQueue<User, DateTime> _expirationQueue = new(); // coda prioritaria per tenere traccia dei token
+        private readonly ILogger<CleanTokenHostedService> _logger; 
         private Timer? _timer;
 
         public CleanTokenHostedService(IServiceProvider services, ILogger<CleanTokenHostedService> logger)

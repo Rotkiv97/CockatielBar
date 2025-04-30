@@ -255,6 +255,9 @@ namespace CocktailDebacle.Server.Migrations
                     b.Property<string>("Bio_link")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<bool?>("CustomSearch")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");

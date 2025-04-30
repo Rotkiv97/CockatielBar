@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CocktailDebacle.Server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250428130841_UserCocktailLikeRelation")]
+    [Migration("20250430111738_UserCocktailLikeRelation")]
     partial class UserCocktailLikeRelation
     {
         /// <inheritdoc />
@@ -257,6 +257,9 @@ namespace CocktailDebacle.Server.Migrations
 
                     b.Property<string>("Bio_link")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool?>("CustomSearch")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Email")
                         .IsRequired()

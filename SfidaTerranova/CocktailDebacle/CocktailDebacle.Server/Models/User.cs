@@ -26,6 +26,8 @@ public class User
     public string PasswordHash { get; set; } = string.Empty;
     public bool? AcceptCookies { get; set; } = false;
 
+    public bool? CustomSearch { get; set; } = false;
+
     public string Token { get; set; } = string.Empty;
 
     public DateTime? TokenExpiration { get; set; }

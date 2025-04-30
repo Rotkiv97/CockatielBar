@@ -47,6 +47,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 });
 
 var token = builder.Configuration["Jwt:Key"];
+Console.WriteLine("👇------JWT key usata dal server: " + token);
 if (string.IsNullOrEmpty(token))
 {
     throw new ArgumentNullException("JWT key is not configured.");
@@ -63,9 +64,26 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(token)),
             ValidateIssuer = false,
-            ValidateAudience = false, 
+            ValidateAudience = false,
             ValidateLifetime = true,
-            ClockSkew = TimeSpan.Zero // Riduci il tempo di tolleranza per la scadenza del token
+            ClockSkew = TimeSpan.Zero
+        };
+
+        // 👇 Aggiungi questa parte per gestire token scaduti o rimossi
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async context =>
+            {
+                Console.WriteLine("🔥 OnTokenValidated CALLED");
+                var dbContext = context.HttpContext.RequestServices.GetRequiredService<AppDbContext>();
+                var rawToken = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+
+                var user = await dbContext.DbUser.FirstOrDefaultAsync(u => u.Token == rawToken);
+                if (user == null || user.TokenExpiration == null || user.TokenExpiration <= DateTime.UtcNow)
+                {
+                    context.Fail("Token not valid anymore.");
+                }
+            }
         };
     });
 
@@ -76,8 +94,7 @@ builder.Services.Configure<CloudinarySettings>(
 builder.Services.AddSingleton<CloudinaryService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddSingleton<ICleanTokenHostedService, CleanTokenHostedService>();
-builder.Services.AddHostedService(provider => 
-    provider.GetRequiredService<ICleanTokenHostedService>());
+builder.Services.AddHostedService(provider => provider.GetRequiredService<ICleanTokenHostedService>());
 builder.Services.AddHttpClient<CocktailImportService>();
 
 
@@ -176,7 +193,6 @@ async Task WaitForSqlServer(AppDbContext dbContext, int maxAttempts = 10, int de
             if (attempt == maxAttempts)
                 throw;
         }
-        
         await Task.Delay(TimeSpan.FromSeconds(delaySeconds));
     }
 }
