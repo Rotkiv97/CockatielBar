@@ -231,14 +231,21 @@ namespace CocktailDebacle.Server.Controllers
                 return NotFound("Utente non trovato.");
             }
 
-            user.UserName = updatedUser.UserName;
-            user.Name = updatedUser.Name;
+            if((updatedUser.UserName != null || updatedUser.UserName != string.Empty) && user.UserName != updatedUser.UserName)
+            {
+                user.UserName = updatedUser.UserName ?? string.Empty;
+            }
+
+            if((updatedUser.Name != null || updatedUser.Name != string.Empty) && user.Name != updatedUser.Name)
+            {
+                user.Name = updatedUser.Name ?? string.Empty;
+            }
             user.LastName = updatedUser.LastName;
             user.Email = updatedUser.Email;
             if (user.AcceptCookies == true && updatedUser.AcceptCookies == false)
             {
                 user.AcceptCookies = false;
-                
+                dffsdf
                 var history = await _context.DbUserHistorySearch
                 .Where(h => h.UserId == user.Id)
                 .ToListAsync();
@@ -609,6 +616,7 @@ namespace CocktailDebacle.Server.Controllers
             return Ok(cocktailDtos);
         }
 
+        // http://localhost:5052/api/Users/ThisYourCocktailLike/{id}
         [HttpGet("ThisYourCocktailLike/{id}")]
         public async Task<IActionResult> ThisYourCocktailLike(int id)
         {
@@ -631,7 +639,7 @@ namespace CocktailDebacle.Server.Controllers
                 return NotFound("Cocktail non trovato.");
             }
             var isLiked = cocktail.UserLikes.Any(u => u.UserName == userName);
-            return Ok(new {isLiked});
+            return Ok(isLiked);
         }
     }
 
