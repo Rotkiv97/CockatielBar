@@ -608,6 +608,31 @@ namespace CocktailDebacle.Server.Controllers
             }
             return Ok(cocktailDtos);
         }
+
+        [HttpGet("ThisYourCocktailLike/{id}")]
+        public async Task<IActionResult> ThisYourCocktailLike(int id)
+        {
+            var userName = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(userName))
+            {
+                return Unauthorized("Utente non autenticato.");
+            }
+
+            var user = await _context.DbUser.FirstAsync(u => u.UserName == userName);
+            if (user == null)
+            {
+                return NotFound("Utente non trovato.");
+            }
+            var cocktail = await _context.DbCocktails
+                .Include(c => c.UserLikes)
+                .FirstOrDefaultAsync(c => c.Id == id);
+            if (cocktail == null)
+            {
+                return NotFound("Cocktail non trovato.");
+            }
+            var isLiked = cocktail.UserLikes.Any(u => u.UserName == userName);
+            return Ok(new {isLiked});
+        }
     }
 
     public class LoginRequest
