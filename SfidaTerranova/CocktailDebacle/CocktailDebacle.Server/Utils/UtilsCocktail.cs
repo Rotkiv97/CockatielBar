@@ -298,6 +298,7 @@ namespace CocktailDebacle.Server.Utils
                 StrDrinkThumb = c.StrDrinkThumb ?? string.Empty,
                 Ingredients = IngredientToList(c),
                 Measures = MeasureToList(c),
+                Likes = c.Likes,
                 UserLikes = c.UserLikes.Select(u => u.UserName).ToList() ?? new List<string>(),
                 StrTags = c.StrTags ?? string.Empty
             };

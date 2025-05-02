@@ -235,7 +235,19 @@ namespace CocktailDebacle.Server.Controllers
             user.Name = updatedUser.Name;
             user.LastName = updatedUser.LastName;
             user.Email = updatedUser.Email;
-            user.AcceptCookies = updatedUser.AcceptCookies;
+            if (user.AcceptCookies == true && updatedUser.AcceptCookies == false)
+            {
+                user.AcceptCookies = false;
+                
+                var history = await _context.DbUserHistorySearch
+                .Where(h => h.UserId == user.Id)
+                .ToListAsync();
+
+                if (history.Any())
+                    _context.DbUserHistorySearch.RemoveRange(history);
+            }
+            //user.AcceptCookies = updatedUser.AcceptCookies;
+            user.Language = updatedUser.Language;
 
             // Se la password viene cambiata, aggiorna l'hash
             if (!string.IsNullOrEmpty(updatedUser.PasswordHash) && updatedUser.PasswordHash != user.PasswordHash)
@@ -252,7 +264,7 @@ namespace CocktailDebacle.Server.Controllers
                 return StatusCode(500, "Errore durante l'aggiornamento dell'utente.");
             }
 
-            return NoContent();
+            return Ok(UtilsUserController.UserToDto(user));
         }
 
         // http://localhost:5052/api/Users/{id} - Elimina un utente
@@ -424,8 +436,8 @@ namespace CocktailDebacle.Server.Controllers
         }
 
         [Authorize]
-        [HttpGet("GetMayCocktailLike")]
-        public async Task<IActionResult> GetMayCocktailLike()
+        [HttpGet("GetMyCocktailLike")]
+        public async Task<IActionResult> GetMyCocktailLike()
         {
             var userName = User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(userName))
@@ -595,40 +607,6 @@ namespace CocktailDebacle.Server.Controllers
                 return NotFound("Nessun cocktail trovato.");
             }
             return Ok(cocktailDtos);
-        }
-
-        [Authorize]
-        [HttpDelete("ClearHistoryUser/{UserName}")]
-        public async Task<IActionResult> ClearHistoryUser(string UserName)
-        {
-            var userName = User.FindFirst(ClaimTypes.Name)?.Value;
-            if (string.IsNullOrEmpty(userName))
-                return Unauthorized("Utente non autenticato.");
-
-            if (UserName != userName)
-                return BadRequest("Non puoi eliminare la cronologia di un altro utente.");
-
-            var user = await _context.DbUser.FirstOrDefaultAsync(u => u.UserName == UserName);
-            if (user == null)
-                return NotFound("Utente non trovato.");
-            if(user.AcceptCookies == true){
-                user.AcceptCookies = false;
-                await _context.SaveChangesAsync();
-            }
-            else{
-                return BadRequest("Non puo avere la cronologia se non accetta i cookies.");
-            }
-            var userHistorySearch = await _context.DbUserHistorySearch
-                .Where(u => u.UserName == UserName)
-                .ToListAsync();
-
-            if (!userHistorySearch.Any())
-                return NotFound("Nessuna cronologia trovata.");
-
-            _context.DbUserHistorySearch.RemoveRange(userHistorySearch);
-            await _context.SaveChangesAsync();
-
-            return Ok(new { Message = "Cronologia eliminata con successo." });
         }
     }
 

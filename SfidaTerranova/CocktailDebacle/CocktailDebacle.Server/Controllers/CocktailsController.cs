@@ -48,7 +48,7 @@ namespace CocktailDebacle.Server.Controllers
 
 
         //http://localhost:5052/api/Cocktails/cocktail/by-id?id=5
-        [HttpGet("cocktail/by-id")]
+       [HttpGet("cocktail/by-id")]
         [AllowAnonymous]
         public async Task<IActionResult> GetCocktailById(int id)
         {
@@ -68,26 +68,30 @@ namespace CocktailDebacle.Server.Controllers
                 {
                     var user = await _context.DbUser
                         .FirstOrDefaultAsync(u => u.UserName == userNameFromToken && u.AcceptCookies == true);
-                    if (user != null)
+
+                    if (user != null && !string.IsNullOrEmpty(cocktail?.StrDrink))
                     {
                         bool exists = await _context.DbUserHistorySearch
-                            .AnyAsync(h => h.UserName == user.UserName 
-                            && cocktail != null && h.SearchText == cocktail.StrDrink);
-                            if (!exists && !string.IsNullOrEmpty(cocktail?.StrDrink) && user.AcceptCookies == true)
+                            .AnyAsync(h => h.UserId == user.Id && h.SearchText == cocktail.StrDrink);
+
+                        if (!exists)
+                        {
+                            _context.DbUserHistorySearch.Add(new UserHistorySearch
                             {
-                                _context.DbUserHistorySearch.Add(new UserHistorySearch
-                                {
-                                    UserName = user.UserName,
-                                    SearchText = cocktail.StrDrink,
-                                    SearchDate = DateTime.UtcNow
-                                });
-                                await _context.SaveChangesAsync();
-                            }
+                                UserId = user.Id,
+                                SearchText = cocktail.StrDrink,
+                                SearchDate = DateTime.UtcNow
+                            });
+
+                            await _context.SaveChangesAsync();
+                        }
                     }
                 }
             }
+
             return Ok(cocktail);
         }
+
 
 
 
@@ -162,7 +166,7 @@ namespace CocktailDebacle.Server.Controllers
                 });
             }
 
-            if (!isAdult && string.IsNullOrEmpty(UserSearch))
+            if (!isAdult && string.IsNullOrEmpty(UserSearch) && string.IsNullOrEmpty(alcoholic))
             {
                query = query.Where(c => c.StrAlcoholic != null && c.StrAlcoholic.ToLower().Contains("Non alcoholic"));
             }
@@ -261,7 +265,7 @@ namespace CocktailDebacle.Server.Controllers
             if(CustomSearch == true && user?.CustomSearch == true){
                 searchHistory = user != null
                     ? await _context.DbUserHistorySearch
-                        .Where(s => s.UserName == user.UserName)
+                        .Where(s => s.UserId == user.Id)
                         .OrderByDescending(s => s.SearchDate)
                         .Take(10)
                         .Select(s => s.SearchText!.ToLower())
@@ -652,8 +656,17 @@ namespace CocktailDebacle.Server.Controllers
            
             if (users == null || !users.Any())
                 return NotFound("No users liked this cocktail.");
-
             return Ok(users);
+        }
+
+        [HttpGet("GetCountCocktailLikes/{id}")]
+        public async Task<IActionResult> GetCountCocktailLikes(int id)
+        {
+            var cocktail = await _context.DbCocktails.FirstOrDefaultAsync(c => c.Id == id);
+            if (cocktail == null)
+                return NotFound("Cocktail not found.");
+
+            return Ok( cocktail.Likes );
         }
 
         [HttpGet("ingredients")]

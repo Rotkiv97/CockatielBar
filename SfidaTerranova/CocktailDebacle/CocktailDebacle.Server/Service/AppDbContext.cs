@@ -18,7 +18,6 @@ namespace CocktailDebacle.Server.Service
             modelBuilder.Entity<User>(entity =>
             {
                 entity.HasKey(u => u.Id);
-                entity.HasAlternateKey(u => u.UserName);
                 entity.Property(u => u.UserName).IsRequired();
                 entity.Property(u => u.Email).IsRequired();
                 entity.Property(u => u.PasswordHash).IsRequired();
@@ -34,9 +33,14 @@ namespace CocktailDebacle.Server.Service
             modelBuilder.Entity<UserHistorySearch>(entity =>
             {
                 entity.HasKey(u => u.Id);
-                entity.Property(u => u.UserName).IsRequired();
+
                 entity.Property(u => u.SearchDate).IsRequired();
                 entity.Property(u => u.SearchText).IsRequired(false);
+
+                entity.HasOne(u => u.User)
+                    .WithMany()
+                    .HasForeignKey(u => u.UserId)
+                    .OnDelete(DeleteBehavior.Cascade); // Se vuoi che le ricerche vengano eliminate con l'utente
             });
 
             modelBuilder.Entity<User>()
@@ -49,11 +53,19 @@ namespace CocktailDebacle.Server.Service
                 .WithMany(u => u.Followers_Users)
                 .UsingEntity<Dictionary<string, object>>(
                     "UserUser",
-                    r => r.HasOne<User>().WithMany().HasForeignKey("Followers_UsersUserName").HasPrincipalKey("UserName"),
-                    l => l.HasOne<User>().WithMany().HasForeignKey("Followed_UsersUserName").HasPrincipalKey("UserName"),
-                    je =>{
-                        je.HasKey("Followed_UsersUserName", "Followers_UsersUserName");
+                    r => r.HasOne<User>()
+                        .WithMany()
+                        .HasForeignKey("FollowerId")  // chi segue
+                        .OnDelete(DeleteBehavior.Restrict),
+                    l => l.HasOne<User>()
+                        .WithMany()
+                        .HasForeignKey("FollowedId") // chi è seguito
+                        .OnDelete(DeleteBehavior.Restrict),
+                    je =>
+                    {
+                        je.HasKey("FollowerId", "FollowedId");
                     });
-        }
+
+            }
     }
 }

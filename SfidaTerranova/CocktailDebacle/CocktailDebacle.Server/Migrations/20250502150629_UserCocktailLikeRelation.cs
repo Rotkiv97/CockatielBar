@@ -103,7 +103,6 @@ namespace CocktailDebacle.Server.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_DbUser", x => x.Id);
-                    table.UniqueConstraint("AK_DbUser_UserName", x => x.UserName);
                 });
 
             migrationBuilder.CreateTable(
@@ -112,13 +111,19 @@ namespace CocktailDebacle.Server.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false),
                     SearchText = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     SearchDate = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_DbUserHistorySearch", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_DbUserHistorySearch_DbUser_UserId",
+                        column: x => x.UserId,
+                        principalTable: "DbUser",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -149,24 +154,30 @@ namespace CocktailDebacle.Server.Migrations
                 name: "UserUser",
                 columns: table => new
                 {
-                    Followed_UsersUserName = table.Column<string>(type: "nvarchar(50)", nullable: false),
-                    Followers_UsersUserName = table.Column<string>(type: "nvarchar(50)", nullable: false)
+                    FollowerId = table.Column<int>(type: "int", nullable: false),
+                    FollowedId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserUser", x => new { x.Followed_UsersUserName, x.Followers_UsersUserName });
+                    table.PrimaryKey("PK_UserUser", x => new { x.FollowerId, x.FollowedId });
                     table.ForeignKey(
-                        name: "FK_UserUser_DbUser_Followed_UsersUserName",
-                        column: x => x.Followed_UsersUserName,
+                        name: "FK_UserUser_DbUser_FollowedId",
+                        column: x => x.FollowedId,
                         principalTable: "DbUser",
-                        principalColumn: "UserName");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_UserUser_DbUser_Followers_UsersUserName",
-                        column: x => x.Followers_UsersUserName,
+                        name: "FK_UserUser_DbUser_FollowerId",
+                        column: x => x.FollowerId,
                         principalTable: "DbUser",
-                        principalColumn: "UserName",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_DbUserHistorySearch_UserId",
+                table: "DbUserHistorySearch",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserCocktailsLike_UserLikesId",
@@ -174,9 +185,9 @@ namespace CocktailDebacle.Server.Migrations
                 column: "UserLikesId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserUser_Followers_UsersUserName",
+                name: "IX_UserUser_FollowedId",
                 table: "UserUser",
-                column: "Followers_UsersUserName");
+                column: "FollowedId");
         }
 
         /// <inheritdoc />

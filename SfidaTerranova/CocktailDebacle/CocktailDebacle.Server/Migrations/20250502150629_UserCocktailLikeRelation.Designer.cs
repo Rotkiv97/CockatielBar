@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CocktailDebacle.Server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250430111738_UserCocktailLikeRelation")]
+    [Migration("20250502150629_UserCocktailLikeRelation")]
     partial class UserCocktailLikeRelation
     {
         /// <inheritdoc />
@@ -217,11 +217,12 @@ namespace CocktailDebacle.Server.Migrations
                     b.Property<string>("SearchText")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("DbUserHistorySearch");
                 });
@@ -312,17 +313,28 @@ namespace CocktailDebacle.Server.Migrations
 
             modelBuilder.Entity("UserUser", b =>
                 {
-                    b.Property<string>("Followed_UsersUserName")
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<int>("FollowerId")
+                        .HasColumnType("int");
 
-                    b.Property<string>("Followers_UsersUserName")
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<int>("FollowedId")
+                        .HasColumnType("int");
 
-                    b.HasKey("Followed_UsersUserName", "Followers_UsersUserName");
+                    b.HasKey("FollowerId", "FollowedId");
 
-                    b.HasIndex("Followers_UsersUserName");
+                    b.HasIndex("FollowedId");
 
                     b.ToTable("UserUser");
+                });
+
+            modelBuilder.Entity("CocktailDebacle.Server.Models.UserHistorySearch", b =>
+                {
+                    b.HasOne("User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("CocktailUser", b =>
@@ -344,16 +356,14 @@ namespace CocktailDebacle.Server.Migrations
                 {
                     b.HasOne("User", null)
                         .WithMany()
-                        .HasForeignKey("Followed_UsersUserName")
-                        .HasPrincipalKey("UserName")
-                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .HasForeignKey("FollowedId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("User", null)
                         .WithMany()
-                        .HasForeignKey("Followers_UsersUserName")
-                        .HasPrincipalKey("UserName")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("FollowerId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
 #pragma warning restore 612, 618

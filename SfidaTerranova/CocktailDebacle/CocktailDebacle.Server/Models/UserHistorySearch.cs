@@ -8,14 +8,15 @@ using System.Text.Json.Serialization;
 
 namespace CocktailDebacle.Server.Models
 {
-    public class UserHistorySearch
+   public class UserHistorySearch
     {
         [Key]
         public int Id { get; set; }
-        public string UserName { get; set; } = string.Empty;
-
-        public string? SearchText { get; set; } 
-
+        public int UserId { get; set; }
+        [ForeignKey("UserId")]
+        [JsonIgnore]
+        public User User { get; set; } = null!;
+        public string? SearchText { get; set; }
         public DateTime SearchDate { get; set; } = DateTime.UtcNow;
     }
 }
