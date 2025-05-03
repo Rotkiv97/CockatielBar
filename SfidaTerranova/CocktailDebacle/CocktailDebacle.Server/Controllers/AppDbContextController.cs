@@ -216,7 +216,7 @@ namespace CocktailDebacle.Server.Controllers
         // http://localhost:5052/api/Users/1 + body -> row {"userName": ="" "name": ="" "lastName": ="" "email": ="" "passwordHash": ="" "acceptCookies": =""}
         [Authorize]
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser(int id, [FromBody] RegisterUserDto updatedUser)
+        public async Task<IActionResult> PutUser(int id, User updatedUser)
         {
             var userName = User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(userName))
@@ -227,14 +227,12 @@ namespace CocktailDebacle.Server.Controllers
             if (user.UserName != userName)
                 return Forbid("Non puoi modificare altri utenti.");
 
-            bool userNameChanged = false;
             if (user.UserName != updatedUser.UserName)
             {
                 var userNameExists = await _context.DbUser.AnyAsync(u => u.UserName == updatedUser.UserName && u.Id != id);
                 if (userNameExists)
                     return BadRequest("Questo Nome Utente è già in uso.");
                 user.UserName = updatedUser.UserName ?? string.Empty;
-                userNameChanged = true;
             }
             if (user.Name != updatedUser.Name)
                 user.Name = updatedUser.Name ?? string.Empty;
@@ -268,11 +266,8 @@ namespace CocktailDebacle.Server.Controllers
             string? newToken = null;
             try
             {
-                if (userNameChanged)
-                {
-                    newToken = await _authService.AuthenticateUser(user.UserName, updatedUser.PasswordHash, user);
-                    user.Token = newToken;
-                }
+                newToken = await _authService.AuthenticateUser(user.UserName, user.PasswordHash, user);
+                user.Token = newToken;
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
@@ -288,7 +283,8 @@ namespace CocktailDebacle.Server.Controllers
                 userDto.LastName,
                 userDto.Email,
                 acceptCookies = user.AcceptCookies,
-                PasswordHash = user.PasswordHash
+                PasswordHash = user.PasswordHash,
+                Token = newToken
             };
             return Ok(newUser);
         }
