@@ -65,7 +65,6 @@ namespace CocktailDebacle.Server.Service
                     {
                         je.HasKey("FollowerId", "FollowedId");
                     });
-
             }
     }
 }

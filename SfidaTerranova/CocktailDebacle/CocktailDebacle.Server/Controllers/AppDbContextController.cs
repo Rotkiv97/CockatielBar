@@ -55,16 +55,6 @@ namespace CocktailDebacle.Server.Controllers
             }
 
             var userDto = UtilsUserController.UserToDto(user); 
-            // new UserDto
-            // {
-            //     Id = user.Id,
-            //     UserName = user.UserName,
-            //     Name = user.Name,
-            //     LastName = user.LastName,
-            //     Email = user.Email,
-            //     ImgProfileUrl = user.ImgProfileUrl ?? string.Empty
-            // };
-
             return Ok(userDto);
         }
 
