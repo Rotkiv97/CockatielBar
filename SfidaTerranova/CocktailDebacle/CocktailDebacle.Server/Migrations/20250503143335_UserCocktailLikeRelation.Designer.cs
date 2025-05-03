@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CocktailDebacle.Server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250502150629_UserCocktailLikeRelation")]
+    [Migration("20250503143335_UserCocktailLikeRelation")]
     partial class UserCocktailLikeRelation
     {
         /// <inheritdoc />

@@ -22,7 +22,7 @@ namespace CocktailDebacle.Server.DTOs
         public List<string> Ingredients { get; set; } = new List<string>();
         public List<string> Measures { get; set; } = new List<string>();
         public int Likes { get; set; } = 0;
-        public List<string> UserLikes { get; set; } = new List<string>();
+        public List<int> UserLikes { get; set; } = new List<int>();
         public string StrTags { get; set; } = string.Empty;
     }
 }

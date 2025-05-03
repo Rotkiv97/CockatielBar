@@ -505,8 +505,8 @@ namespace CocktailDebacle.Server.Controllers
         }
 
         [Authorize]
-        [HttpPost("FollowedNewUser/{followedUserName}")]
-        public async Task<IActionResult> FollowedNewUser(string followedUserName)
+        [HttpPost("FollowedNewUser/{followedUserId}")]
+        public async Task<IActionResult> FollowedNewUser(int followedUserId)
         {
             var userName = User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(userName))
@@ -520,12 +520,12 @@ namespace CocktailDebacle.Server.Controllers
 
             var followedUser = await _context.DbUser
                 .Include(u => u.Followers_Users)
-                .FirstOrDefaultAsync(u => u.UserName == followedUserName);
+                .FirstOrDefaultAsync(u => u.Id == followedUserId);
             if (followedUser == null)
                 return NotFound("Utente seguito non trovato.");
             
             bool FollowingUser = user.Followed_Users.Any(u => u.Id == followedUser.Id);
-            if(followedUserName == userName)
+            if(followedUserId == user.Id)
             {
                 return BadRequest("Non puoi seguire te stesso.");
             }
@@ -534,27 +534,24 @@ namespace CocktailDebacle.Server.Controllers
                 user.Followed_Users.Remove(followedUser);
                 followedUser.Followers_Users.Remove(user);
                 await _context.SaveChangesAsync();
-                return Ok(new { Message = $"Non segui più questo utente = {followedUserName}" });
+                return Ok(new { Message = $"Non segui più questo utente = {followedUserId}" });
             }
             else
             {
                 user.Followed_Users.Add(followedUser);
                 followedUser.Followers_Users.Add(user);
                 await _context.SaveChangesAsync();
-                return Ok(new { Message = $"Ora segui questo utente = {followedUserName}" });
+                return Ok(new { Message = $"Ora segui questo utente = {followedUserId}" });
             }
         }
 
 
         [Authorize]
-        [HttpGet("GetFollowedUsers/{UserName}")]
-        public async Task<IActionResult> GetFollowedUsers(string UserName)
+        [HttpGet("GetFollowedUsers/{id}")]
+        public async Task<IActionResult> GetFollowedUsers(int id)
         {
-            if(string.IsNullOrEmpty(UserName))
-            {
-                return BadRequest("Nome utente non valido.");
-            }
-
+            if(id <= 0)
+                return BadRequest("ID non valido.");
             var userName = User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(userName))
             {
@@ -562,8 +559,7 @@ namespace CocktailDebacle.Server.Controllers
             }
 
             var user = await _context.DbUser
-                .Include(u => u.Followed_Users)
-                .FirstOrDefaultAsync(u => u.UserName == UserName);
+                .Include(u => u.Followed_Users).FirstAsync(u => u.Id == id);
 
             if (user == null)
             {
@@ -576,13 +572,11 @@ namespace CocktailDebacle.Server.Controllers
         }
 
         [Authorize]
-        [HttpGet("GetFollowersUsers/{UserName}")]
-        public async Task<IActionResult> GetFollowersUsers(string UserName)
+        [HttpGet("GetFollowersUsers/{id}")]
+        public async Task<IActionResult> GetFollowersUsers(int id)
         {
-            if(string.IsNullOrEmpty(UserName))
-            {
-                return BadRequest("Nome utente non valido.");
-            }
+            if (id <= 0)
+                return BadRequest("ID non valido.");
 
             var userName = User.FindFirst(ClaimTypes.Name)?.Value;
 
@@ -593,7 +587,7 @@ namespace CocktailDebacle.Server.Controllers
 
             var user = await _context.DbUser
                 .Include(u => u.Followers_Users)
-                .FirstOrDefaultAsync(u => u.UserName == UserName);
+                .FirstOrDefaultAsync(u => u.Id == id);
 
             if (user == null)
             {

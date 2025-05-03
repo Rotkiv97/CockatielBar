@@ -21,8 +21,8 @@ namespace CocktailDebacle.Server.Utils
                 LastName = user.LastName,
                 Email = user.Email,
                 ImgProfileUrl = user.ImgProfileUrl ?? string.Empty,
-                Followed_Users = user.Followed_Users.Select(u => u.UserName).ToList() ?? new List<string>(),
-                Followers_Users = user.Followers_Users.Select(u => u.UserName).ToList() ?? new List<string>(),
+                Followed_Users = user.Followed_Users.Select(u => u.Id).ToList() ?? new List<int>(),
+                Followers_Users = user.Followers_Users.Select(u => u.Id).ToList() ?? new List<int>(),
             };
         }
     }

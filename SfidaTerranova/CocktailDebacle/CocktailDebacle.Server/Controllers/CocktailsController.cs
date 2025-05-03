@@ -481,7 +481,6 @@ namespace CocktailDebacle.Server.Controllers
             }
         }
 
-
         // Cocktail Delete (User)
         [Authorize]
         [HttpDelete("CocktailDelete/{idDrink}")]

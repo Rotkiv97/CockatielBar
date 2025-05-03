@@ -7,3 +7,4 @@ C:/Users/matti/OneDrive/Desktop/NEWterranova/SfidaTerranova-main/SfidaTerranova/
 /src/cocktaildebacle.client/obj/Debug/cocktaildebacle.client.esproj.CoreCompileInputs.cache
 C:\Users\matti\OneDrive\Desktop\NEWterranova\SfidaTerranova-main\SfidaTerranova\CocktailDebacle\cocktaildebacle.client\obj\Debug\cocktaildebacle.client.esproj.CoreCompileInputs.cache
 C:\Users\matti\OneDrive\Desktop\Terranova\terranova-main\SfidaTerranova-main\SfidaTerranova\CocktailDebacle\cocktaildebacle.client\obj\Debug\cocktaildebacle.client.esproj.CoreCompileInputs.cache
+C:\Users\EURONICS\Documents\GitHub\SfidaTerranova\SfidaTerranova\CocktailDebacle\cocktaildebacle.client\obj\Debug\cocktaildebacle.client.esproj.CoreCompileInputs.cache

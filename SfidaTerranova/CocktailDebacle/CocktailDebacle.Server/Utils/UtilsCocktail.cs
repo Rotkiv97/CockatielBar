@@ -299,7 +299,7 @@ namespace CocktailDebacle.Server.Utils
                 Ingredients = IngredientToList(c),
                 Measures = MeasureToList(c),
                 Likes = c.Likes,
-                UserLikes = c.UserLikes.Select(u => u.UserName).ToList() ?? new List<string>(),
+                UserLikes = c.UserLikes.Select(u => u.Id).ToList() ?? new List<int>(),
                 StrTags = c.StrTags ?? string.Empty
             };
         }
