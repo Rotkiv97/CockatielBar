@@ -214,66 +214,100 @@ namespace CocktailDebacle.Server.Controllers
 
         // PUT: api/Users/{id} - Modifica un utente esistente
         // http://localhost:5052/api/Users/1 + body -> row {"userName": ="" "name": ="" "lastName": ="" "email": ="" "passwordHash": ="" "acceptCookies": =""}
-        
         [Authorize]
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser(int id, User updatedUser)
+        public async Task<IActionResult> PutUser(int id, [FromBody] RegisterUserDto updatedUser)
         {
             var userName = User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(userName))
-            {
                 return Unauthorized("Utente non autenticato.");
-            }
-            // Trova l'utente nel database
-            var user = await _context.DbUser.FindAsync(id);
+            var user = await _context.DbUser.FirstOrDefaultAsync(u => u.Id == id);
             if (user == null)
-            {
                 return NotFound("Utente non trovato.");
-            }
+            if (user.UserName != userName)
+                return Forbid("Non puoi modificare altri utenti.");
 
-            if((updatedUser.UserName != null || updatedUser.UserName != string.Empty) && user.UserName != updatedUser.UserName)
+            bool userNameChanged = false;
+            if (user.UserName != updatedUser.UserName)
             {
+                var userNameExists = await _context.DbUser.AnyAsync(u => u.UserName == updatedUser.UserName && u.Id != id);
+                if (userNameExists)
+                    return BadRequest("Questo Nome Utente è già in uso.");
                 user.UserName = updatedUser.UserName ?? string.Empty;
+                userNameChanged = true;
             }
-
-            if((updatedUser.Name != null || updatedUser.Name != string.Empty) && user.Name != updatedUser.Name)
-            {
+            if (user.Name != updatedUser.Name)
                 user.Name = updatedUser.Name ?? string.Empty;
-            }
-            user.LastName = updatedUser.LastName;
-            user.Email = updatedUser.Email;
-            if (user.AcceptCookies == true && updatedUser.AcceptCookies == false)
-            {
-                user.AcceptCookies = false;
-                dffsdf
-                var history = await _context.DbUserHistorySearch
-                .Where(h => h.UserId == user.Id)
-                .ToListAsync();
 
-                if (history.Any())
+            if (user.LastName != updatedUser.LastName)
+                user.LastName = updatedUser.LastName ?? string.Empty;
+
+            if (user.Email != updatedUser.Email)
+            {
+                var emailExists = await _context.DbUser.AnyAsync(u => u.Email == updatedUser.Email && u.Id != id);
+                if (emailExists)
+                    return BadRequest("Questa email è già in uso.");
+                user.Email = updatedUser.Email ?? string.Empty;
+            }
+            if (user.AcceptCookies != updatedUser.AcceptCookies)
+            {
+                user.AcceptCookies = updatedUser.AcceptCookies;
+
+                if (user.AcceptCookies == false)
+                {
+                    var history = await _context.DbUserHistorySearch
+                        .Where(h => h.UserId == user.Id)
+                        .ToListAsync();
                     _context.DbUserHistorySearch.RemoveRange(history);
+                }
             }
-            //user.AcceptCookies = updatedUser.AcceptCookies;
-            user.Language = updatedUser.Language;
 
-            // Se la password viene cambiata, aggiorna l'hash
             if (!string.IsNullOrEmpty(updatedUser.PasswordHash) && updatedUser.PasswordHash != user.PasswordHash)
-            {
                 user.PasswordHash = HashPassword(updatedUser.PasswordHash);
-            }
-            
+
+            string? newToken = null;
             try
             {
+                if (userNameChanged)
+                {
+                    newToken = await _authService.AuthenticateUser(user.UserName, updatedUser.PasswordHash, user);
+                    user.Token = newToken;
+                }
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
                 return StatusCode(500, "Errore durante l'aggiornamento dell'utente.");
             }
-
-            return Ok(UtilsUserController.UserToDto(user));
+            var userDto = UtilsUserController.UserToDto(user);
+            var newUser = new 
+            {
+                userDto.Id,
+                userDto.UserName,
+                userDto.Name,
+                userDto.LastName,
+                userDto.Email,
+                acceptCookies = user.AcceptCookies,
+                PasswordHash = user.PasswordHash
+            };
+            return Ok(newUser);
         }
 
+        [Authorize]
+        [HttpGet("getPassword/{id}")]
+        public async Task<IActionResult> getPassword(int id)
+        {
+            var userName = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(userName))
+                return Unauthorized("Utente non autenticato.");
+            var user = await _context.DbUser.FindAsync(id);
+            if (user == null)
+                return NotFound("Utente non trovato.");
+            var password = user.PasswordHash;
+            if (string.IsNullOrEmpty(password))
+                return NotFound("Password non trovata.");
+            return Ok(new { Password = password });
+        }
         // http://localhost:5052/api/Users/{id} - Elimina un utente
         [Authorize]
         [HttpDelete("{id}")]
