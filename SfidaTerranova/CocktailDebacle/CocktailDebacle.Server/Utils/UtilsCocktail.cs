@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Globalization;
 using CocktailDebacle.Server.DTOs;
 using CocktailDebacle.Server.Models;
-
+using Microsoft.EntityFrameworkCore;
 
 namespace CocktailDebacle.Server.Utils
 {
@@ -363,6 +363,21 @@ namespace CocktailDebacle.Server.Utils
                 StrMeasure15 = cocktailCreate.StrMeasure15
             };
         }
+
+
+        public static IEnumerable<string> GetIngredients(Cocktail c)
+        {
+            return new[]
+            {
+                c.StrIngredient1, c.StrIngredient2, c.StrIngredient3, c.StrIngredient4, c.StrIngredient5,
+                c.StrIngredient6, c.StrIngredient7, c.StrIngredient8, c.StrIngredient9, c.StrIngredient10,
+                c.StrIngredient11, c.StrIngredient12, c.StrIngredient13, c.StrIngredient14, c.StrIngredient15
+            }
+            .Where(i => !string.IsNullOrWhiteSpace(i))
+            .Select(i => i!.Trim());
+        }
+
+
 
         public static void UpdateCocktail(Cocktail cocktail, CocktailCreate dto)
         {

@@ -161,7 +161,7 @@ namespace CocktailDebacle.Server.Controllers
             var user = await _context.DbUser.FirstOrDefaultAsync(u => u.UserName == userName);
             if (user == null)
                 return NotFound($"Utente non trovato{userName} = {user?.UserName}");
-            return Ok(user.Token);
+            return Ok( new {token = user.Token.ToString()});
         }
 
         // http://localhost:5052/api/Users + body -> row {"userName": ="" "name": ="" "lastName": ="" "email": ="" "passwordHash": ="" "acceptCookies": =""}
@@ -319,7 +319,6 @@ namespace CocktailDebacle.Server.Controllers
         {
             return BCrypt.Net.BCrypt.HashPassword(password);
         }
-
 
         /// IMG Profile ///
 

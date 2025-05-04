@@ -115,8 +115,10 @@ namespace CocktailDebacle.Server.Controllers
         )
         {
             IQueryable<Cocktail> query = _context.DbCocktails.AsQueryable();
-
+            List<Cocktail> cocktailListIngredient = new List<Cocktail>();
             var isAdult = false;
+            int totalItems = 0;
+            int totalPages = 0; 
             if (User.Identity?.IsAuthenticated == true)
             {
                 var userNameFromToken = User.FindFirst(ClaimTypes.Name)?.Value;
@@ -130,7 +132,6 @@ namespace CocktailDebacle.Server.Controllers
                     }
                 }
             }
-
             if (!string.IsNullOrEmpty(UserSearch) && string.IsNullOrEmpty(nameCocktail))
             {
                 string? userNameFromToken = null;
@@ -138,14 +139,12 @@ namespace CocktailDebacle.Server.Controllers
                     userNameFromToken = User.FindFirst(ClaimTypes.Name)?.Value?.ToLower();
 
                 var userSearchLower = UserSearch.ToLower();
-
                 var users = await _context.DbUser
                     .Where(u =>
                         u.UserName.ToLower().StartsWith(userSearchLower) &&
                         (userNameFromToken == null || u.UserName.ToLower() != userNameFromToken))
                     .Select(u => UtilsUserController.UserToDto(u))
                     .ToListAsync();
-
                 if (users.Count == 0)
                 {
                     users = await _context.DbUser
@@ -155,7 +154,6 @@ namespace CocktailDebacle.Server.Controllers
                         .Select(u => UtilsUserController.UserToDto(u))
                         .ToListAsync();
                 }
-
                 return Ok(new
                 {
                     TotalResult = users.Count,
@@ -197,24 +195,43 @@ namespace CocktailDebacle.Server.Controllers
 
             if (!string.IsNullOrEmpty(nameCocktail))
                 query = query.Where(c => c.StrDrink != null && c.StrDrink.ToLower().Contains(nameCocktail.ToLower()));
-            else if (!string.IsNullOrEmpty(ingredient))
-                query = query.Where(
-                    c => (c.StrIngredient1 != null && c.StrIngredient1.ToLower().Contains(ingredient.ToLower())) ||
-                        (c.StrIngredient2 != null && c.StrIngredient2.ToLower().Contains(ingredient.ToLower())) ||
-                        (c.StrIngredient3 != null && c.StrIngredient3.ToLower().Contains(ingredient.ToLower())) ||
-                        (c.StrIngredient4 != null && c.StrIngredient4.ToLower().Contains(ingredient.ToLower())) ||
-                        (c.StrIngredient5 != null && c.StrIngredient5.ToLower().Contains(ingredient.ToLower())) ||
-                        (c.StrIngredient6 != null && c.StrIngredient6.ToLower().Contains(ingredient.ToLower())) ||
-                        (c.StrIngredient7 != null && c.StrIngredient7.ToLower().Contains(ingredient.ToLower())) ||
-                        (c.StrIngredient8 != null && c.StrIngredient8.ToLower().Contains(ingredient.ToLower())) ||
-                        (c.StrIngredient9 != null && c.StrIngredient9.ToLower().Contains(ingredient.ToLower())) ||
-                        (c.StrIngredient10 != null && c.StrIngredient10.ToLower().Contains(ingredient.ToLower())) ||
-                        (c.StrIngredient11 != null && c.StrIngredient11.ToLower().Contains(ingredient.ToLower())) ||
-                        (c.StrIngredient12 != null && c.StrIngredient12.ToLower().Contains(ingredient.ToLower())) ||
-                        (c.StrIngredient13 != null && c.StrIngredient13.ToLower().Contains(ingredient.ToLower())) ||
-                        (c.StrIngredient14 != null && c.StrIngredient14.ToLower().Contains(ingredient.ToLower())) ||
-                        (c.StrIngredient15 != null && c.StrIngredient15.ToLower().Contains(ingredient.ToLower()))
-                );
+            if (!string.IsNullOrEmpty(ingredient))
+            {
+                var allCocktails = await query.ToListAsync();
+                var ingredients = ingredient.ToLower();
+                var IngredientStart = allCocktails
+                    .Where(c => UtilsCocktail.GetIngredients(c)
+                        .Any(i => i.ToLower().StartsWith(ingredients)))
+                    .ToList();
+                var IngredientContains = allCocktails
+                    .Where(c => UtilsCocktail.GetIngredients(c)
+                        .Any(i => i.ToLower().Contains(ingredients) && !i.ToLower().StartsWith(ingredients)))
+                    .ToList();
+                cocktailListIngredient = IngredientStart
+                    .Concat(IngredientContains)
+                    .GroupBy(c => c.Id)
+                    .Select(g => g.First())
+                    .ToList();
+                pageSize = 50;
+                totalItems = cocktailListIngredient.Count;
+                totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+                var PageCocktails = cocktailListIngredient
+                    .Skip((page - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
+                var cocktailDtos = PageCocktails
+                    .Select(c => UtilsCocktail.CocktailToDto(c))
+                    .ToList();
+                return Ok(new
+                {
+                    TotalResult = totalItems,
+                    TotalPages = totalPages,
+                    CurrentPage = page,
+                    PageSize = pageSize,
+                    Cocktails = cocktailDtos
+                });
+            }
+
             if (!string.IsNullOrEmpty(description))
                 query = query.Where(c => c.StrInstructions != null && c.StrInstructions.ToLower().Contains(description.ToLower()));
 
@@ -239,8 +256,8 @@ namespace CocktailDebacle.Server.Controllers
             }
 
             // Calcolo risultati dopo i filtri
-            var totalItems = await query.CountAsync();
-            var totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+            totalItems = await query.CountAsync();
+            totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
 
             // Ordinamento per nome, con precedenza se inizia con il testo cercato
             if (!string.IsNullOrEmpty(nameCocktail))
@@ -256,9 +273,6 @@ namespace CocktailDebacle.Server.Controllers
             }
 
             var cocktailList = await query.ToListAsync();
-
-            // Calcolo lo score per ogni cocktail (solo se autenticato)
-
             List<string> searchHistory = new();
             List<Cocktail> likedList = new();
             
