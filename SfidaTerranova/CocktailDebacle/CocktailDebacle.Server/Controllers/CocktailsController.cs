@@ -235,27 +235,6 @@ namespace CocktailDebacle.Server.Controllers
             if (!string.IsNullOrEmpty(description))
                 query = query.Where(c => c.StrInstructions != null && c.StrInstructions.ToLower().Contains(description.ToLower()));
 
-            User? user = null;
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                var userNameFromToken = User.FindFirst(ClaimTypes.Name)?.Value;
-                user = await _context.DbUser
-                    .Include(u => u.CocktailsLike)
-                    .FirstOrDefaultAsync(u => u.UserName == userNameFromToken);
-
-                // Se si richiedono solo i like, override sulla query (niente consigli, solo quelli likati)
-                if (!string.IsNullOrEmpty(cocktailLicke) && cocktailLicke.ToLower() == "true")
-                {
-                    var likedCocktailIds = user?.CocktailsLike.Select(c => c.Id).ToList();
-                    
-                    if (likedCocktailIds != null && likedCocktailIds.Any())
-                        query = query.Where(c => likedCocktailIds.Contains(c.Id));
-                    else
-                        query = query.Where(c => c.Id == 0);
-                }
-            }
-
-            // Calcolo risultati dopo i filtri
             totalItems = await query.CountAsync();
             totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
 
@@ -273,31 +252,12 @@ namespace CocktailDebacle.Server.Controllers
             }
 
             var cocktailList = await query.ToListAsync();
-            List<string> searchHistory = new();
-            List<Cocktail> likedList = new();
-            
-            if(CustomSearch == true && user?.CustomSearch == true){
-                searchHistory = user != null
-                    ? await _context.DbUserHistorySearch
-                        .Where(s => s.UserId == user.Id)
-                        .OrderByDescending(s => s.SearchDate)
-                        .Take(10)
-                        .Select(s => s.SearchText!.ToLower())
-                        .ToListAsync()
-                    : new List<string>();
-                likedList = user != null ? user.CocktailsLike.ToList() : new List<Cocktail>();
-            }
 
-            var cocktailScores = cocktailList
-            .Select(c => new {
-                Cocktail = c,
-                Score = (CustomSearch == true && user?.CustomSearch == true && user != null) ? UtilsCocktail.GetSuggestionScore(c, user, searchHistory, likedList) : 0})
-            .Where(c => !noFilter || c.Score > 0)
-            .OrderByDescending(c => c.Score)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .Select(c => UtilsCocktail.CocktailToDto(c.Cocktail))
-            .ToList();
+            var cocktailDto = cocktailList
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(c => UtilsCocktail.CocktailToDto(c))
+                .ToList();
 
             return Ok(new
             {
@@ -305,7 +265,7 @@ namespace CocktailDebacle.Server.Controllers
                 TotalPages = totalPages,
                 CurrentPage = page < 1 ? 1 : page,
                 PageSize = pageSize < 1 ? 10 : (pageSize > 100 ? 100 : pageSize),
-                Cocktails = cocktailScores
+                Cocktails = cocktailDto
             });
         }
 
