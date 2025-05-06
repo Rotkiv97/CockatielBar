@@ -96,7 +96,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddSingleton<ICleanTokenHostedService, CleanTokenHostedService>();
 builder.Services.AddHostedService(provider => provider.GetRequiredService<ICleanTokenHostedService>());
 builder.Services.AddHttpClient<CocktailImportService>();
-
+builder.Services.AddHttpClient<TranslationService>();
 
 var app = builder.Build();
 

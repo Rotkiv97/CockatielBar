@@ -655,22 +655,88 @@ namespace CocktailDebacle.Server.Controllers
         }
 
         [Authorize]
-        [HttpGet("GetMyCocktailSuggestions/{id}")]
-        public async Task<IActionResult> GetMyCocktailSuggestions(int id, 
-            [FromQuery] string type = "",
-            [FromQuery] int pageSize = 10 
-        )
+        [HttpGet("SuggestionsCocktailByUser/{id}")]
+        public async Task<ActionResult<IEnumerable<object>>> GetSuggestions(
+            int id,
+            [FromQuery] string type = "likes",
+            [FromQuery] int pageSize = 10)
         {
+
             var userName = User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(userName))
-            {
                 return Unauthorized("Utente non autenticato.");
-            }
-            var user = await _context.DbUser.FirstAsync(u => u.Id == id);
+            var user = await _context.DbUser
+                .Include(u => u.CocktailsLike)
+                .FirstOrDefaultAsync(u => u.Id == id);
+
             if (user == null)
+                return NotFound("User not found");
+
+            bool isAdult = user.IsOfMajorityAge ?? false;
+            var likedCocktailIds = user.CocktailsLike.Select(c => c.Id).ToHashSet();
+
+            IQueryable<Cocktail> query = _context.DbCocktails
+                .Where(c => !likedCocktailIds.Contains(c.Id) && (isAdult || c.StrAlcoholic!.ToLower() != "alcoholic"));
+
+            List<Cocktail> results = new();
+
+            if (type == "likes")
             {
-                return NotFound("Utente non trovato.");
+                var likedCocktails = await _context.DbCocktails
+                    .Where(c => c.UserLikes.Any(u => u.Id == user.Id))
+                    .ToListAsync();
+
+                if (likedCocktails.Count > 0)
+                {
+                    var similar = await UtilsUserController.FindSimilarCocktails(likedCocktails, query.ToList(), pageSize);
+                    results.AddRange(similar);
+                }
             }
+            else if (type == "search")
+            {
+                var history = await UtilsUserController.GetSearchHistory(_context, user.Id);
+
+                if (history.Any())
+                {
+                    var similar = await UtilsUserController.FindSimilarCocktails(history, query.ToList(), pageSize);
+                    results.AddRange(similar);
+                }
+                else
+                {
+                    // fallback se history vuota
+                    var fallback = await query
+                        .OrderBy(_ => Guid.NewGuid())
+                        .Take(pageSize)
+                        .ToListAsync();
+                    results.AddRange(fallback);
+                }
+            }
+            else if (type == "category")
+            {
+                var category = await UtilsUserController.GetPreferredCategory(_context, user.Id);
+                if (!string.IsNullOrEmpty(category))
+                {
+                    results.AddRange(await query
+                        .Where(c => c.StrCategory == category)
+                        .OrderBy(r => Guid.NewGuid())
+                        .Take(pageSize)
+                        .ToListAsync());
+                }
+            }
+
+            // Fallback o completamento se i risultati sono insufficienti
+            if (results.Count < pageSize)
+            {
+                var additional = await query
+                    .Where(c => !results.Select(r => r.Id).Contains(c.Id))
+                    .OrderBy(r => Guid.NewGuid())
+                    .Take(pageSize - results.Count)
+                    .ToListAsync();
+
+                results.AddRange(additional);
+            }
+
+            return Ok(results);
         }
     }
 

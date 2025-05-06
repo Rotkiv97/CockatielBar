@@ -107,9 +107,7 @@ namespace CocktailDebacle.Server.Controllers
             [FromQuery] string category = "",
             [FromQuery] string alcoholic = "",
             [FromQuery] string description = "",
-            [FromQuery] string cocktailLicke = "",
             [FromQuery] string UsernameCreateCocktail = "",
-            [FromQuery] bool CustomSearch = false,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10
         )
