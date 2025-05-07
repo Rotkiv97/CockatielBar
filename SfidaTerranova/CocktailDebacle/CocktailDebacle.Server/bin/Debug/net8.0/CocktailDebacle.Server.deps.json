@@ -8,6 +8,7 @@
     ".NETCoreApp,Version=v8.0": {
       "CocktailDebacle.Server/1.0.0": {
         "dependencies": {
+          "Azure.AI.Translation.Text": "1.0.0-beta.1",
           "BCrypt.Net-Next": "4.0.3",
           "CloudinaryDotNet": "1.27.5",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.0",
@@ -24,7 +25,19 @@
           "CocktailDebacle.Server.dll": {}
         }
       },
-      "Azure.Core/1.25.0": {
+      "Azure.AI.Translation.Text/1.0.0-beta.1": {
+        "dependencies": {
+          "Azure.Core": "1.31.0",
+          "System.Text.Json": "8.0.4"
+        },
+        "runtime": {
+          "lib/netstandard2.0/Azure.AI.Translation.Text.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.23.21802"
+          }
+        }
+      },
+      "Azure.Core/1.31.0": {
         "dependencies": {
           "Microsoft.Bcl.AsyncInterfaces": "6.0.0",
           "System.Diagnostics.DiagnosticSource": "6.0.0",
@@ -35,15 +48,15 @@
           "System.Threading.Tasks.Extensions": "4.5.4"
         },
         "runtime": {
-          "lib/net5.0/Azure.Core.dll": {
-            "assemblyVersion": "1.25.0.0",
-            "fileVersion": "1.2500.22.33004"
+          "lib/net6.0/Azure.Core.dll": {
+            "assemblyVersion": "1.31.0.0",
+            "fileVersion": "1.3100.23.21004"
           }
         }
       },
       "Azure.Identity/1.7.0": {
         "dependencies": {
-          "Azure.Core": "1.25.0",
+          "Azure.Core": "1.31.0",
           "Microsoft.Identity.Client": "4.47.2",
           "Microsoft.Identity.Client.Extensions.Msal": "2.19.3",
           "System.Memory": "4.5.4",
@@ -1333,12 +1346,19 @@
       "serviceable": false,
       "sha512": ""
     },
-    "Azure.Core/1.25.0": {
+    "Azure.AI.Translation.Text/1.0.0-beta.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-X8Dd4sAggS84KScWIjEbFAdt2U1KDolQopTPoHVubG2y3CM54f9l6asVrP5Uy384NWXjsspPYaJgz5xHc+KvTA==",
-      "path": "azure.core/1.25.0",
-      "hashPath": "azure.core.1.25.0.nupkg.sha512"
+      "sha512": "sha512-sYe31NZUfwJnv3Rls1w58Sdx68UHTA6zNefiPpvA1c/ae/VC8UZStkT17b9H1Ygu4Y77AKSffEfpQJG3CLHVlA==",
+      "path": "azure.ai.translation.text/1.0.0-beta.1",
+      "hashPath": "azure.ai.translation.text.1.0.0-beta.1.nupkg.sha512"
+    },
+    "Azure.Core/1.31.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-YZlzaVS4XpPPIob934+UFfxvxMWe05PG3FDfwAXZz+MY+ShDJCjMokfrfh18F7VDW5tG0iMbPVjigeL6crGCiQ==",
+      "path": "azure.core/1.31.0",
+      "hashPath": "azure.core.1.31.0.nupkg.sha512"
     },
     "Azure.Identity/1.7.0": {
       "type": "package",

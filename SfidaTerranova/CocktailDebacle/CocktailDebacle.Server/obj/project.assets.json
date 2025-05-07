@@ -2,7 +2,24 @@
   "version": 3,
   "targets": {
     "net8.0": {
-      "Azure.Core/1.25.0": {
+      "Azure.AI.Translation.Text/1.0.0-beta.1": {
+        "type": "package",
+        "dependencies": {
+          "Azure.Core": "1.31.0",
+          "System.Text.Json": "4.7.2"
+        },
+        "compile": {
+          "lib/netstandard2.0/Azure.AI.Translation.Text.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard2.0/Azure.AI.Translation.Text.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Azure.Core/1.31.0": {
         "type": "package",
         "dependencies": {
           "Microsoft.Bcl.AsyncInterfaces": "1.1.1",
@@ -14,12 +31,12 @@
           "System.Threading.Tasks.Extensions": "4.5.4"
         },
         "compile": {
-          "lib/net5.0/Azure.Core.dll": {
+          "lib/net6.0/Azure.Core.dll": {
             "related": ".xml"
           }
         },
         "runtime": {
-          "lib/net5.0/Azure.Core.dll": {
+          "lib/net6.0/Azure.Core.dll": {
             "related": ".xml"
           }
         }
@@ -2397,22 +2414,40 @@
     }
   },
   "libraries": {
-    "Azure.Core/1.25.0": {
-      "sha512": "X8Dd4sAggS84KScWIjEbFAdt2U1KDolQopTPoHVubG2y3CM54f9l6asVrP5Uy384NWXjsspPYaJgz5xHc+KvTA==",
+    "Azure.AI.Translation.Text/1.0.0-beta.1": {
+      "sha512": "sYe31NZUfwJnv3Rls1w58Sdx68UHTA6zNefiPpvA1c/ae/VC8UZStkT17b9H1Ygu4Y77AKSffEfpQJG3CLHVlA==",
       "type": "package",
-      "path": "azure.core/1.25.0",
+      "path": "azure.ai.translation.text/1.0.0-beta.1",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "CHANGELOG.md",
         "README.md",
-        "azure.core.1.25.0.nupkg.sha512",
+        "azure.ai.translation.text.1.0.0-beta.1.nupkg.sha512",
+        "azure.ai.translation.text.nuspec",
+        "azureicon.png",
+        "lib/netstandard2.0/Azure.AI.Translation.Text.dll",
+        "lib/netstandard2.0/Azure.AI.Translation.Text.xml"
+      ]
+    },
+    "Azure.Core/1.31.0": {
+      "sha512": "YZlzaVS4XpPPIob934+UFfxvxMWe05PG3FDfwAXZz+MY+ShDJCjMokfrfh18F7VDW5tG0iMbPVjigeL6crGCiQ==",
+      "type": "package",
+      "path": "azure.core/1.31.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "CHANGELOG.md",
+        "README.md",
+        "azure.core.1.31.0.nupkg.sha512",
         "azure.core.nuspec",
         "azureicon.png",
         "lib/net461/Azure.Core.dll",
         "lib/net461/Azure.Core.xml",
         "lib/net5.0/Azure.Core.dll",
         "lib/net5.0/Azure.Core.xml",
+        "lib/net6.0/Azure.Core.dll",
+        "lib/net6.0/Azure.Core.xml",
         "lib/netcoreapp2.1/Azure.Core.dll",
         "lib/netcoreapp2.1/Azure.Core.xml",
         "lib/netstandard2.0/Azure.Core.dll",
@@ -7261,6 +7296,7 @@
   },
   "projectFileDependencyGroups": {
     "net8.0": [
+      "Azure.AI.Translation.Text >= 1.0.0-beta.1",
       "BCrypt.Net-Next >= 4.0.3",
       "CloudinaryDotNet >= 1.27.5",
       "Microsoft.AspNetCore.Authentication.JwtBearer >= 8.0.0",
@@ -7325,6 +7361,10 @@
       "net8.0": {
         "targetAlias": "net8.0",
         "dependencies": {
+          "Azure.AI.Translation.Text": {
+            "target": "Package",
+            "version": "[1.0.0-beta.1, )"
+          },
           "BCrypt.Net-Next": {
             "target": "Package",
             "version": "[4.0.3, )"
@@ -7418,7 +7458,7 @@
       "code": "NU1603",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "CocktailDebacle.Server depends on OpenAI (>= 1.6.3) but OpenAI 1.6.3 was not found. OpenAI 1.7.0 was resolved instead.",
+      "message": "CocktailDebacle.Server dipende da OpenAI (>= 1.6.3), ma OpenAI 1.6.3 non è stato trovato. OpenAI 1.7.0 è stato risolto.",
       "libraryId": "OpenAI",
       "targetGraphs": [
         "net8.0"
@@ -7428,7 +7468,7 @@
       "code": "NU1903",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "Package 'Azure.Identity' 1.7.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-5mfx-4wcx-rv27",
+      "message": "Il pacchetto 'Azure.Identity' 1.7.0 presenta una vulnerabilità nota di gravità alta, https://github.com/advisories/GHSA-5mfx-4wcx-rv27",
       "libraryId": "Azure.Identity",
       "targetGraphs": [
         "net8.0"
@@ -7438,7 +7478,7 @@
       "code": "NU1902",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "Package 'Azure.Identity' 1.7.0 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-m5vv-6r4h-3vj9",
+      "message": "Il pacchetto 'Azure.Identity' 1.7.0 presenta una vulnerabilità nota di gravità moderata, https://github.com/advisories/GHSA-m5vv-6r4h-3vj9",
       "libraryId": "Azure.Identity",
       "targetGraphs": [
         "net8.0"
@@ -7448,7 +7488,7 @@
       "code": "NU1902",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "Package 'Azure.Identity' 1.7.0 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-wvxc-855f-jvrv",
+      "message": "Il pacchetto 'Azure.Identity' 1.7.0 presenta una vulnerabilità nota di gravità moderata, https://github.com/advisories/GHSA-wvxc-855f-jvrv",
       "libraryId": "Azure.Identity",
       "targetGraphs": [
         "net8.0"
@@ -7458,7 +7498,7 @@
       "code": "NU1903",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "Package 'Microsoft.Data.SqlClient' 5.1.1 has a known high severity vulnerability, https://github.com/advisories/GHSA-98g6-xh36-x2p7",
+      "message": "Il pacchetto 'Microsoft.Data.SqlClient' 5.1.1 presenta una vulnerabilità nota di gravità alta, https://github.com/advisories/GHSA-98g6-xh36-x2p7",
       "libraryId": "Microsoft.Data.SqlClient",
       "targetGraphs": [
         "net8.0"
@@ -7468,7 +7508,7 @@
       "code": "NU1903",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "Package 'Microsoft.Extensions.Caching.Memory' 8.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-qj66-m88j-hmgj",
+      "message": "Il pacchetto 'Microsoft.Extensions.Caching.Memory' 8.0.0 presenta una vulnerabilità nota di gravità alta, https://github.com/advisories/GHSA-qj66-m88j-hmgj",
       "libraryId": "Microsoft.Extensions.Caching.Memory",
       "targetGraphs": [
         "net8.0"
@@ -7478,7 +7518,7 @@
       "code": "NU1902",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "Package 'Microsoft.IdentityModel.JsonWebTokens' 7.0.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-59j7-ghrg-fj52",
+      "message": "Il pacchetto 'Microsoft.IdentityModel.JsonWebTokens' 7.0.3 presenta una vulnerabilità nota di gravità moderata, https://github.com/advisories/GHSA-59j7-ghrg-fj52",
       "libraryId": "Microsoft.IdentityModel.JsonWebTokens",
       "targetGraphs": [
         "net8.0"
@@ -7488,7 +7528,7 @@
       "code": "NU1903",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "Package 'System.Formats.Asn1' 5.0.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-447r-wph3-92pm",
+      "message": "Il pacchetto 'System.Formats.Asn1' 5.0.0 presenta una vulnerabilità nota di gravità alta, https://github.com/advisories/GHSA-447r-wph3-92pm",
       "libraryId": "System.Formats.Asn1",
       "targetGraphs": [
         "net8.0"
@@ -7498,7 +7538,7 @@
       "code": "NU1902",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "Package 'System.IdentityModel.Tokens.Jwt' 7.0.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-59j7-ghrg-fj52",
+      "message": "Il pacchetto 'System.IdentityModel.Tokens.Jwt' 7.0.3 presenta una vulnerabilità nota di gravità moderata, https://github.com/advisories/GHSA-59j7-ghrg-fj52",
       "libraryId": "System.IdentityModel.Tokens.Jwt",
       "targetGraphs": [
         "net8.0"
@@ -7508,7 +7548,7 @@
       "code": "NU1903",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "Package 'System.Text.Json' 8.0.4 has a known high severity vulnerability, https://github.com/advisories/GHSA-8g4q-xg66-9fp4",
+      "message": "Il pacchetto 'System.Text.Json' 8.0.4 presenta una vulnerabilità nota di gravità alta, https://github.com/advisories/GHSA-8g4q-xg66-9fp4",
       "libraryId": "System.Text.Json",
       "targetGraphs": [
         "net8.0"

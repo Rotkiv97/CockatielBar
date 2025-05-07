@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using CocktailDebacle.Server.Service;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
 
 
 /*
@@ -96,7 +97,11 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddSingleton<ICleanTokenHostedService, CleanTokenHostedService>();
 builder.Services.AddHostedService(provider => provider.GetRequiredService<ICleanTokenHostedService>());
 builder.Services.AddHttpClient<CocktailImportService>();
-builder.Services.AddHttpClient<TranslationService>();
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<TranslationService>();
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.SetMinimumLevel(LogLevel.Debug);
 
 var app = builder.Build();
 

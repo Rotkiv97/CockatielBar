@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Text.Json.Serialization;
 
 namespace CocktailDebacle.Server.Service
 {
@@ -109,7 +110,6 @@ namespace CocktailDebacle.Server.Service
 
         private string GetSubscriptionKey()
         {
-            // Prima prova con le variabili d'ambiente (più sicuro)
             var key = Environment.GetEnvironmentVariable("TRANSLATOR_SUBSCRIPTION_KEY") 
                    ?? _config["TranslatorService:SubscriptionKey"];
             
@@ -139,17 +139,15 @@ namespace CocktailDebacle.Server.Service
             );
         }
 
-        private string BuildTranslationUrl(
-            string endpoint, 
-            string toLanguage, 
-            string? fromLanguage)
+        private string BuildTranslationUrl(string endpoint, string toLanguage, string? fromLanguage)
         {
             var fromParam = string.IsNullOrWhiteSpace(fromLanguage) 
-                ? "from=auto" 
-                : $"from={fromLanguage.ToLower()}";
+                ? "" 
+                : $"&from={fromLanguage.ToLower()}";
 
-            return $"{endpoint}/translate?api-version=3.0&{fromParam}&to={toLanguage.ToLower()}";
+            return $"{endpoint}/translator/text/v3.0/translate?api-version=3.0{fromParam}&to={toLanguage.ToLower()}";
         }
+
 
         private async Task<string> HandleResponse(HttpResponseMessage response)
         {
@@ -169,7 +167,21 @@ namespace CocktailDebacle.Server.Service
             if (parsed == null || !parsed.Any())
                 throw new InvalidOperationException("Nessun risultato di traduzione ricevuto");
 
-            return parsed.First().Translations?.FirstOrDefault()?.Text ?? string.Empty;
+            if (parsed != null && parsed.FirstOrDefault()?.Translations?.FirstOrDefault()?.Text != null)
+            {
+                var firstTranslation = parsed.FirstOrDefault()?.Translations?.FirstOrDefault()?.Text;
+                if (string.IsNullOrEmpty(firstTranslation))
+                {
+                    _logger.LogWarning("Traduzione non trovata nella risposta JSON.");
+                    return string.Empty;
+                }
+                return firstTranslation;
+            }
+            else
+            {
+                _logger.LogWarning("Traduzione non trovata nella risposta JSON.");
+                return string.Empty;
+            }
         }
 
         #endregion
@@ -177,12 +189,16 @@ namespace CocktailDebacle.Server.Service
 
     public class TranslationResult
     {
+        [JsonPropertyName("translations")]
         public List<TranslationText>? Translations { get; set; }
     }
 
     public class TranslationText
     {
+        [JsonPropertyName("text")]
         public string? Text { get; set; }
+
+        [JsonPropertyName("to")]
         public string? To { get; set; }
     }
 }
