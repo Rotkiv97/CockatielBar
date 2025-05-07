@@ -78,19 +78,14 @@ namespace CocktailDebacle.Server.Service
             }
         }
 
-        #region Metodi Privati
-
         private void ValidateInput(string text, string toLanguage, string? fromLanguage)
         {
             if (string.IsNullOrWhiteSpace(text))
                 throw new ArgumentException("Il testo da tradurre è obbligatorio");
-
             if (string.IsNullOrWhiteSpace(toLanguage))
                 throw new ArgumentException("La lingua di destinazione è obbligatoria");
-
             if (!_supportedLanguages.Contains(toLanguage.ToLower()))
                 throw new ArgumentException($"Lingua di destinazione non supportata: {toLanguage}");
-
             if (!string.IsNullOrWhiteSpace(fromLanguage) && 
                 !_supportedLanguages.Contains(fromLanguage.ToLower()))
             {
@@ -101,7 +96,6 @@ namespace CocktailDebacle.Server.Service
         private string GetConfiguredEndpoint()
         {
             var endpoint = _config["TranslatorService:Endpoint"]?.TrimEnd('/');
-            
             if (string.IsNullOrWhiteSpace(endpoint))
                 throw new InvalidOperationException("Endpoint di traduzione non configurato");
 
@@ -112,10 +106,8 @@ namespace CocktailDebacle.Server.Service
         {
             var key = Environment.GetEnvironmentVariable("TRANSLATOR_SUBSCRIPTION_KEY") 
                    ?? _config["TranslatorService:SubscriptionKey"];
-            
             if (string.IsNullOrWhiteSpace(key))
                 throw new InvalidOperationException("Chiave di sottoscrizione non configurata");
-
             return key;
         }
 
@@ -183,8 +175,6 @@ namespace CocktailDebacle.Server.Service
                 return string.Empty;
             }
         }
-
-        #endregion
     }
 
     public class TranslationResult

@@ -654,29 +654,50 @@ namespace CocktailDebacle.Server.Controllers
             return Ok(isLiked);
         }
 
-        [Authorize]
+        [AllowAnonymous]
         [HttpGet("SuggestionsCocktailByUser/{id}")]
         public async Task<ActionResult<IEnumerable<object>>> GetSuggestions(
             int id,
             [FromQuery] string type = "likes",
-            [FromQuery] int pageSize = 10)
+            [FromQuery] int pageSize = 10
+        )
         {
+            var isLoggedIn = User.Identity?.IsAuthenticated ?? false;
+            User? user = null;
+            if (isLoggedIn)
+            {
+                var userName = User.FindFirst(ClaimTypes.Name)?.Value;
+                if (!string.IsNullOrEmpty(userName))
+                {
+                    user = await _context.DbUser
+                        .Include(u => u.CocktailsLike)
+                        .FirstOrDefaultAsync(u => u.Id == id);
+                }
+            }
 
-            var userName = User.FindFirst(ClaimTypes.Name)?.Value;
-            if (string.IsNullOrEmpty(userName))
-                return Unauthorized("Utente non autenticato.");
-            var user = await _context.DbUser
-                .Include(u => u.CocktailsLike)
-                .FirstOrDefaultAsync(u => u.Id == id);
+            if (!isLoggedIn || id <= 0 || user == null)
+            {
+                var commonCategory = await _context.DbCocktails
+                    .Where(c => !string.IsNullOrEmpty(c.StrCategory) && !string.IsNullOrEmpty(c.StrAlcoholic) && c.StrAlcoholic.ToLower() != "alcoholic")
+                    .GroupBy(c => c.StrCategory)
+                    .OrderByDescending(g => g.Count())
+                    .Select(g => g.Key)
+                    .FirstOrDefaultAsync();
 
-            if (user == null)
-                return NotFound("User not found");
+                var fallbackCocktails = await _context.DbCocktails
+                    .Where(c => c.StrCategory == commonCategory && c.StrAlcoholic != null && c.StrAlcoholic.ToLower() != "alcoholic")
+                    .OrderBy(c => Guid.NewGuid())
+                    .Take(pageSize)
+                    .ToListAsync();
+
+                return Ok(fallbackCocktails);
+            }
 
             bool isAdult = user.IsOfMajorityAge ?? false;
             var likedCocktailIds = user.CocktailsLike.Select(c => c.Id).ToHashSet();
 
             IQueryable<Cocktail> query = _context.DbCocktails
-                .Where(c => !likedCocktailIds.Contains(c.Id) && (isAdult || c.StrAlcoholic!.ToLower() != "alcoholic"));
+                .Where(c => !likedCocktailIds!.Contains(c.Id) && (isAdult || c.StrAlcoholic!.ToLower() != "alcoholic"));
 
             List<Cocktail> results = new();
 
