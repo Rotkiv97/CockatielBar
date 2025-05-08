@@ -354,7 +354,7 @@ namespace CocktailDebacle.Server.Controllers
         [Authorize]
         [HttpGet("IngedientSearch/SearchIngredient")]
         public async Task<IActionResult> GetIngredientSearch(
-            [FromQuery] string UserName = "",
+            [FromQuery] int id,
             [FromQuery] string ingredient = "",
             [FromQuery] int max = 10
         ){
@@ -363,11 +363,7 @@ namespace CocktailDebacle.Server.Controllers
             var usernamebytoken = User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(usernamebytoken))
                 return Unauthorized("User not found.");
-
-            if (string.IsNullOrEmpty(UserName) || UserName != usernamebytoken)
-                return BadRequest("UserName not match.");
-            var user = await _context.DbUser
-                .FirstOrDefaultAsync(u => u.UserName == UserName);
+            var user = await _context.DbUser.FirstAsync(u => u.Id == id);
             if (user == null)
                 return NotFound("User not found.");
             
@@ -387,7 +383,7 @@ namespace CocktailDebacle.Server.Controllers
         [Authorize]
         [HttpGet("SearchMeasureType/searchMeasure")]
         public async Task<IActionResult> GetMeasureTypeSearch(
-            [FromQuery] string UserName = "", 
+            [FromQuery] int id, 
             [FromQuery] string measure = "",
             [FromQuery] int max = 40
         ){
@@ -398,11 +394,7 @@ namespace CocktailDebacle.Server.Controllers
             if (string.IsNullOrEmpty(usernamebytoken))
                 return Unauthorized("User not found.");
 
-            if(string.IsNullOrEmpty(UserName) || UserName != usernamebytoken)
-                return BadRequest("UserName not match.");
-
-            var user = await _context.DbUser
-                .FirstOrDefaultAsync(u => u.UserName == UserName);
+            var user = await _context.DbUser.FirstOrDefaultAsync(u => u.Id == id);
             if (user == null)
                 return NotFound("User not found.");
 
