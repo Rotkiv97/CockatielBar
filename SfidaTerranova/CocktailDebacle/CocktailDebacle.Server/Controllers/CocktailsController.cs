@@ -370,8 +370,8 @@ namespace CocktailDebacle.Server.Controllers
 
             var isAdult = user.IsOfMajorityAge == true;
             var listIngredient = isAdult
-            ? UtilsCocktail.SearchIngredients(ingredient, max)
-            : UtilsCocktail.SearchNonAlcoholicIngredients(ingredient, max);
+            ? UtilsCocktail.SearchIngredients(ingredient, _context ,max)
+            : UtilsCocktail.SearchNonAlcoholicIngredients(ingredient, _context ,max);
             
             return Ok(new
             {
@@ -398,7 +398,7 @@ namespace CocktailDebacle.Server.Controllers
             if (user == null)
                 return NotFound("User not found.");
 
-            var listMeasure = UtilsCocktail.SearchMeasureType(measure, max);
+            var listMeasure = UtilsCocktail.SearchMeasureType(measure, max, _context);
             
             return Ok(new
             {
@@ -406,7 +406,54 @@ namespace CocktailDebacle.Server.Controllers
             });
         }
 
-        // Cocktail Update (User)
+        // search glass e search category
+
+        [Authorize]
+        [HttpGet("SearchGlass/searchGlass")]
+        public async Task<IActionResult> GetGlassSearch(
+            [FromQuery] int id, 
+            [FromQuery] string glass = "",
+            [FromQuery] int max = 40
+        ){
+            if (string.IsNullOrEmpty(glass))
+                return BadRequest("Glass cannot be empty.");
+
+            var usernamebytoken = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(usernamebytoken))
+                return Unauthorized("User not found.");
+
+            var user = await _context.DbUser.FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null)
+                return NotFound("User not found.");
+
+            var listGlass = UtilsCocktail.SearchGlassType(glass, _context ,max);
+            
+            return Ok(new{ glassTypes = listGlass });
+        }
+
+        [Authorize]
+        [HttpGet("SearchCategory/searchCategory")]
+        public async Task<IActionResult> GetCategorySearch(
+            [FromQuery] int id, 
+            [FromQuery] string category = "",
+            [FromQuery] int max = 40
+        ){
+            if (string.IsNullOrEmpty(category))
+                return BadRequest("Category cannot be empty.");
+
+            var usernamebytoken = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (string.IsNullOrEmpty(usernamebytoken))
+                return Unauthorized("User not found.");
+
+            var user = await _context.DbUser.FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null)
+                return NotFound("User not found.");
+
+            var listCategory = UtilsCocktail.SearchCategoryType(category, max, _context);
+            
+            return Ok(new { categoryTypes = listCategory });
+        }
+
         [Authorize]
         [HttpPut("CocktailUpdate/{idDrink}")]
         public async Task<IActionResult> UpdateCocktail(int idDrink, [FromBody] CocktailCreate updatedCocktail)

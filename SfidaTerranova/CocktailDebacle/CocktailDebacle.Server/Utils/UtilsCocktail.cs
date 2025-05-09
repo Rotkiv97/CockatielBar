@@ -7,6 +7,7 @@ using System.Globalization;
 using CocktailDebacle.Server.DTOs;
 using CocktailDebacle.Server.Models;
 using Microsoft.EntityFrameworkCore;
+using CocktailDebacle.Server.Service;
 
 namespace CocktailDebacle.Server.Utils
 {
@@ -172,19 +173,50 @@ namespace CocktailDebacle.Server.Utils
             "Apricot jam", "Blueberry jam", "Raspberry jam"
         };
 
-        public static List<string> SearchMeasureType(string search, int max)
+        public static readonly List<string> catergories = new List<string>
+        {
+            "Ordinary Drink", "Cocktail", "Shake", "Other/Unknown", "Homemade Liqueur", "Punch",
+            "Coffee / Tea", "Soft Drink", "Beer", "Cocoa", "Milk / Cream", "Dessert",
+            "Non_Alcoholic_Beverage", "Alcoholic Cocktail", "Aperitif", "After Dinner Drink", "Infused Spirit",
+            "Tiki Drink", "Sour", "Highball", "Lowball", "Mocktail"
+        };
+
+        public static void AddToListType(AppDbContext context, string type, List<string> list)
+        {
+            var property = typeof(Cocktail).GetProperty(type);
+            if (property == null)
+                throw new ArgumentException($"Property '{type}' does not exist on Cocktail");
+
+            var values = context.DbCocktails
+                .AsEnumerable() // usa LINQ to Objects per usare reflection in sicurezza
+                .Select(c => property.GetValue(c)?.ToString()?.Trim())
+                .Where(v => !string.IsNullOrWhiteSpace(v))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            foreach (var value in values)
+            {
+                if (!list.Contains(value!, StringComparer.OrdinalIgnoreCase))
+                    list.Add(value!);
+            }
+        }
+
+        public static List<string> SearchMeasureType(string search, int max, AppDbContext context)
         {
             if (string.IsNullOrWhiteSpace(search))
                 return new List<string>();
 
             search = search.Trim().ToLower();
 
+            AddToListType(context, "StrMeasure", MeasurementUnits);
+
             var startsWith = MeasurementUnits
-                .Where(i => i != null && i.ToLower().StartsWith(search))
+                .Where(i => !string.IsNullOrWhiteSpace(i) && i.ToLower().StartsWith(search))
                 .ToList();
 
             var contains = MeasurementUnits
-                .Where(i => i != null && i.ToLower().Contains(search) && !i.ToLower().StartsWith(search))
+                .Where(i => !string.IsNullOrWhiteSpace(i) && i.ToLower().Contains(search) && !i.ToLower().StartsWith(search))
+
                 .ToList();
 
             var result = startsWith
@@ -196,29 +228,32 @@ namespace CocktailDebacle.Server.Utils
             return result;
         }
 
-        public static List<string> SearchIngredients(string search, int maxResults = 10)
+        public static List<string> SearchIngredients(string search, AppDbContext context, int maxResults = 10)
         {
             if (string.IsNullOrWhiteSpace(search))
                 return new List<string>();
 
-            search = search.Trim().ToLower();
 
+            search = search.Trim().ToLower();
+            AddToListType(context, "StrIngredient", IngredientAlcoholic);
             // Alcolici
             var startsWithAlcoholic = IngredientAlcoholic
-                .Where(i => i != null && i.ToLower().StartsWith(search))
+                .Where(i => !string.IsNullOrWhiteSpace(i) && i.ToLower().StartsWith(search))
                 .ToList();
 
             var containsAlcoholic = IngredientAlcoholic
-                .Where(i => i != null && i.ToLower().Contains(search) && !i.ToLower().StartsWith(search))
+                .Where(i => !string.IsNullOrWhiteSpace(i) && i.ToLower().Contains(search) && !i.ToLower().StartsWith(search))
+
                 .ToList();
 
             // Analcolici
             var startsWithNonAlcoholic = IngredientNonAlcoholic
-                .Where(i => i != null && i.ToLower().StartsWith(search))
+                .Where(i => !string.IsNullOrWhiteSpace(i) && i.ToLower().StartsWith(search))
                 .ToList();
 
             var containsNonAlcoholic = IngredientNonAlcoholic
-                .Where(i => i != null && i.ToLower().Contains(search) && !i.ToLower().StartsWith(search))
+                .Where(i => !string.IsNullOrWhiteSpace(i) && i.ToLower().Contains(search) && !i.ToLower().StartsWith(search))
+
                 .ToList();
 
             var result = startsWithAlcoholic
@@ -233,19 +268,73 @@ namespace CocktailDebacle.Server.Utils
         }
 
 
-        public static List<string> SearchNonAlcoholicIngredients(string search, int maxResults = 10)
+        public static List<string> SearchNonAlcoholicIngredients(string search, AppDbContext context ,int maxResults = 10)
         {
             if (string.IsNullOrWhiteSpace(search))
                 return new List<string>();
 
             search = search.Trim().ToLower();
 
+            AddToListType(context, "StrIngredient", IngredientNonAlcoholic);
             var startsWith = IngredientNonAlcoholic
-                .Where(i => i != null && i.ToLower().StartsWith(search))
+                .Where(i => !string.IsNullOrWhiteSpace(i) && i.ToLower().StartsWith(search))
                 .ToList();
 
             var contains = IngredientNonAlcoholic
-                .Where(i => i != null && i.ToLower().Contains(search) && !i.ToLower().StartsWith(search))
+                .Where(i => !string.IsNullOrWhiteSpace(i) && i.ToLower().Contains(search) && !i.ToLower().StartsWith(search))
+
+                .ToList();
+
+            var result = startsWith
+                .Concat(contains)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Take(maxResults)
+                .ToList();
+
+            return result;
+        }
+
+        public static List<string> SearchGlassType(string search, AppDbContext context ,int maxResults)
+        {
+            if (string.IsNullOrWhiteSpace(search))
+                return new List<string>();
+
+            search = search.Trim().ToLower();
+
+            AddToListType(context, "StrGlass", GlassCapacity.Keys.ToList());
+            var startsWith = GlassCapacity.Keys
+                .Where(i => !string.IsNullOrWhiteSpace(i) && i.ToLower().StartsWith(search))
+                .ToList();
+
+            var contains = GlassCapacity.Keys
+                .Where(i => !string.IsNullOrWhiteSpace(i) && i.ToLower().Contains(search) && !i.ToLower().StartsWith(search))
+
+                .ToList();
+
+            var result = startsWith
+                .Concat(contains)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Take(maxResults)
+                .ToList();
+
+            return result;
+        }
+        public static List<string> SearchCategoryType(string search, int maxResults, AppDbContext context)
+        {
+            if (string.IsNullOrWhiteSpace(search))
+                return new List<string>();
+
+            search = search.Trim().ToLower();
+
+            AddToListType(context, "StrCategory", catergories);
+
+            var startsWith = catergories
+                .Where(i => !string.IsNullOrWhiteSpace(i) && i.ToLower().StartsWith(search))
+                .ToList();
+
+            var contains = catergories
+                .Where(i => !string.IsNullOrWhiteSpace(i) && i.ToLower().Contains(search) && !i.ToLower().StartsWith(search))
+
                 .ToList();
 
             var result = startsWith
@@ -505,76 +594,76 @@ namespace CocktailDebacle.Server.Utils
         }
 
 
-        public static int GetSuggestionScore(Cocktail c, User user, List<string> searchHistory, List<Cocktail> likedCocktails)
-        {
-            int score = 0;
+        // public static int GetSuggestionScore(Cocktail c, User user, List<string> searchHistory, List<Cocktail> likedCocktails)
+        // {
+        //     int score = 0;
 
-            var filterWeight = new Dictionary<SuggestionUser, int>{
-                { SuggestionUser.NameMatch, 4 },
-                { SuggestionUser.IngredientMatch, 2 },
-                { SuggestionUser.CategoryMatch, 2 },
-                { SuggestionUser.GlassMatch, 3 },
-                { SuggestionUser.DescriptionMatch, 2 },
-                { SuggestionUser.SearchHistoryMatch, 6 },
-                { SuggestionUser.likeCocktail, 7 }
-            };
-
-
-            var ingredients = Enumerable.Range(1, 15)
-                .Select(i => typeof(Cocktail).GetProperty($"StrIngredient{i}")?.GetValue(c)?.ToString()?.ToLower())
-                .Where(i => !string.IsNullOrWhiteSpace(i))
-                .ToList();
+        //     var filterWeight = new Dictionary<SuggestionUser, int>{
+        //         { SuggestionUser.NameMatch, 4 },
+        //         { SuggestionUser.IngredientMatch, 2 },
+        //         { SuggestionUser.CategoryMatch, 2 },
+        //         { SuggestionUser.GlassMatch, 3 },
+        //         { SuggestionUser.DescriptionMatch, 2 },
+        //         { SuggestionUser.SearchHistoryMatch, 6 },
+        //         { SuggestionUser.likeCocktail, 7 }
+        //     };
 
 
-            // Ingredienti più presenti nei like
-            var topIngredientLikes = likedCocktails
-                .SelectMany(l => Enumerable.Range(1, 15)
-                    .Select(i => typeof(Cocktail).GetProperty($"StrIngredient{i}")?.GetValue(l)?.ToString()?.ToLower())
-                    .Where(i => !string.IsNullOrWhiteSpace(i)))
-                .GroupBy(i => i)
-                .OrderByDescending(g => g.Count())
-                .Take(5) // Prendi i primi 3 ingredienti più comuni
-                .Select(g => g.Key)
-                .ToList();
+        //     var ingredients = Enumerable.Range(1, 15)
+        //         .Select(i => typeof(Cocktail).GetProperty($"StrIngredient{i}")?.GetValue(c)?.ToString()?.ToLower())
+        //         .Where(i => !string.IsNullOrWhiteSpace(i))
+        //         .ToList();
 
-            if(ingredients.Any(i => topIngredientLikes.Contains(i))) 
-                score += filterWeight[SuggestionUser.IngredientMatch];
-            // MATCH con LIKE
-            foreach (var liked in likedCocktails)
-            {
-                if (liked.Id == c.Id) {
-                    score += filterWeight[SuggestionUser.likeCocktail];
-                    continue; 
-                }
-                // Ingredient match
-                var likedIngredients = Enumerable.Range(1, 15)
-                    .Select(i => typeof(Cocktail).GetProperty($"StrIngredient{i}")?.GetValue(liked)?.ToString()?.ToLower())
-                    .Where(i => !string.IsNullOrWhiteSpace(i))
-                    .ToList();
 
-                if (ingredients.Any(i => likedIngredients.Contains(i))) 
-                    score +=  filterWeight[SuggestionUser.IngredientMatch];
+        //     // Ingredienti più presenti nei like
+        //     var topIngredientLikes = likedCocktails
+        //         .SelectMany(l => Enumerable.Range(1, 15)
+        //             .Select(i => typeof(Cocktail).GetProperty($"StrIngredient{i}")?.GetValue(l)?.ToString()?.ToLower())
+        //             .Where(i => !string.IsNullOrWhiteSpace(i)))
+        //         .GroupBy(i => i)
+        //         .OrderByDescending(g => g.Count())
+        //         .Take(5) // Prendi i primi 3 ingredienti più comuni
+        //         .Select(g => g.Key)
+        //         .ToList();
 
-                // Categoria, bicchiere
-                if (!string.IsNullOrEmpty(c.StrCategory) && c.StrCategory == liked.StrCategory)
-                    score +=  filterWeight[SuggestionUser.CategoryMatch];;
-                if (!string.IsNullOrEmpty(c.StrGlass) && c.StrGlass == liked.StrGlass)
-                    score +=  filterWeight[SuggestionUser.GlassMatch];
-            }
+        //     if(ingredients.Any(i => topIngredientLikes.Contains(i))) 
+        //         score += filterWeight[SuggestionUser.IngredientMatch];
+        //     // MATCH con LIKE
+        //     foreach (var liked in likedCocktails)
+        //     {
+        //         if (liked.Id == c.Id) {
+        //             score += filterWeight[SuggestionUser.likeCocktail];
+        //             continue; 
+        //         }
+        //         // Ingredient match
+        //         var likedIngredients = Enumerable.Range(1, 15)
+        //             .Select(i => typeof(Cocktail).GetProperty($"StrIngredient{i}")?.GetValue(liked)?.ToString()?.ToLower())
+        //             .Where(i => !string.IsNullOrWhiteSpace(i))
+        //             .ToList();
 
-            // MATCH con ricerche recenti
-            if (searchHistory.Any(s => !string.IsNullOrEmpty(c.StrDrink) && c.StrDrink.ToLower().Contains(s)))
-                score +=  filterWeight[SuggestionUser.NameMatch];
-            if (searchHistory.Any(s => ingredients.Any(i => i != null && i.Contains(s))))
-                score +=  filterWeight[SuggestionUser.IngredientMatch];
-            if (searchHistory.Any(s => c.StrCategory?.ToLower().Contains(s) == true))
-                score +=  filterWeight[SuggestionUser.CategoryMatch];
-            if (searchHistory.Any(s => c.StrGlass?.ToLower().Contains(s) == true))
-                score +=  filterWeight[SuggestionUser.GlassMatch];
-            if (searchHistory.Any(s => c.StrInstructions?.ToLower().Contains(s) == true))
-                score +=  filterWeight[SuggestionUser.DescriptionMatch];
-            return score;
-        }
+        //         if (ingredients.Any(i => likedIngredients.Contains(i))) 
+        //             score +=  filterWeight[SuggestionUser.IngredientMatch];
+
+        //         // Categoria, bicchiere
+        //         if (!string.IsNullOrEmpty(c.StrCategory) && c.StrCategory == liked.StrCategory)
+        //             score +=  filterWeight[SuggestionUser.CategoryMatch];;
+        //         if (!string.IsNullOrEmpty(c.StrGlass) && c.StrGlass == liked.StrGlass)
+        //             score +=  filterWeight[SuggestionUser.GlassMatch];
+        //     }
+
+        //     // MATCH con ricerche recenti
+        //     if (searchHistory.Any(s => !string.IsNullOrEmpty(c.StrDrink) && c.StrDrink.ToLower().Contains(s)))
+        //         score +=  filterWeight[SuggestionUser.NameMatch];
+        //     if (searchHistory.Any(s => ingredients.Any(i => i != null && i.Contains(s))))
+        //         score +=  filterWeight[SuggestionUser.IngredientMatch];
+        //     if (searchHistory.Any(s => c.StrCategory?.ToLower().Contains(s) == true))
+        //         score +=  filterWeight[SuggestionUser.CategoryMatch];
+        //     if (searchHistory.Any(s => c.StrGlass?.ToLower().Contains(s) == true))
+        //         score +=  filterWeight[SuggestionUser.GlassMatch];
+        //     if (searchHistory.Any(s => c.StrInstructions?.ToLower().Contains(s) == true))
+        //         score +=  filterWeight[SuggestionUser.DescriptionMatch];
+        //     return score;
+        // }
 
     }
 }
