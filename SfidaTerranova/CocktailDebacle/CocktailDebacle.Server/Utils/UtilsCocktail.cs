@@ -216,7 +216,6 @@ namespace CocktailDebacle.Server.Utils
 
             var contains = MeasurementUnits
                 .Where(i => !string.IsNullOrWhiteSpace(i) && i.ToLower().Contains(search) && !i.ToLower().StartsWith(search))
-
                 .ToList();
 
             var result = startsWith
@@ -253,7 +252,6 @@ namespace CocktailDebacle.Server.Utils
 
             var containsNonAlcoholic = IngredientNonAlcoholic
                 .Where(i => !string.IsNullOrWhiteSpace(i) && i.ToLower().Contains(search) && !i.ToLower().StartsWith(search))
-
                 .ToList();
 
             var result = startsWithAlcoholic
@@ -282,7 +280,6 @@ namespace CocktailDebacle.Server.Utils
 
             var contains = IngredientNonAlcoholic
                 .Where(i => !string.IsNullOrWhiteSpace(i) && i.ToLower().Contains(search) && !i.ToLower().StartsWith(search))
-
                 .ToList();
 
             var result = startsWith
@@ -308,7 +305,6 @@ namespace CocktailDebacle.Server.Utils
 
             var contains = GlassCapacity.Keys
                 .Where(i => !string.IsNullOrWhiteSpace(i) && i.ToLower().Contains(search) && !i.ToLower().StartsWith(search))
-
                 .ToList();
 
             var result = startsWith
@@ -334,7 +330,6 @@ namespace CocktailDebacle.Server.Utils
 
             var contains = catergories
                 .Where(i => !string.IsNullOrWhiteSpace(i) && i.ToLower().Contains(search) && !i.ToLower().StartsWith(search))
-
                 .ToList();
 
             var result = startsWith
