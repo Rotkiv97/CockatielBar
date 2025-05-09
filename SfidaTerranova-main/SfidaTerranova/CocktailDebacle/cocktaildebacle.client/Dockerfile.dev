@@ -1,0 +1,13 @@
+FROM node:20
+WORKDIR /app
+
+# Copia solo i file necessari per l'installazione
+COPY package.json package-lock.json ./
+
+# Fix per le dipendenze
+RUN npm install --legacy-peer-deps --force
+RUN npm install @angular/animations@19.2.2 @angular/core@19.2.2 --no-audit --fund=false
+
+EXPOSE 4200
+
+# Il comando vero e proprio sarà nel docker-compose

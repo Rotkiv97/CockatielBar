@@ -1,0 +1,80 @@
+
+<div #explosionEmitter class="explosion-emitter" style="position: relative;">
+</div>
+<div class="container">
+  <!-- Sidebar with Logo Menu -->
+  <div class="sidebar">
+
+    
+    <!-- Dropdown Menu -->
+
+  </div>    
+
+  <!-- Main Content -->
+  <div class="main-content">
+
+    <!-- Header -->
+    <div class="header">
+      <img src="/assets/logo.png" alt="Logo" class="profile-pic" (click)="toggleMenu()">
+      <div class="dropdown-menu" [class.show]="menuOpen">
+        <a href="/profile-page" [ngClass]="{'grayscale': !isLoggedIn()}">
+          <i class="material-icons">account_circle</i> Profile
+        </a>
+        <a href="/cocktails" [ngClass]="{'grayscale': !isLoggedIn()}">
+          <i class="material-icons">public</i> Browse
+        </a>
+        <a href="/settings" [ngClass]="{'grayscale': !isLoggedIn()}">
+          <i class="material-icons">settings</i> Settings
+        </a>
+        <a href="javascript:void(0)" (click)="logout()" [ngClass]="{'grayscale': !isLoggedIn()}">
+          <i class="material-icons">exit_to_app</i> Log Out
+        </a>
+        <a href="/login-signup" *ngIf="!isLoggedIn()" [ngClass]="{'grayscale': isLoggedIn()}">
+          <i class="material-icons">login</i> Sign up / Login
+        </a>
+      </div>
+      <h1>Welcome to Cockatiel Bar</h1>
+    </div>
+
+    <!-- Carousel -->
+    <div class="carousel-container">
+      <div class="carousel">
+        <div class="carousel-inner">
+          <div class="carousel-item active">
+            <img src="/assets/home_parrots_1.png" alt="Cocktail" class="carousel-img">
+            <div class="carousel-caption">
+              <h2>Discover Cocktails</h2>
+              <p>Explore amazing recipes from around the world</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="actions">
+      <a *ngIf="!isLoggedIn()" href="/login-signup">
+        <button class="action-btn">
+          <i class="bi bi-door-open"></i><br> Login to Start!
+        </button>
+      </a>
+      <a href="/cocktails">
+        <button class="action-btn">
+          <i class="fas fa-cocktail"></i><br>Browse Cocktails
+        </button>
+      </a>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <div class="footer-content">
+        <p>© 2025 CocktailApp</p>
+        <div class="footer-links">
+          <a href="/privacy-policy">Privacy</a>
+          <a href="/whaw">WhaW?</a>
+          <a href="/help">Help</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

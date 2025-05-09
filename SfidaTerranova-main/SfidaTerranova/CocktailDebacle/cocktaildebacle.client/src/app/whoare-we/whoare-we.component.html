@@ -1,0 +1,56 @@
+
+<div class="who-are-we">
+  <div class="profile-card">
+    <div class="profile-image" (click)="openModal('mmar')">
+      <img src="assets/mmar.png" alt="Mmar">
+    </div>
+    <h3>Mmar</h3>
+    <p>Un creativo senza pari, che ha affrontato tempeste di pixel e montagne di codice, tutto grazie alle sue fedeli cockatiels. Con ali di ispirazione e becco affilato, ha trasformato ogni difficoltà in una nuova avventura di eleganza funzionale.</p>
+  </div>
+
+  <div class="profile-card">
+    <div class="profile-image" (click)="openModal('vic')">
+      <img src="assets/vic.png" alt="Vic">
+    </div>
+    <h3>Vic</h3>
+    <p>Un sviluppatore che ha affrontato e si è perso in innumerevoli labirinti digitali. Ogni volta che si trova intrappolato in un nuovo enigma di codice, è sempre la sua fedele cockatiel a guidarlo fuori, con il suo canto che risuona come un faro tra le righe di codice. La sua vera forza? Non uscire mai dai labirinti, ma crearne di nuovi, più complicati e affascinanti.</p>
+  </div>
+  
+
+  
+  <!-- Freccia per tornare indietro -->
+  <a href="javascript:void(0)" class="back-arrow" (click)="goBack()">
+    <i class="material-icons">arrow_back</i>
+  </a>
+  <div class="logo-container" (click)="toggleMenu()">
+    <img src="/assets/logo.png" alt="Logo" class="logo">
+  </div>
+  
+  <!-- Dropdown Menu -->
+  <div class="dropdown-menu" [class.show]="menuOpen">
+    <a href="/profile-page" [ngClass]="{'grayscale': !isLoggedIn()}">
+      <i class="material-icons">account_circle</i> Profile
+    </a>
+    <a href="/settings" [ngClass]="{'grayscale': !isLoggedIn()}">
+      <i class="material-icons">settings</i> Settings
+    </a>
+    <a href="/home"  [ngClass]="{'grayscale': !isLoggedIn()}">
+      <i class="material-icons">exit_to_app</i> home
+    </a>
+    <a href="/login-signup" *ngIf="!isLoggedIn()" [ngClass]="{'grayscale': isLoggedIn()}">
+      <i class="material-icons">login</i> Sign up / Login
+    </a>
+  </div>
+  
+  
+  
+  <!-- Modal -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <!-- X per chiudere il modal -->
+      <span class="close-btn" (click)="closeModal()">×</span>
+      <img [src]="modalImageSrc" alt="Profile Image">
+      <div [innerHTML]="modalDescription"></div>
+    </div>
+  </div>
+  

@@ -1,0 +1,62 @@
+<!-- cocktail-modal.component.html -->
+<div class="modal-backdrop" (click)="onClose()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <button type="button" class="close-button" (click)="onClose()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="polaroid-wrapper">
+      <div class="polaroid-frame">
+        <div class="polaroid-inner">
+        <div class="cocktail-image">
+          <img [src]="cocktail?.strDrinkThumb" alt="{{ cocktail?.strDrink }}" class="cocktail-img">
+          <div class="polaroid-umbrella">🐦</div>
+  
+          
+          <div class="cocktail-details">
+            <div class="cocktail-header">
+              <h3 class="cocktail-title">{{ cocktail?.strDrink }}</h3>
+              <span class="cocktail-badge">{{ cocktail?.strCategory }}</span>
+            </div>
+            <ul class="cocktail-instructions">
+              <li *ngFor="let step of getInstructionSteps()">
+                {{ step }}
+              </li>
+            </ul>
+            
+            
+            <div class="ingredients-list">
+              <h4 class="ingredients-title">Ingredients:</h4>
+              <ul class="ingredients-grid">
+                <li *ngFor="let ingredient of getIngredients()" class="ingredient-item">
+                  <span class="ingredient-name">{{ ingredient.name }}</span>
+                  <span class="ingredient-measure">{{ ingredient.measure }}</span>
+                </li>
+              </ul>
+            </div>
+            <div class="CocktailGlass" style="display: flex; flex-direction: row; align-items: center; margin-top: 20px;">
+              <img [src]="CocktailIcon" style="width: 80px; height: 80px; object-fit: contain; margin-right: 12px;">
+              <span class="cocktail-title" style="font-style: italic; font-weight: 300;">{{ cocktail?.strGlass }}</span>
+            </div>
+            
+            
+              
+          </div>
+        </div>
+      </div>
+    </div>
+        
+        <div class="image-interactions">
+          <span class="like-counter" (click)="handleLike()">
+            <i class="fas fa-heart" [class.liked]="isLiked"></i>
+            {{ likeCount }}
+          </span>
+          <button class="interaction-btn share-btn" (click)="handleShare($event)">
+            <i class="fas fa-share-alt"></i>
+            <span class="tooltip">Share</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>

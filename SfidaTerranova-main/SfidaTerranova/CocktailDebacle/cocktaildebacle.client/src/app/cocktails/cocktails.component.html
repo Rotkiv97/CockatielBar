@@ -1,0 +1,264 @@
+<app-cocktail-modal 
+  *ngIf="selectedCocktail" 
+  [cocktail]="selectedCocktail" 
+  (close)="selectedCocktail = null">
+</app-cocktail-modal>
+<div id="bg-overlay" class="background-overlay"></div>
+<div class="moon-sun">
+  <div class="sidebar full-sidebar">
+    <div class="cocktails-page">
+      <app-search></app-search>
+    </div>
+
+    <!-- Freccia stilizzata che cambia in base allo stato -->
+    
+  
+    <a href="/home"> <div class="menu-item" style="margin-left: -20px;">
+      <i class="fas fa-home"></i> Home</div>
+    </a>
+
+  <a>
+  <div class="menu-item" style="margin-left: -16px;">
+    <i class="fas fa-compass"></i> Explore
+  </div>
+  </a>
+
+    <a href="/profile-page">
+    <div class="menu-item" style="margin-left: -20px;"><i class="fas fa-user"></i> Profile</div>
+    </a>
+  </div>
+
+  <!-- Sidebar con solo icone (per schermi piccoli) -->
+  <div class="sidebar icon-sidebar">
+    <!--HOME BUTTON-->
+    <a href="/home" class="menu-item icon-link">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+      </svg>
+    </a>
+    
+    <a href="" class="menu-item icon-link" >
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m20.893 13.393-1.135-1.135a2.252 2.252 0 0 1-.421-.585l-1.08-2.16a.414.414 0 0 0-.663-.107.827.827 0 0 1-.812.21l-1.273-.363a.89.89 0 0 0-.738 1.595l.587.39c.59.395.674 1.23.172 1.732l-.2.2c-.212.212-.33.498-.33.796v.41c0 .409-.11.809-.32 1.158l-1.315 2.191a2.11 2.11 0 0 1-1.81 1.025 1.055 1.055 0 0 1-1.055-1.055v-1.172c0-.92-.56-1.747-1.414-2.089l-.655-.261a2.25 2.25 0 0 1-1.383-2.46l.007-.042a2.25 2.25 0 0 1 .29-.787l.09-.15a2.25 2.25 0 0 1 2.37-1.048l1.178.236a1.125 1.125 0 0 0 1.302-.795l.208-.73a1.125 1.125 0 0 0-.578-1.315l-.665-.332-.091.091a2.25 2.25 0 0 1-1.591.659h-.18c-.249 0-.487.1-.662.274a.931.931 0 0 1-1.458-1.137l1.411-2.353a2.25 2.25 0 0 0 .286-.76m11.928 9.869A9 9 0 0 0 8.965 3.525m11.928 9.868A9 9 0 1 1 8.965 3.525" />
+      </svg>
+    </a>
+
+    <a href="/profile-page" class="menu-item icon-link">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+      </svg>
+    </a>
+
+  </div>
+  <div class="container">
+    
+    <div *ngIf="isMobile" class="logo-container" (click)="toggleMenu()">
+      <img [src]="currentUser?.imgProfileUrl" alt="Logo" class="logo">
+
+    </div>
+    <mat-menu #menu="matMenu">
+      <a mat-menu-item href="/home">
+        <mat-icon>home</mat-icon>
+        <span style="font-size: 16px;">Home</span>
+      </a>
+      <a mat-menu-item href="/cocktails">
+        <mat-icon>public</mat-icon>
+        <span style="font-size: 16px;">Browse</span>
+      </a>
+      <a mat-menu-item href="/settings">
+        <mat-icon>settings</mat-icon>
+        <span style="font-size: 16px;">Settings</span>
+      </a>
+    </mat-menu>
+    
+    <h1>Explore our Cocktails</h1>
+
+    <!-- Modal Template -->
+    <ng-template #imageModal let-modal>
+      <div class="modal-header">
+        <button type="button" class="btn-close btn-close-white" aria-label="Close" (click)="modal.dismiss()"></button>
+      </div>
+      <div class="modal-body text-center">
+        <div class="modal-image-container">
+          <img [src]="currentModalImage" class="img-fluid modal-image" alt="Modal Image" (click)="$event.stopPropagation()">
+          
+          <!-- Barra interazioni modal -->
+          <div class="image-interactions">
+            <button class="interaction-btn" (click)="handleLike($event, currentModalImage)">
+              <i class="fas fa-heart" [class.liked]="isLiked(currentModalImage)"></i>
+              <span class="interaction-count">{{ getLikeCount({ image: currentModalImage }) }}</span>
+            </button>
+            <button class="interaction-btn" (click)="handleShare($event)">
+              <i class="fas fa-share-alt"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </ng-template>
+
+    <div class="mobile-search" style="position: relative;">
+      <input type="text" [(ngModel)]="searchQuery" (keyup)="onKeyUp($event)" placeholder="Search..." class="search-input">
+      <button (click)="handleSearch()" class="search-button">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="24" height="24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197a7.5 7.5 0 1 0 5.197-5.197z"/>
+        </svg>
+      </button>
+    
+      <!-- Box delle suggestions -->
+      <div class="suggestions-box" *ngIf="showSuggestions && suggestions.length > 0">
+        <div *ngFor="let suggestion of suggestions" class="suggestion-item" (click)="selectSuggestion(suggestion)">
+          <span class="suggestion-text" *ngIf="selectedFilter === 'nameCocktail=' || selectedFilter === 'ingredient='">
+            {{ suggestion.strDrink }}
+          </span>
+          <span class="suggestion-text" *ngIf="selectedFilter === 'UserSearch='">
+            {{ suggestion.userName }}
+          </span>
+          <img *ngIf="selectedFilter === 'nameCocktail=' || selectedFilter === 'ingredient='" [src]="suggestion.strDrinkThumb" alt="thumb" class="suggestion-thumb" />
+          <img *ngIf="selectedFilter === 'UserSearch='" [src]="suggestion.imgProfileUrl ? suggestion.imgProfileUrl : 'assets/default-profile.png'" alt="thumb" class="suggestion-thumb" />
+        </div>
+      </div>
+    </div>
+    
+    <!-- Mobile Filter Section - Add this right after the mobile search -->
+    <div *ngIf="!notLoggedin" class="mobile-filter-section">
+      <div class="filter-toggle" (click)="toggleMobileFilterOptions()">
+        <i class="bi" [ngClass]="showMobileFilterOptions ? 'bi-caret-up' : 'bi-caret-down-fill'"></i>
+      </div>
+      
+      <!-- Mobile Filter Options -->
+      <div *ngIf="showMobileFilterOptions" [ngClass]="{'closing': isClosing}" class="mobile-filter-options">
+        <ul>
+          <h5>Search..</h5>
+        
+          <!-- Alcolici -->
+          <li (click)="applyFilter('nameCocktail=')" [class.selected]="selectedFilter === 'nameCocktail='">
+            <i class="fas fa-glass-martini" style="margin-left: 10px; font-size: 24px;"></i>
+            <span *ngIf="selectedFilter === 'nameCocktail=' && Alcoholic" class="checkmark">✔</span>
+          </li>
+        
+          <!-- Non Alcolici -->
+          <li (click)="applyFilter('nonAlcoholic')" [class.selected]="selectedFilter === 'nameCocktail='">
+            <span class="fa-stack" style="font-size: 1.5rem; margin-top: -30px; margin-left: -10px; ">
+              <i class="fas fa-glass-martini fa-stack-1x"></i>
+              <i class="fas fa-slash fa-stack-1x" style="color: red;"></i>
+            </span>
+            <span *ngIf="!Alcoholic" class="checkmark">✔</span>
+          </li>
+        
+          <!-- Terza opzione -->
+          <li (click)="applyFilter('ingredient=')" [class.selected]="selectedFilter === 'ingredient='">
+            <i class="bi bi-basket" style="margin-left: 10px; font-size: 24px;"></i>
+            <span *ngIf="selectedFilter === 'ingredient='" class="checkmark">✔</span>
+          </li>
+        
+          <!-- Utenti -->
+          <li (click)="applyFilter('UserSearch=')" [class.selected]="selectedFilter === 'UserSearch='">
+            <i class="bi bi-people" style="margin-left: 10px; font-size: 24px;"></i>
+            <span *ngIf="selectedFilter === 'UserSearch='" class="checkmark">✔</span>
+          </li>
+        </ul>
+      </div>
+      
+    </div>
+    
+
+    <!-- Post Instagram Style -->
+    <div class="instagram-post">
+      <!-- Header -->
+        <header class="instagram-header">
+          <figure>
+            <img src="assets/logo.png" alt="Cockatiels Bar" class="profile-pic">
+            <figcaption>
+              <h4>Cockatiels Bar</h4>
+              <span>Official Page</span>
+            </figcaption>
+          </figure>
+          <button class="theme-toggle" (click)="toggleTheme()">
+            <i class="fas" [class.fa-moon]="isLightMode" [class.fa-sun]="!isLightMode"></i>
+          </button>
+        </header>
+
+      <!-- Main Carousel -->
+      <section class="carousel-section">
+        <h3> Looking for..</h3>
+        <div id="mainCarousel" class="carousel slide" data-bs-ride="carousel">
+          <div class="carousel-inner">
+            <div class="carousel-item" *ngFor="let item of carouselItems; let i = index" [class.active]="i === 0">
+              <div class="image-wrapper">
+                <img [src]="item.image" class="d-block w-100 carousel-img" alt="{{item.title}}" 
+                    (click)="openModal(imageModal, item.image)">
+                <div class="preview-interactions">
+                  <span class="interaction-preview" (click)="handleLike($event, item.image)">
+                    <i class="fas fa-heart" [class.liked]="isLiked(item.image)"></i>
+                    {{ getLikeCount(item) }}
+                  </span>
+                </div>
+              </div>
+              <div class="carousel-caption">
+                <h5>{{item.title}}</h5>
+                <p>{{item.description}}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+  <!-- Second Carousel -->
+      <section class="carousel-section">
+        <div id="mainCarousel" class="carousel slide" data-bs-ride="carousel">
+          <div class="carousel-inner">
+            <div class="carousel-item" *ngFor="let item of carouselItems; let i = index" [class.active]="i === 0">
+              <div class="image-wrapper">
+                <img [src]="item.image" class="d-block w-100 carousel-img" alt="{{item.title}}" 
+                    (click)="openModal(imageModal, item.image)">
+                <div class="preview-interactions">
+                  <span class="interaction-preview" (click)="handleLike($event, item.image)">
+                    <i class="fas fa-heart" [class.liked]="isLiked(item.image)"></i>
+                    {{ getLikeCount(item) }}
+                  </span>
+                </div>
+              </div>
+              <div class="carousel-caption">
+                <h5>{{item.title}}</h5>
+                <p>{{item.description}}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    <!-- Third Carousel -->
+      <section class="carousel-section">
+        <div id="mainCarousel" class="carousel slide" data-bs-ride="carousel">
+          <div class="carousel-inner">
+            <div class="carousel-item" *ngFor="let item of carouselItems; let i = index" [class.active]="i === 0">
+              <div class="image-wrapper">
+                <img [src]="item.image" class="d-block w-100 carousel-img" alt="{{item.title}}" 
+                    (click)="openModal(imageModal, item.image)">
+                <div class="preview-interactions">
+                  <span class="interaction-preview" (click)="handleLike($event, item.image)">
+                    <i class="fas fa-heart" [class.liked]="isLiked(item.image)"></i>
+                    {{ getLikeCount(item) }}
+                  </span>
+                </div>
+              </div>
+              <div class="carousel-caption">
+                <h5>{{item.title}}</h5>
+                <p>{{item.description}}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <div class="profile-footer" [style.background-color]="'rgba(172, 7, 7, 0.781)'">
+        <div class="footer-content">
+          <p>© 2025 CocktailApp</p>
+          <div class="footer-links">
+            <a href="/privacy-policy" [style.color]="'rgba(255, 255, 255, 0.7)'">Privacy</a>
+            <a href="/whaw" [style.color]="'rgba(255, 255, 255, 0.7)'">WhaW</a>
+            <a href="/help" [style.color]="'rgba(255, 255, 255, 0.7)'">Help</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</div>

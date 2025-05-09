@@ -1,0 +1,105 @@
+<!-- Desktop Search -->
+
+<app-cocktail-modal 
+  *ngIf="selectedCocktail" 
+  [cocktail]="selectedCocktail" 
+  (close)="selectedCocktail = null">
+</app-cocktail-modal>
+<div class="search" style="position: relative;">
+    <input 
+      type="text" 
+      [(ngModel)]="searchQuery" 
+      (keyup)="onKeyUp($event)" 
+      placeholder="Search" 
+      class="search-input"
+    >
+    <button (click)="handleSearch()" class="search-button">Search</button>
+    
+    <div class="suggestions-box" *ngIf="showSuggestions && suggestions.length > 0">
+      <div *ngFor="let suggestion of suggestions" class="suggestion-item" (click)="selectSuggestion(suggestion)">
+        <span class="suggestion-text" *ngIf="selectedFilter === 'nameCocktail=' || selectedFilter === 'ingredient='">
+          {{ suggestion.strDrink }}
+        </span>
+        <span class="suggestion-text" *ngIf="selectedFilter === 'UserSearch='">
+          {{ suggestion.userName }}
+        </span>
+        <img *ngIf="selectedFilter === 'nameCocktail=' || selectedFilter === 'ingredient='" [src]="suggestion.strDrinkThumb" alt="thumb" class="suggestion-thumb" />
+        <img *ngIf="selectedFilter === 'UserSearch='" [src]="suggestion.imgProfileUrl ? suggestion.imgProfileUrl : 'assets/default-profile.png'" alt="thumb" class="suggestion-thumb" />
+      </div>
+    </div>
+  </div>
+  
+  <!-- Mobile Search -->
+  <div class="mobile-search" style="position: relative;">
+    <input 
+      type="text" 
+      [(ngModel)]="searchQuery" 
+      (keyup)="onKeyUp($event)" 
+      placeholder="Search..." 
+      class="search-input"
+    >
+    <button (click)="handleSearch()" class="search-button">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="24" height="24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197a7.5 7.5 0 1 0 5.197-5.197z"/>
+      </svg>
+    </button>
+  
+    <div class="suggestions-box" *ngIf="isLoggedIn && showSuggestions && suggestions.length > 0">
+      <div *ngFor="let suggestion of suggestions" class="suggestion-item" (click)="selectSuggestion(suggestion)">
+        <span class="suggestion-text" *ngIf="selectedFilter === 'nameCocktail=' || selectedFilter === 'ingredient='">
+          {{ suggestion.strDrink }}
+        </span>
+        <span class="suggestion-text" *ngIf="selectedFilter === 'UserSearch='">
+          {{ suggestion.userName }}
+        </span>
+        <img *ngIf="selectedFilter === 'nameCocktail=' || selectedFilter === 'ingredient='" [src]="suggestion.strDrinkThumb" alt="thumb" class="suggestion-thumb" />
+        <img *ngIf="selectedFilter === 'UserSearch='" [src]="suggestion.imgProfileUrl ? suggestion.imgProfileUrl : 'assets/default-profile.png'" alt="thumb" class="suggestion-thumb" />
+      </div>
+    </div>
+  </div>
+  
+  <!-- Filter Section (condiviso) -->      
+  <div class="filter-section-wrapper" *ngIf="isLoggedIn">
+    <div class="filter-section">
+      <div class="arrow"  *ngIf="showArrow || isDesktopScreen()" (click)="toggleFilterOptions()" >
+        <i class="bi" [ngClass]="showFilterOptions ? 'bi-caret-up' : 'bi-caret-down-fill'"></i>
+      </div>
+  
+  
+    <div *ngIf="showFilterOptions" [ngClass]="{'closing': isClosing}" class="filter-options">
+      <button (click)="closeFilterOptions()" class="close-button">🗙</button>
+    
+      <ul>
+        <h5>Search..</h5>
+      
+        <!-- Alcolici -->
+        <li (click)="applyFilter('nameCocktail=')" [class.selected]="selectedFilter === 'nameCocktail='">
+          <i class="fas fa-glass-martini" style="margin-left: 10px; font-size: 24px;"></i>
+          <span *ngIf="selectedFilter === 'nameCocktail=' && Alcoholic" class="checkmark">✔</span>
+        </li>
+      
+        <!-- Non Alcolici -->
+        <li (click)="applyFilter('nonAlcoholic')" [class.selected]="selectedFilter === 'nameCocktail='">
+          <span class="fa-stack" style="font-size: 1.5rem; margin-top: -30px; margin-left: -10px; ">
+            <i class="fas fa-glass-martini fa-stack-1x"></i>
+            <i class="fas fa-slash fa-stack-1x" style="color: red;"></i>
+          </span>
+          <span *ngIf="!Alcoholic" class="checkmark">✔</span>
+        </li>
+      
+        <!-- Terza opzione -->
+        <li (click)="applyFilter('ingredient=')" [class.selected]="selectedFilter === 'ingredient='">
+          <i class="bi bi-basket" style="margin-left: 10px; font-size: 24px;"></i>
+          <span *ngIf="selectedFilter === 'ingredient='" class="checkmark">✔</span>
+        </li>
+      
+        <!-- Utenti -->
+        <li (click)="applyFilter('UserSearch=')" [class.selected]="selectedFilter === 'UserSearch='">
+          <i class="bi bi-people" style="margin-left: 10px; font-size: 24px;"></i>
+          <span *ngIf="selectedFilter === 'UserSearch='" class="checkmark">✔</span>
+        </li>
+      </ul>
+      
+      
+    </div>
+  </div>

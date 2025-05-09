@@ -1,0 +1,89 @@
+/* Contenitore principale */
+.privacy-policy-container {
+  max-width: 800px; /* Larghezza massima del contenuto */
+  margin: 0 auto; /* Centra il contenuto */
+  padding: 20px; /* Spaziatura interna */
+  font-family: "Segoe UI", sans-serif;
+  line-height: 1.6; /* Altezza della linea per migliorare la leggibilità */
+}
+
+/* Titolo principale */
+h1 {
+  font-size: 2.5rem; /* Dimensione del titolo */
+  color: #333; /* Colore del testo */
+  margin-bottom: 20px; /* Spaziatura inferiore */
+}
+
+/* Titoli delle sezioni */
+h2 {
+  font-size: 2rem; /* Dimensione del titolo della sezione */
+  color: #444; /* Colore del testo */
+  margin-top: 30px; /* Spaziatura superiore */
+  margin-bottom: 15px; /* Spaziatura inferiore */
+}
+
+h3 {
+  font-size: 1.5rem; /* Dimensione del sottotitolo */
+  color: #555; /* Colore del testo */
+  margin-top: 20px; /* Spaziatura superiore */
+  margin-bottom: 10px; /* Spaziatura inferiore */
+}
+
+/* Paragrafi */
+p {
+  font-size: 1rem; /* Dimensione del testo */
+  color: #666; /* Colore del testo */
+  margin-bottom: 15px; /* Spaziatura inferiore */
+}
+
+/* Liste */
+ul {
+  margin-bottom: 15px; /* Spaziatura inferiore */
+  padding-left: 20px; /* Spaziatura interna */
+}
+
+  ul li {
+    margin-bottom: 10px; /* Spaziatura inferiore */
+  }
+
+/* Link */
+a {
+  color: #007bff; /* Colore del link */
+  text-decoration: none; /* Rimuove la sottolineatura */
+}
+
+  a:hover {
+    text-decoration: underline; /* Sottolineatura al passaggio del mouse */
+  }
+
+/* Stile per il testo evidenziato */
+strong {
+  font-weight: bold; /* Testo in grassetto */
+}
+body {
+  background-image: url('/assets/cockatiels_bg.png'); 
+  background-size: cover; /* Rende l'immagine di sfondo che copre tutta la pagina */
+  background-position: center center; /* Posiziona l'immagine al centro della pagina */
+  background-repeat: no-repeat;
+  font-family: "Segoe UI", sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  position: relative;
+}
+
+.container {
+  background-color: #ffffff; /* Sfondo bianco */
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  margin: 2rem auto; /* Centro automatico */
+  max-width: 800px; /* Limita la larghezza */
+  height: 80vh; /* Altezza fissa: 80% della finestra */
+  overflow-y: auto; /* Scroll verticale interno */
+}
+
+
