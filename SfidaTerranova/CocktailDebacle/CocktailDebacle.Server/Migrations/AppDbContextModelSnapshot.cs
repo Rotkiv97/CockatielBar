@@ -189,8 +189,8 @@ namespace CocktailDebacle.Server.Migrations
                     b.Property<string>("StrVideo")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserNameCocktail")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("UserIdCocktail")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("dateCreated")
                         .HasColumnType("datetime2");

@@ -17,7 +17,7 @@ namespace CocktailDebacle.Server.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserNameCocktail = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    UserIdCocktail = table.Column<int>(type: "int", nullable: false),
                     PublicCocktail = table.Column<bool>(type: "bit", nullable: true),
                     dateCreated = table.Column<DateTime>(type: "datetime2", nullable: true),
                     Likes = table.Column<int>(type: "int", nullable: false),

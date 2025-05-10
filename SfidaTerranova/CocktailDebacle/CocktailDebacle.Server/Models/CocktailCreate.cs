@@ -11,7 +11,7 @@ namespace CocktailDebacle.Server.Models
         [Key]
         public int Id { get; set; } // Chiave primaria
 
-        public string? UserNameCocktail { get; set; } = string.Empty; // Nome utente che ha creato il cocktail
+        public int UserIdCocktail { get; set; } // Id utente che ha creato il cocktail
         
         public bool? PublicCocktail { get; set; } = false; // Indica se il cocktail è pubblico o privato
 

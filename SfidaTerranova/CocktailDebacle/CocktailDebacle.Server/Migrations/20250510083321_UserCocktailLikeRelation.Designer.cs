@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CocktailDebacle.Server.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250503143335_UserCocktailLikeRelation")]
+    [Migration("20250510083321_UserCocktailLikeRelation")]
     partial class UserCocktailLikeRelation
     {
         /// <inheritdoc />
@@ -192,8 +192,8 @@ namespace CocktailDebacle.Server.Migrations
                     b.Property<string>("StrVideo")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserNameCocktail")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("UserIdCocktail")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("dateCreated")
                         .HasColumnType("datetime2");

@@ -188,9 +188,6 @@ namespace CocktailDebacle.Server.Controllers
             if (!string.IsNullOrEmpty(alcoholic))
                 query = query.Where(c => c.StrAlcoholic != null && c.StrAlcoholic.ToLower().Contains(alcoholic.ToLower()));
 
-            if (!string.IsNullOrEmpty(UsernameCreateCocktail))
-                query = query.Where(c => c.UserNameCocktail != null && c.UserNameCocktail.ToLower().Contains(UsernameCreateCocktail.ToLower()));
-
             if (!string.IsNullOrEmpty(nameCocktail))
                 query = query.Where(c => c.StrDrink != null && c.StrDrink.ToLower().Contains(nameCocktail.ToLower()));
             if (!string.IsNullOrEmpty(ingredient))
@@ -280,8 +277,14 @@ namespace CocktailDebacle.Server.Controllers
                 return Unauthorized("User not found.");
             }
 
+            var user = await _context.DbUser.FirstOrDefaultAsync(u => u.UserName == username);
+            if (user == null)
+            {
+                return Unauthorized("User not found or not accepted cookies.");
+            }
+
             var cocktails = await _context.DbCocktails
-                .Where(c => c.UserNameCocktail == username)
+                .Where(c => c.Id == user.Id)
                 .ToListAsync();
             return Ok(cocktails);
         }
@@ -310,7 +313,7 @@ namespace CocktailDebacle.Server.Controllers
                 return BadRequest("Cocktail already exists.");
             }
 
-            var newcocktail = UtilsCocktail.CreateNewCocktail(cocktailCreate, username);
+            var newcocktail = UtilsCocktail.CreateNewCocktail(cocktailCreate, user.Id);
 
             var ingredientList = UtilsCocktail.IngredientToList(newcocktail);
             bool haIngredientiAlcolici = UtilsCocktail.CocktailIsAlcoholic(ingredientList);
@@ -462,8 +465,12 @@ namespace CocktailDebacle.Server.Controllers
             if (string.IsNullOrEmpty(username))
                 return Unauthorized("User not authenticated.");
 
+            var user = await _context.DbUser.FirstOrDefaultAsync(u => u.UserName == username);
+            if (user == null)
+                return NotFound("User not found or does not accept cookies.");
+
             var cocktail = await _context.DbCocktails
-                .FirstOrDefaultAsync(c => c.Id == idDrink && c.UserNameCocktail == username);
+                .FirstOrDefaultAsync(c => c.Id == idDrink && c.UserIdCocktail == user.Id);
 
             if (cocktail == null)
                 return NotFound("Cocktail not found or does not belong to you.");
@@ -501,8 +508,12 @@ namespace CocktailDebacle.Server.Controllers
             if (string.IsNullOrEmpty(username))
                 return Unauthorized("User not authenticated.");
 
+            var user = await _context.DbUser.FirstOrDefaultAsync(u => u.UserName == username);
+            if (user == null)
+                return NotFound("User not found or does not accept cookies.");
+
             var cocktail = await _context.DbCocktails
-                .FirstOrDefaultAsync(c => c.Id == idDrink && c.UserNameCocktail == username);
+                .FirstOrDefaultAsync(c => c.Id == idDrink && c.UserIdCocktail == user.Id);
 
             if (cocktail == null)
                 return NotFound("Cocktail not found or does not belong to you.");
@@ -527,8 +538,12 @@ namespace CocktailDebacle.Server.Controllers
             if (string.IsNullOrEmpty(username))
                 return Unauthorized("User not authenticated.");
 
+            var user = await _context.DbUser.FirstOrDefaultAsync(u => u.UserName == username);
+            if (user == null)
+                return NotFound("User not found or does not accept cookies.");
+
             var cocktail = await _context.DbCocktails
-                .FirstOrDefaultAsync(c => c.Id == id && c.UserNameCocktail == username);
+                .FirstOrDefaultAsync(c => c.Id == id && c.UserIdCocktail == user.Id);
 
             if (cocktail == null)
                 return NotFound("Cocktail not found or does not belong to you.");
@@ -576,9 +591,12 @@ namespace CocktailDebacle.Server.Controllers
             var username = User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(username))
                 return Unauthorized("User not authenticated.");
+            var user = await _context.DbUser.FirstOrDefaultAsync(u => u.UserName == username);
+            if (user == null)
+                return NotFound("User not found or does not accept cookies.");
 
             var cocktail = await _context.DbCocktails
-                .FirstOrDefaultAsync(c => c.Id == id && c.UserNameCocktail == username);
+                .FirstOrDefaultAsync(c => c.Id == id && c.UserIdCocktail == user.Id);
 
             if (cocktail == null)
                 return NotFound("Cocktail not found or does not belong to you.");

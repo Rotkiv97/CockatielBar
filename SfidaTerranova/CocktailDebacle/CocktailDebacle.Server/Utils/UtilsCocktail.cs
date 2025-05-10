@@ -297,8 +297,6 @@ namespace CocktailDebacle.Server.Utils
                 return new List<string>();
 
             search = search.Trim().ToLower();
-
-            AddToListType(context, "StrGlass", GlassCapacity.Keys.ToList());
             var startsWith = GlassCapacity.Keys
                 .Where(i => !string.IsNullOrWhiteSpace(i) && i.ToLower().StartsWith(search))
                 .ToList();
@@ -388,11 +386,11 @@ namespace CocktailDebacle.Server.Utils
             };
         }
 
-        public static Cocktail CreateNewCocktail(CocktailCreate cocktailCreate, string username)
+        public static Cocktail CreateNewCocktail(CocktailCreate cocktailCreate, int idUser)
         {
             return new Cocktail
             {
-                UserNameCocktail = username,
+                UserIdCocktail = idUser,
                 PublicCocktail = cocktailCreate.PublicCocktail,
                 dateCreated = DateTime.UtcNow,
                 Likes = 0,
