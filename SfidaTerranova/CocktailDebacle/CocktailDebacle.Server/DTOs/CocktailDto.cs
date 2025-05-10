@@ -10,10 +10,12 @@ namespace CocktailDebacle.Server.DTOs
     {
         public int Id { get; set; }
         public string IdDrink { get; set; } = string.Empty;
+        public bool? PublicCocktail { get; set; } = true;
+        public int UserIdCocktail { get; set; } = 0; 
         public string StrDrink { get; set; } = string.Empty;
         public string StrCategory { get; set; } = string.Empty;
-        [Required]
-        [RegularExpression("^(Alcoholic|Non alcoholic|Optional alcohol)$", ErrorMessage = "Must be 'Alcoholic', 'Non alcoholic' or 'Optional alcohol'")]
+        // [Required]
+        // [RegularExpression("^(Alcoholic|Non alcoholic|Optional alcohol)$", ErrorMessage = "Must be 'Alcoholic', 'Non alcoholic' or 'Optional alcohol'")]
         public string StrAlcoholic { get; set; } = string.Empty;
         public string StrGlass { get; set; } = string.Empty;
         public string StrInstructions { get; set; } = string.Empty;

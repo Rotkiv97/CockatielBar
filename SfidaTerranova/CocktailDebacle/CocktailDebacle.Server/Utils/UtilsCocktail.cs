@@ -294,8 +294,6 @@ namespace CocktailDebacle.Server.Utils
                 return new List<string>();
 
             search = search.Trim().ToLower();
-
-            AddToListType(context, "StrIngredient", IngredientNonAlcoholic);
             var startsWith = IngredientNonAlcoholic
                 .Where(i => !string.IsNullOrWhiteSpace(i) && i.ToLower().StartsWith(search))
                 .ToList();

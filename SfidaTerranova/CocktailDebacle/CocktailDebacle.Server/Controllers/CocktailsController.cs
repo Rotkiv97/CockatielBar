@@ -299,7 +299,10 @@ namespace CocktailDebacle.Server.Controllers
             {
                 return Unauthorized("User not found or not accepted cookies.");
             }
-
+            if (string.IsNullOrEmpty(cocktailCreate.StrDrink))
+            {
+                return BadRequest("Cocktail name cannot be empty.");
+            }
             var cocktail = await _context.DbCocktails
                 .FirstOrDefaultAsync(c => c.StrDrink == cocktailCreate.StrDrink);
 
@@ -312,6 +315,10 @@ namespace CocktailDebacle.Server.Controllers
 
             var ingredientList = UtilsCocktail.IngredientToList(newcocktail);
             bool haIngredientiAlcolici = UtilsCocktail.CocktailIsAlcoholic(ingredientList);
+
+            var StrAlcoholic = haIngredientiAlcolici ? "Alcoholic" : "Non alcoholic";
+            
+            newcocktail.StrAlcoholic = StrAlcoholic;
 
             if (!user.IsOfMajorityAge.GetValueOrDefault(true))
             {
@@ -366,9 +373,7 @@ namespace CocktailDebacle.Server.Controllers
                 return NotFound("User not found.");
 
             var isAdult = user.IsOfMajorityAge == true;
-            var listIngredient = isAdult
-            ? UtilsCocktail.SearchIngredients(ingredient, _context ,max)
-            : UtilsCocktail.SearchNonAlcoholicIngredients(ingredient, _context ,max);
+            var listIngredient = isAdult ? UtilsCocktail.SearchIngredients(ingredient, _context ,max) : UtilsCocktail.SearchNonAlcoholicIngredients(ingredient, _context ,max);
             
             return Ok(new
             {

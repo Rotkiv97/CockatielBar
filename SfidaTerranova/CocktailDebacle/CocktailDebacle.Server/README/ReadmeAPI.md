@@ -81,8 +81,8 @@ Questa chiamata l'ho pensata inizialmente anche per una ricerca combinata per po
 
 esempio di chiamata :  http://localhost:5052/api/cocktails/search?ingredient=Vodka&page=1&pageSize=10
 
-
 ### My Cocktails
+
 A bisongo solo del [Token](#inserise-i-token-su-postoman) dal quale mi estrapolo username e controllo e trovo l'user nel database, dopo di che controllo nel database se esistino o travo cocktail(UserIdCocktail) che hanno il mio stesso id id.
 
 ### Ingredient Search
