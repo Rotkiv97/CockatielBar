@@ -35,9 +35,7 @@ namespace CocktailDebacle.Server.Utils
 
         public static readonly List<string> MeasurementUnits = new List<string>
         {
-            "ml", "oz", "cl", "cup", "tsp", "tbsp", "dash", "part", "shot", "pint", 
-            "quart", "gallon", "drop", "slice", "piece", "pinch", "bottle", "can", "splash", 
-            "barspoon", "teaspoon", "tablespoon", "liter", "centiliter", "deciliter", "sprig"
+            "ml", "oz", "cl", "cup", "tsp", "tbsp", "dash", "shot", "part"
         };
 
         public static readonly List<string> IngredientAlcoholic = new List<string>
@@ -183,21 +181,47 @@ namespace CocktailDebacle.Server.Utils
 
         public static void AddToListType(AppDbContext context, string type, List<string> list)
         {
-            var property = typeof(Cocktail).GetProperty(type);
-            if (property == null)
-                throw new ArgumentException($"Property '{type}' does not exist on Cocktail");
+            var cocktails = context.DbCocktails.AsEnumerable(); // Carica tutti i cocktail in memoria
 
-            var values = context.DbCocktails
-                .AsEnumerable() // usa LINQ to Objects per usare reflection in sicurezza
-                .Select(c => property.GetValue(c)?.ToString()?.Trim())
-                .Where(v => !string.IsNullOrWhiteSpace(v))
-                .Distinct(StringComparer.OrdinalIgnoreCase)
-                .ToList();
-
-            foreach (var value in values)
+            if (type == "StrIngredient")
             {
-                if (!list.Contains(value!, StringComparer.OrdinalIgnoreCase))
-                    list.Add(value!);
+                for (int i = 1; i <= 15; i++)
+                {
+                    var propName = $"StrIngredient{i}";
+                    var property = typeof(Cocktail).GetProperty(propName);
+
+                    if (property != null)
+                    {
+                        var values = cocktails
+                            .Select(c => property.GetValue(c)?.ToString()?.Trim())
+                            .Where(v => !string.IsNullOrWhiteSpace(v))
+                            .Distinct(StringComparer.OrdinalIgnoreCase)
+                            .ToList();
+                        foreach (var value in values)
+                        {
+                            if (!list.Contains(value!, StringComparer.OrdinalIgnoreCase))
+                                list.Add(value!);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                var property = typeof(Cocktail).GetProperty(type);
+                if (property == null)
+                    throw new ArgumentException($"Property '{type}' does not exist on Cocktail");
+
+                var values = cocktails
+                    .Select(c => property.GetValue(c)?.ToString()?.Trim())
+                    .Where(v => !string.IsNullOrWhiteSpace(v))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+
+                foreach (var value in values)
+                {
+                    if (!list.Contains(value!, StringComparer.OrdinalIgnoreCase))
+                        list.Add(value!);
+                }
             }
         }
 
@@ -207,8 +231,6 @@ namespace CocktailDebacle.Server.Utils
                 return new List<string>();
 
             search = search.Trim().ToLower();
-
-            AddToListType(context, "StrMeasure", MeasurementUnits);
 
             var startsWith = MeasurementUnits
                 .Where(i => !string.IsNullOrWhiteSpace(i) && i.ToLower().StartsWith(search))

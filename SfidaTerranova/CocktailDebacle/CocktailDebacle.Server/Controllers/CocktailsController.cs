@@ -48,7 +48,7 @@ namespace CocktailDebacle.Server.Controllers
 
 
         //http://localhost:5052/api/Cocktails/cocktail/by-id?id=5
-       [HttpGet("cocktail/by-id")]
+        [HttpGet("cocktail/by-id")]
         [AllowAnonymous]
         public async Task<IActionResult> GetCocktailById(int id)
         {
@@ -106,8 +106,7 @@ namespace CocktailDebacle.Server.Controllers
             [FromQuery] string ingredient = "",
             [FromQuery] string category = "",
             [FromQuery] string alcoholic = "",
-            [FromQuery] string description = "",
-            [FromQuery] string UsernameCreateCocktail = "",
+
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 10
         )
@@ -171,10 +170,9 @@ namespace CocktailDebacle.Server.Controllers
                 string.IsNullOrEmpty(glass) &&
                 string.IsNullOrEmpty(ingredient) &&
                 string.IsNullOrEmpty(category) &&
-                string.IsNullOrEmpty(alcoholic) &&
-                string.IsNullOrEmpty(description) &&
-                string.IsNullOrEmpty(UsernameCreateCocktail);
-            
+                string.IsNullOrEmpty(alcoholic);
+
+        
             
             // Solo cocktail pubblici
             query = query.Where(c => c.PublicCocktail == true || c.PublicCocktail == null);
@@ -226,9 +224,6 @@ namespace CocktailDebacle.Server.Controllers
                     Cocktails = cocktailDtos
                 });
             }
-
-            if (!string.IsNullOrEmpty(description))
-                query = query.Where(c => c.StrInstructions != null && c.StrInstructions.ToLower().Contains(description.ToLower()));
 
             totalItems = await query.CountAsync();
             totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
@@ -284,7 +279,7 @@ namespace CocktailDebacle.Server.Controllers
             }
 
             var cocktails = await _context.DbCocktails
-                .Where(c => c.Id == user.Id)
+                .Where(c => c.UserIdCocktail == user.Id)
                 .ToListAsync();
             return Ok(cocktails);
         }
@@ -355,7 +350,7 @@ namespace CocktailDebacle.Server.Controllers
 
 
         [Authorize]
-        [HttpGet("IngedientSearch/SearchIngredient")]
+        [HttpGet("IngredientSearch/SearchIngredient")]
         public async Task<IActionResult> GetIngredientSearch(
             [FromQuery] int id,
             [FromQuery] string ingredient = "",
@@ -369,7 +364,6 @@ namespace CocktailDebacle.Server.Controllers
             var user = await _context.DbUser.FirstAsync(u => u.Id == id);
             if (user == null)
                 return NotFound("User not found.");
-            
 
             var isAdult = user.IsOfMajorityAge == true;
             var listIngredient = isAdult
@@ -378,7 +372,6 @@ namespace CocktailDebacle.Server.Controllers
             
             return Ok(new
             {
-                isAdult,
                 ingredients = listIngredient
             });
         }
@@ -408,8 +401,6 @@ namespace CocktailDebacle.Server.Controllers
                 measureTypes = listMeasure
             });
         }
-
-        // search glass e search category
 
         [Authorize]
         [HttpGet("SearchGlass/searchGlass")]
