@@ -53,7 +53,7 @@ namespace CocktailDebacle.Server.Controllers
         public async Task<IActionResult> GetCocktailById(int id)
         {
             var cocktailEntity = await _context.DbCocktails
-                .Where(c => c.Id == id && c.PublicCocktail == true)
+                .Where(c => c.Id == id)
                 .FirstOrDefaultAsync();
 
             if (cocktailEntity == null)
@@ -259,9 +259,6 @@ namespace CocktailDebacle.Server.Controllers
             });
         }
 
-
-        // Cocktail Create o Modificati (User)
-
         [Authorize]
         [HttpGet("MyCocktails")]
         public async Task<ActionResult<IEnumerable<CocktailDto>>> GetMyCocktails()
@@ -452,20 +449,7 @@ namespace CocktailDebacle.Server.Controllers
             if (cocktail == null)
                 return NotFound("Cocktail not found or does not belong to you.");
 
-           UtilsCocktail.UpdateCocktail(cocktail, updatedCocktail);
-
-            // Validazione della coerenza tra ingredienti e misure
-            var validationError = UtilsCocktail.ValidateIngredientMeasureConsistency(cocktail);
-            if (validationError != null)
-            {
-                return BadRequest(validationError);
-            }
-            // Validazione della classe di volume del cocktail
-            var volumeError = UtilsCocktail.ValidateVolumeClassCocktail(cocktail, UtilsCocktail.GlassCapacity);
-            if (volumeError != null)
-            {
-                return BadRequest(volumeError);
-            }
+            UtilsCocktail.UpdateCocktail(cocktail, updatedCocktail);
             try{
                 await _context.SaveChangesAsync();
                 return Ok(new { Message = "Cocktail aggiornato con successo!" });
@@ -608,7 +592,7 @@ namespace CocktailDebacle.Server.Controllers
             if (string.IsNullOrEmpty(username))
                 return Unauthorized("User not authenticated.");
 
-            var cocktail = await _context.DbCocktails.Include(c => c.UserLikes).FirstOrDefaultAsync(c => c.Id == Id && c.PublicCocktail == true);
+            var cocktail = await _context.DbCocktails.Include(c => c.UserLikes).FirstOrDefaultAsync(c => c.Id == Id);
             if (cocktail == null)
                 return NotFound("Cocktail not found.");
 

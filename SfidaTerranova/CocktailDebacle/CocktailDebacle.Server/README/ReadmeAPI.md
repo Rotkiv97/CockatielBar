@@ -5,58 +5,65 @@
 # Inserise i Token su postoman
 
 # Autenticazione
+
 ## Alcune API richiedono un token JWT. Per aggiungerlo in **Postman**:
+
 - Vai nella sezione `Authorization`
 - Imposta `Auth Type` su **Bearer Token**
 - Inserisci il token dell’utente nel campo `Token`
 
 ![Img](./src/TokenPostman.png)
 
+---
+
 ## 🍸 API Cocktail
+
 - [GET - http://localhost:5052/api/Cocktails/cocktails](#get-all-cocktail)
 - [GET - http://localhost:5052/api/Cocktails/cocktail/by-id](#cocktail-by-id)
 - [GET - http://localhost:5052/api/Cocktails/search](#my-cocktails)
 - [GET - http://localhost:5052/api/Cocktails/IngedientSearch/SearchIngredient](#ingredient-search)
 - [GET - http://localhost:5052/api/Cocktails/SearchMeasureType/searchMeasure](#search-measure)
 - [GET - http://localhost:5052/api/Cocktails/SearchGlass/searchGlass](#search-glass)
-- [GET - http://localhost:5052/api/Cocktails/SearchCategory/searchCategory](#)
-- [GET - http://localhost:5052/api/Cocktails/GetUserCocktailLikes](#)
-- [GET - http://localhost:5052/api/Cocktails/GetCountCocktailLikes/{id}](#)
-- [GET - http://localhost:5052/api/Cocktails/ingredients](#)
-- [GET - http://localhost:5052/api/Cocktails/SearchUser/{username}](#)
+- [GET - http://localhost:5052/api/Cocktails/SearchCategory/searchCategory](#search-category)
+- [GET - http://localhost:5052/api/Cocktails/GetUserCocktailLikes](#get-user-cocktail-likes)
+- [GET - http://localhost:5052/api/Cocktails/GetCountCocktailLikes/{id}](#get-count-cocktail-likes)
+- [GET - http://localhost:5052/api/Cocktails/ingredients](#ingredients)
+- [GET - http://localhost:5052/api/Cocktails/SearchUser/{username}](#search-user)
 
-- [POST - http://localhost:5052/api/Cocktails/CocktailCreate](#)
-- [POST - http://localhost:5052/api/Cocktails/{id}/UploadImageCocktail-local](#)
-- [POST - http://localhost:5052/api/Cocktails/{id}/UploadImageCocktail-url](#)
+- [POST - http://localhost:5052/api/Cocktails/CocktailCreate](#cocktail-create)
+- [POST - http://localhost:5052/api/Cocktails/{id}/UploadImageCocktail-local](#upload-image-cocktail-local)
+- [POST - http://localhost:5052/api/Cocktails/{id}/UploadImageCocktail-url](#upload-image-cocktail-url)
 
-- [PUT - http://localhost:5052/api/Cocktails/CocktailUpdate/{idDrink}](#)
+- [PUT - http://localhost:5052/api/Cocktails/CocktailUpdate/{idDrink}](#cocktail-update)
 
-- [DELETE - http://localhost:5052/api/Cocktails/CocktailDelete/{idDrink}](#)
+- [DELETE - http://localhost:5052/api/Cocktails/CocktailDelete/{idDrink}](#cocktail-delete)
 
 ## 👤 API Users
-- [GET - http://localhost:5052/api/Users/GetUser/{username}](#)
-- [GET - http://localhost:5052/api/Users/check-token](#)
-- [GET - http://localhost:5052/api/Users/GetToken](#)
-- [GET - http://localhost:5052/api/Users/getPassword/{id}](#)
-- [GET - http://localhost:5052/api/Users/GetMyCocktailLike/{id}](#)
-- [GET - http://localhost:5052/api/Users/GetFollowedUsers/{id}](#)
-- [GET - http://localhost:5052/api/Users/GetFollowersUsers/{id}](#)
-- [GET - http://localhost:5052/api/Users/Get_Cocktail_for_Followed_Users](#)
-- [GET - http://localhost:5052/api/Users/ThisYourCocktailLike/{id}](#)
-- [GET - http://localhost:5052/api/Users/SuggestionsCocktailByUser/{id}](#)
 
-- [POST - http://localhost:5052/api/Users/login](#)
-- [POST - http://localhost:5052/api/Users/logout](#)
-- [POST - http://localhost:5052/api/Users/register](#)
-- [POST - http://localhost:5052/api/Users/upload-profile-image-local/{id}](#)
-- [POST - http://localhost:5052/api/Users/upload-profile-image-Url/{id}](#)
-- [POST - http://localhost:5052/api/Users/FollowedNewUser/{followedUserId}](#)
+- [GET - http://localhost:5052/api/Users/GetUser/{username}](#get-user)
+- [GET - http://localhost:5052/api/Users/check-token](#check-token)
+- [GET - http://localhost:5052/api/Users/GetToken](#get-token)
+- [GET - http://localhost:5052/api/Users/getPassword/{id}](#get-password)
+- [GET - http://localhost:5052/api/Users/GetMyCocktailLike/{id}](#get-my-cocktail-like)
+- [GET - http://localhost:5052/api/Users/GetFollowedUsers/{id}](#get-followed-users-get)
+- [GET - http://localhost:5052/api/Users/GetFollowersUsers/{id}](#get-followers-users)
+- [GET - http://localhost:5052/api/Users/Get_Cocktail_for_Followed_Users](#get-cocktails-for-followed-users)
+- [GET - http://localhost:5052/api/Users/ThisYourCocktailLike/{id}](#this-is-your-cocktail-like)
+- [GET - http://localhost:5052/api/Users/SuggestionsCocktailByUser/{id}](#suggestion-cocktails-by-user)
 
-- [PUT - http://localhost:5052/api/Users/{id}](#)
+- [POST - http://localhost:5052/api/Users/login](#login)
+- [POST - http://localhost:5052/api/Users/logout](#logout)
+- [POST - http://localhost:5052/api/Users/register](#register)
+- [POST - http://localhost:5052/api/Users/upload-profile-image-local/{id}](#upload-profile-image-local)
+- [POST - http://localhost:5052/api/Users/upload-profile-image-Url/{id}](#upload-profile-image-url)
+- [POST - http://localhost:5052/api/Users/FollowedNewUser/{followedUserId}](#followed-new-user-post)
 
-- [DELETE - http://localhost:5052/api/Users/{id}](#)
+- [PUT - http://localhost:5052/api/Users/{id}](#update-user)
+
+- [DELETE - http://localhost:5052/api/Users/{id}](#delete-user)
 
 ## 🌍 API Translation
+
 - [POST - http://localhost:5052/api/Translation/translate](#)
 
 
@@ -233,4 +240,216 @@ A bisono del [Token](#inserise-i-token-su-postoman).
 
 Esempio: `/api/Cocktails/CocktailDelete/{idDrink}`
 
+# User Api
 
+---
+
+### Get User
+
+Restituisce i dati di un utente tramite il suo `username`.  
+Richiede autenticazione [Token](#inserise-i-token-su-postoman).
+
+Esempio: `http://localhost:5052/api/Users/GetUser/{userName}`
+
+---
+
+### Check Token
+
+Verifica se un token è ancora valido per un determinato `userName`.
+
+Esempio: `http://localhost:5052/api/Users/check-token?userName={userName}`
+
+---
+
+### Get Token
+
+Recupera il token JWT attuale per un utente tramite `userName`.
+
+Esempio: `http://localhost:5052/api/Users/GetToken?userName={userName}`
+
+---
+
+### Get Password
+
+Restituisce la password hashata dell’utente autenticato con il [Token](#inserise-i-token-su-postoman) e passandoli il suo `ID`.
+
+Esempio: `http://localhost:5052/api/Users/getPassword/{id}`
+
+---
+
+### Get My Cocktail Like
+
+Restituisce i cocktail a cui l’utente ha messo like.
+Ha bisno del [Token](#inserise-i-token-su-postoman) e dell' `ID` dell'utente.
+
+Esempio: `http://localhost:5052/api/Users/GetMyCocktailLike/{id}`
+
+---
+
+### Get Followed Users (GET)
+
+Restituisce la lista degli utenti seguiti.
+Ha bisogno dell' `ID` dell'user e del [Token](#inserise-i-token-su-postoman).
+
+Esempio: `http://localhost:5052/api/Users/GetFollowedUsers/{id}`
+
+---
+
+### Get Followers Users
+
+Restituisce la lista degli utenti che seguono l’utente.
+Ha bisogno dell' `ID` dell'user e del [Token](#inserise-i-token-su-postoman).
+
+Esempio: `http://localhost:5052/api/Users/GetFollowersUsers/{id}`
+
+---
+
+### Get Cocktails for Followed Users
+
+Restituisce tutti i cocktail “likati” dagli utenti seguiti.
+Ha bisno del [Token](#inserise-i-token-su-postoman).
+
+Esempio: `http://localhost:5052/api/Users/Get_Cocktail_for_Followed_Users`
+
+---
+
+### This Is Your Cocktail Like
+
+Verifica se l’utente autenticato ha messo like a un determinato cocktail.
+
+Esempio: `http://localhost:5052/api/Users/ThisYourCocktailLike/{id}`
+
+---
+
+### Suggestion Cocktails By User
+
+Suggerisce cocktail all’utente in base a:
+
+- `likes`
+- `search`
+- `category`
+
+Ha bisogno dell' `ID` dell'utente.
+
+Esempio: `http://localhost:5052/api/Users/SuggestionsCocktailByUser/{id}?type=likes&pageSize=10`
+
+---
+
+### Login
+
+Autentica l’utente e restituisce un token JWT.
+
+```json
+{
+  "userNameRequest": "userName",
+  "passwordRequest": "password"
+}
+```
+
+Esempio: `http://localhost:5052/api/Users/login`
+
+---
+
+### Logout
+
+Invalida il token salvato per l’utente.
+
+```json
+{
+  "userName": "Vik8"
+}
+```
+
+Esempio: `http://localhost:5052/api/Users/logout`
+
+---
+
+### Register
+
+Crea un nuovo utente.  
+Richiede il seguente JSON nel body (raw):
+
+```json
+{
+  "userName": "userName",
+  "name": "name",
+  "lastName": "lastName",
+  "email": "caio@comeva.com",
+  "passwordHash": "password",
+  "acceptCookies": true,
+  "isOfMajorityAge": true
+}
+```
+
+Esempio: `http://localhost:5052/api/Users/register`
+
+---
+
+### Upload Profile Image Local
+
+Carica un’immagine profilo da file locale e la carica su Claudinary.  
+Richiede autenticazione [Token](#inserise-i-token-su-postoman).
+
+**Body (form-data)**:
+
+- `file` = [file immagine]
+
+Esempio: `http://localhost:5052/api/Users/upload-profile-image-local/{id}`  
+
+---
+
+### Upload Profile Image URL
+
+Carica un’immagine profilo da un URL remoto e la carica su Claudinary.  
+Richiede autenticazione  [Token](#inserise-i-token-su-postoman).
+E Richiede `ID` dell'utente.
+**Body (raw, JSON)**:
+
+```json
+"https://example.com/image.jpg"
+```
+
+Esempio: `http://localhost:5052/api/Users/upload-profile-image-Url/{id}`
+
+---
+
+### Followed New User (POST)
+
+Segui o smetti di seguire un altro utente.
+Ha bisno del [Token](#inserise-i-token-su-postoman).
+Hai bisgno dell'`ID` dell'utente che vuoi seguire.
+
+Esempio: `http://localhost:5052/api/Users/FollowedNewUser/{followedUserId}`
+
+---
+
+
+### Update User
+
+Modifica i dati dell’utente autenticato.  
+Richiede autenticazione [Token](#inserise-i-token-su-postoman).
+Hai bisgno dell'`ID` dell'utente.
+
+Body (JSON):
+
+```json
+{
+  "userName": "Vik8New",
+  "name": "Vik",
+  "lastName": "New",
+  "email": "new@email.com",
+  "passwordHash": "newpassword",
+  "acceptCookies": false
+}
+```
+
+Esempio: `http://localhost:5052/api/Users/{id}`
+
+---
+
+### Delete User
+
+Elimina l’utente autenticato [Token](#inserise-i-token-su-postoman).
+Hai bisgno dell'`ID` dell'utente.
+
+Esempio: `http://localhost:5052/api/Users/{id}`

@@ -391,6 +391,7 @@ namespace CocktailDebacle.Server.Utils
             return new CocktailDto
             {
                 Id = c.Id,
+                UserIdCocktail = c.UserIdCocktail,
                 IdDrink = c.IdDrink ?? string.Empty,
                 StrDrink = c.StrDrink ?? string.Empty,
                 StrCategory = c.StrCategory ?? string.Empty,
@@ -410,7 +411,7 @@ namespace CocktailDebacle.Server.Utils
         {
             return new Cocktail
             {
-                UserIdCocktail = idUser,
+                UserIdCocktail = cocktailCreate.UserIdCocktail,
                 PublicCocktail = cocktailCreate.PublicCocktail,
                 dateCreated = DateTime.UtcNow,
                 Likes = 0,
@@ -483,34 +484,43 @@ namespace CocktailDebacle.Server.Utils
 
         public static void UpdateCocktail(Cocktail cocktail, CocktailCreate dto)
         {
-            // Aggiorna le proprietà del cocktail esistente con i nuovi valori
-            cocktail.StrDrink = dto.StrDrink ?? cocktail.StrDrink;
-            cocktail.StrCategory = dto.StrCategory ?? cocktail.StrCategory;
-            cocktail.StrAlcoholic = dto.StrAlcoholic ?? cocktail.StrAlcoholic;
-            cocktail.StrGlass = dto.StrGlass ?? cocktail.StrGlass;
-            cocktail.StrInstructions = dto.StrInstructions ?? cocktail.StrInstructions;  
-            cocktail.StrDrinkThumb = dto.StrDrinkThumb ?? cocktail.StrDrinkThumb;
-            cocktail.StrTags = dto.StrTags ?? cocktail.StrTags;
-            cocktail.StrVideo = dto.StrVideo ?? cocktail.StrVideo;
-            cocktail.StrIBA = dto.StrIBA ?? cocktail.StrIBA;
-            cocktail.DateModified = DateTime.UtcNow.ToString("yyyy-MM-dd"); // Aggiorna la data di modifica
-            cocktail.PublicCocktail = dto.PublicCocktail; // Aggiorna la visibilità del cocktail
-            cocktail.StrDrinkAlternate = dto.StrDrinkAlternate ?? cocktail.StrDrinkAlternate;
-            cocktail.StrInstructionsES = dto.StrInstructionsES ?? cocktail.StrInstructionsES;
-            cocktail.StrInstructionsDE = dto.StrInstructionsDE ?? cocktail.StrInstructionsDE;
-            cocktail.StrInstructionsFR = dto.StrInstructionsFR ?? cocktail.StrInstructionsFR;
-            cocktail.StrInstructionsIT = dto.StrInstructionsIT ?? cocktail.StrInstructionsIT;
-            cocktail.StrInstructionsZH_HANS = dto.StrInstructionsZH_HANS ?? cocktail.StrInstructionsZH_HANS;
-            cocktail.StrInstructionsZH_HANT = dto.StrInstructionsZH_HANT ?? cocktail.StrInstructionsZH_HANT;
+            if (HasValue(dto.StrDrink ?? string.Empty)) cocktail.StrDrink = dto.StrDrink;
+            if (HasValue(dto.StrCategory ?? string.Empty)) cocktail.StrCategory = dto.StrCategory;
+            if (HasValue(dto.StrAlcoholic ?? string.Empty)) cocktail.StrAlcoholic = dto.StrAlcoholic;
+            if (HasValue(dto.StrGlass ?? string.Empty)) cocktail.StrGlass = dto.StrGlass;
+            if (HasValue(dto.StrInstructions ?? string.Empty)) cocktail.StrInstructions = dto.StrInstructions;
+            if (HasValue(dto.StrDrinkThumb ?? string.Empty)) cocktail.StrDrinkThumb = dto.StrDrinkThumb;
+            if (HasValue(dto.StrTags ?? string.Empty)) cocktail.StrTags = dto.StrTags;
+            if (HasValue(dto.StrVideo ?? string.Empty)) cocktail.StrVideo = dto.StrVideo;
+            if (HasValue(dto.StrIBA ?? string.Empty)) cocktail.StrIBA = dto.StrIBA;
+            if (HasValue(dto.StrDrinkAlternate ?? string.Empty)) cocktail.StrDrinkAlternate = dto.StrDrinkAlternate;
+            if (HasValue(dto.StrInstructionsES ?? string.Empty)) cocktail.StrInstructionsES = dto.StrInstructionsES;
+            if (HasValue(dto.StrInstructionsDE ?? string.Empty)) cocktail.StrInstructionsDE = dto.StrInstructionsDE;
+            if (HasValue(dto.StrInstructionsFR ?? string.Empty)) cocktail.StrInstructionsFR = dto.StrInstructionsFR;
+            if (HasValue(dto.StrInstructionsIT ?? string.Empty)) cocktail.StrInstructionsIT = dto.StrInstructionsIT;
+            if (HasValue(dto.StrInstructionsZH_HANS ?? string.Empty)) cocktail.StrInstructionsZH_HANS = dto.StrInstructionsZH_HANS;
+            if (HasValue(dto.StrInstructionsZH_HANT ?? string.Empty)) cocktail.StrInstructionsZH_HANT = dto.StrInstructionsZH_HANT;
+
+            cocktail.DateModified = DateTime.UtcNow.ToString("yyyy-MM-dd");
+            cocktail.PublicCocktail = dto.PublicCocktail;
             for (int i = 1; i <= 15; i++)
             {
-                typeof(Cocktail).GetProperty($"StrIngredient{i}")?.SetValue(cocktail, 
-                    typeof(CocktailCreate).GetProperty($"StrIngredient{i}")?.GetValue(dto));
+                var ingredientProp = typeof(Cocktail).GetProperty($"StrIngredient{i}");
+                var measureProp = typeof(Cocktail).GetProperty($"StrMeasure{i}");
 
-                typeof(Cocktail).GetProperty($"StrMeasure{i}")?.SetValue(cocktail, 
-                    typeof(CocktailCreate).GetProperty($"StrMeasure{i}")?.GetValue(dto));
+                var dtoIngredient = typeof(CocktailCreate).GetProperty($"StrIngredient{i}")?.GetValue(dto) as string;
+                var dtoMeasure = typeof(CocktailCreate).GetProperty($"StrMeasure{i}")?.GetValue(dto) as string;
+
+                if (HasValue(dtoIngredient ?? string.Empty))
+                    ingredientProp?.SetValue(cocktail, dtoIngredient);
+
+                if (HasValue(dtoMeasure ?? string.Empty))
+                    measureProp?.SetValue(cocktail, dtoMeasure);
             }
         }
+
+        // Support function
+        private static bool HasValue(string value) => !string.IsNullOrWhiteSpace(value);
 
         public static double ConvertToMilliliters(string? measure)
         {
