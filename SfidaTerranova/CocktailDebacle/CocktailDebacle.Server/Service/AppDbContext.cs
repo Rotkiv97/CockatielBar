@@ -5,10 +5,10 @@ namespace CocktailDebacle.Server.Service
 {
     public class AppDbContext : DbContext
     {
-        public DbSet<User> DbUser { get; set; } // DbSet per la tabella Users
-        public DbSet<Cocktail> DbCocktails { get; set; } // DbSet per la tabella Cocktails
+        public DbSet<User> DbUser { get; set; }
+        public DbSet<Cocktail> DbCocktails { get; set; }
         
-        public DbSet<UserHistorySearch> DbUserHistorySearch { get; set; } // DbSet per la tabella UserHistorySearch
+        public DbSet<UserHistorySearch> DbUserHistorySearch { get; set; } 
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -28,8 +28,6 @@ namespace CocktailDebacle.Server.Service
                 entity.HasKey(c => c.Id); 
                 entity.ToTable("Cocktails");
             });
-
-            // Configurazione della tabella UserHistorySearch
             modelBuilder.Entity<UserHistorySearch>(entity =>
             {
                 entity.HasKey(u => u.Id);
@@ -40,13 +38,13 @@ namespace CocktailDebacle.Server.Service
                 entity.HasOne(u => u.User)
                     .WithMany()
                     .HasForeignKey(u => u.UserId)
-                    .OnDelete(DeleteBehavior.Cascade); // Se vuoi che le ricerche vengano eliminate con l'utente
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<User>()
                 .HasMany(u => u.CocktailsLike)
                 .WithMany(c => c.UserLikes)
-                .UsingEntity(j => j.ToTable("UserCocktailsLike")); // Tabella di join per la relazione molti-a-molti
+                .UsingEntity(j => j.ToTable("UserCocktailsLike"));
 
             modelBuilder.Entity<User>()
                 .HasMany(u => u.Followed_Users)
@@ -55,11 +53,11 @@ namespace CocktailDebacle.Server.Service
                     "UserUser",
                     r => r.HasOne<User>()
                         .WithMany()
-                        .HasForeignKey("FollowerId")  // chi segue
+                        .HasForeignKey("FollowerId")
                         .OnDelete(DeleteBehavior.Restrict),
                     l => l.HasOne<User>()
                         .WithMany()
-                        .HasForeignKey("FollowedId") // chi è seguito
+                        .HasForeignKey("FollowedId")
                         .OnDelete(DeleteBehavior.Restrict),
                     je =>
                     {

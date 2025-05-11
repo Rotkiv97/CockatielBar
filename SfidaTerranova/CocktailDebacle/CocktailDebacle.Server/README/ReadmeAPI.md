@@ -16,9 +16,9 @@
 - [GET - http://localhost:5052/api/Cocktails/cocktails](#get-all-cocktail)
 - [GET - http://localhost:5052/api/Cocktails/cocktail/by-id](#cocktail-by-id)
 - [GET - http://localhost:5052/api/Cocktails/search](#my-cocktails)
-- [GET - http://localhost:5052/api/Cocktails/IngedientSearch/SearchIngredient](#)
-- [GET - http://localhost:5052/api/Cocktails/SearchMeasureType/searchMeasure](#)
-- [GET - http://localhost:5052/api/Cocktails/SearchGlass/searchGlass](#)
+- [GET - http://localhost:5052/api/Cocktails/IngedientSearch/SearchIngredient](#ingredient-search)
+- [GET - http://localhost:5052/api/Cocktails/SearchMeasureType/searchMeasure](#search-measure)
+- [GET - http://localhost:5052/api/Cocktails/SearchGlass/searchGlass](#search-glass)
 - [GET - http://localhost:5052/api/Cocktails/SearchCategory/searchCategory](#)
 - [GET - http://localhost:5052/api/Cocktails/GetUserCocktailLikes](#)
 - [GET - http://localhost:5052/api/Cocktails/GetCountCocktailLikes/{id}](#)
@@ -70,11 +70,7 @@ Restituisce **tutti i cocktail** presenti nel database come lista di oggetti `DT
 
 Restituisce un singolo cocktail, identificato da `id`.  
 Se l’utente è autenticato e ha accettato i cookie, la ricerca viene **salvata nello storico personale** (`UserHistorySearch`).
-Esempio:
-
-```
-/api/Cocktails/cocktail/by-id?id=12
-```
+Esempio:`/api/Cocktails/cocktail/by-id?id=12`
 
 ---
 
@@ -95,10 +91,7 @@ Permette la ricerca avanzata di cocktail tramite **query param**:
 
 > Può essere usata con uno o più filtri. Se viene usato solo `UserSearch`, restituisce **una lista di utenti**.
 
-Esempio:
-```
-/api/Cocktails/search?ingredient=vodka&page=1&pageSize=10
-```
+Esempio: `/api/Cocktails/search?ingredient=vodka&page=1&pageSize=10`
 
 ---
 
@@ -113,12 +106,10 @@ Richiede [Token](#inserise-i-token-su-postoman).
 
 Suggerisce ingredienti filtrati in base alla stringa `ingredient`.  
 Il risultato dipende dall'età dell’utente (`IsOfMajorityAge`):  
-- minorenni: solo ingredienti analcolici
-- maggiorenni: tutti
-Esempio:
-```
-/api/Cocktails/IngredientSearch/SearchIngredient?id={userId}&ingredient={string}
-```
+- se sei minorenne: solo ingredienti analcolici
+- se sei maggiorenne: tutti
+
+Esempio: `/api/Cocktails/IngredientSearch/SearchIngredient?id={userId}&ingredient={string}`
 
 ---
 
@@ -126,7 +117,120 @@ Esempio:
 
 Suggerisce le unità di misura supportate (es: `ml`, `oz`, `dash`...).  
 Filtro opzionale con il parametro `measure`.
+Richiede [Token](#inserise-i-token-su-postoman).
 
-```
-/api/Cocktails/SearchMeasureType/searchMeasure?id={userId}&measure={string}
-```
+Esempio: `/api/Cocktails/SearchMeasureType/searchMeasure?id={userId}&measure={string}`
+
+---
+
+### Search Glass
+
+Suggerisce i tipi di bicchieri disponibili nel database filtrando per nome.
+Richiede [Token](#inserise-i-token-su-postoman).
+
+Esempio: `/api/Cocktails/SearchGlass/searchGlass?id={userId}&glass=margarita`
+
+---
+
+### Search Category
+
+Suggerisce le categorie esistenti (es: "Cocktail", "Soft Drink", ecc.), con supporto alla ricerca.
+Richiede [Token](#inserise-i-token-su-postoman).
+
+Esempio: `/api/Cocktails/SearchCategory/searchCategory?id={userId}&category=soft`
+
+---
+
+### Get User Cocktail Likes
+
+Restituisce l’elenco degli utenti che hanno messo “like” al cocktail specificato.
+
+Esempio: `/api/Cocktails/GetUserCocktailLikes?id={cocktailId}`
+
+---
+
+### Get Count Cocktail Likes
+
+Restituisce il **numero totale di like** per un cocktail.
+
+Esempio: `/api/Cocktails/GetCountCocktailLikes/{id}`
+
+---
+
+### Ingredients
+
+Restituisce l’elenco **unico e ordinato** di tutti gli ingredienti usati nei cocktail presenti nel database.
+
+Esempio: `/api/Cocktails/ingredients`
+
+---
+
+### Search User
+
+Ricerca utenti filtrando per `username`.  
+Funziona solo se sei autenticato [Token](#inserise-i-token-su-postoman).  
+Restituisce utenti che iniziano o contengono il nome cercato (escludendo te stesso).
+
+Esempio: `/api/Cocktails/SearchUser/{username}`
+
+---
+
+### Cocktail Create
+
+Permette di **creare un nuovo cocktail**.  
+Valida:
+- Età (non alcolici se sei minorenne)
+- Consistenza tra ingredienti e misure
+- Volume massimo consentito in base al bicchiere scelto
+
+Richiede [Token](#inserise-i-token-su-postoman) e JSON del cocktail (`CocktailCreate` DTO).
+
+Esempio: `/api/Cocktails/CocktailCreate`
+
+---
+
+### Upload Image Cocktail local
+
+Carica un'immagine locale per il cocktail (Cloudinary).  
+Ed ha bisono del fili caricato [FromFile] file.
+
+Esempio: `/api/Cocktails/{id}/UploadImageCocktail-local`
+
+---
+
+### Upload Image Cocktail Url
+
+Carica un'immagine da URL remoto (es: `https://...`) per un cocktail.
+Sostituisce l'immagine precedente se presente.
+
+Esempio: `/api/Cocktails/{id}/UploadImageCocktail-url`
+
+---
+
+### Like
+
+Permette di aggiungere o rimuovere un like a un cocktail.  
+Restituisce il numero aggiornato di like.
+A bisono del [Token](#inserise-i-token-su-postoman).
+
+Esempio: `/api/Cocktails/like/{id}`
+
+### Cocktail Update
+
+Permette di modificare un cocktail **solo se sei l’autore**.  
+Validazione come la creazione (alcolici, misure, volume...).
+A bisono del [Token](#inserise-i-token-su-postoman).
+
+Esempio: `/api/Cocktails/CocktailUpdate/{idDrink}`
+
+---
+
+### Cocktail Delete
+
+Elimina un cocktail.  
+Accessibile solo dall’utente autore del cocktail.
+A bisono del [Token](#inserise-i-token-su-postoman).
+
+Esempio: `/api/Cocktails/CocktailDelete/{idDrink}`
+
+

@@ -48,7 +48,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 });
 
 var token = builder.Configuration["Jwt:Key"];
-Console.WriteLine("👇------JWT key usata dal server: " + token);
 if (string.IsNullOrEmpty(token))
 {
     throw new ArgumentNullException("JWT key is not configured.");
@@ -69,8 +68,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true,
             ClockSkew = TimeSpan.Zero
         };
-
-        // 👇 Aggiungi questa parte per gestire token scaduti o rimossi
         options.Events = new JwtBearerEvents
         {
             OnTokenValidated = async context =>

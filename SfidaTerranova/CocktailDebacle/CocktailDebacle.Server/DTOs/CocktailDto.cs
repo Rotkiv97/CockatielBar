@@ -11,7 +11,7 @@ namespace CocktailDebacle.Server.DTOs
         public int Id { get; set; }
         public string IdDrink { get; set; } = string.Empty;
         public bool? PublicCocktail { get; set; } = true;
-        public int UserIdCocktail { get; set; } = 0; 
+        public int UserIdCocktail { get; set; } 
         public string StrDrink { get; set; } = string.Empty;
         public string StrCategory { get; set; } = string.Empty;
         // [Required]

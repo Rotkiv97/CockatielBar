@@ -33,7 +33,7 @@ namespace CocktailDebacle.Server.Controllers
             {
                 var translatedText = await _translator.TranslateTextAsync(request.Text, request.ToLanguage, request.FromLanguage);
                 _logger.LogInformation("🔍 RICEVUTO: Text = {Text}, ToLanguage = {ToLanguage}", request.Text, request.ToLanguage);
-                return Ok(new { result = translatedText });
+                return Ok(new { result = translatedText});
             }
             catch (Exception ex)
             {

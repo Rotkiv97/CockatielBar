@@ -23,20 +23,16 @@ namespace CocktailDebacle.Server.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly AppDbContext _context;
         private readonly IAuthService _authService;
-
         private readonly CloudinaryService _cloudinaryService;
-
         private readonly ILogger<UsersController> _logger;
-
+        private readonly AppDbContext _context;
         public UsersController(AppDbContext context, IAuthService authService, ILogger<UsersController> logger, CloudinaryService cloudinaryService)
         {
             _cloudinaryService = cloudinaryService;
             _authService = authService;
             _context = context;
             _logger = logger;
-            _logger.LogInformation("CloudinaryService initialized.✅");
         }
 
         [Authorize]
@@ -86,11 +82,7 @@ namespace CocktailDebacle.Server.Controllers
             {
                 return Unauthorized($"Invalid token = {token}");
             }
-            _logger.LogDebug($"Token = {token}");
-            //user.Token = token;
-            //user.TokenExpiration = DateTime.UtcNow; // Imposta la scadenza del token a 1 ora
             await _context.SaveChangesAsync();
-            // Se la password è corretta, restituisci i dati utente
             return Ok(new
             {
                 user.Id,
@@ -171,7 +163,6 @@ namespace CocktailDebacle.Server.Controllers
         [HttpPost("register")]
         public async Task<ActionResult<User>> Register([FromBody] RegisterUserDto userDto)
         {
-            // Controlla se esiste già un utente con la stessa email
             bool emailExists = await _context.DbUser.AnyAsync(u => u.Email == userDto.Email);
             bool userNameExists = await _context.DbUser.AnyAsync(u => u.UserName == userDto.UserName);
             if (userNameExists)
@@ -183,7 +174,6 @@ namespace CocktailDebacle.Server.Controllers
                 return BadRequest("Questa Email è già in uso?.");
             }
 
-            // Mappa il DTO al modello User
             var user = new User
             {
                 UserName = userDto.UserName,
@@ -195,7 +185,6 @@ namespace CocktailDebacle.Server.Controllers
                 AcceptCookies = userDto.AcceptCookies
             };
 
-            // Aggiungi l'utente al database
             _context.DbUser.Add(user);
             await _context.SaveChangesAsync();
 

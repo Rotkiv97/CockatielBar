@@ -323,35 +323,11 @@ namespace CocktailDebacle.Server.Controllers
             var StrAlcoholic = haIngredientiAlcolici ? "Alcoholic" : "Non alcoholic";
             
             newcocktail.StrAlcoholic = StrAlcoholic;
-
-            if (!user.IsOfMajorityAge.GetValueOrDefault(true))
-            {
-                // Solo analcolici permessi per i minorenni
-                if (cocktailCreate.StrAlcoholic != "Non alcoholic")
-                    return BadRequest("Se sei minorenne puoi creare solo cocktail analcolici!");
-
-                if (haIngredientiAlcolici)
-                    return BadRequest("Se sei minorenne non puoi inserire ingredienti alcolici!");
-            }
-
-            // Validazione della coerenza tra ingredienti e misure
-            var validationError = UtilsCocktail.ValidateIngredientMeasureConsistency(newcocktail);
-            if (validationError != null)
-            {
-                return BadRequest(validationError);
-            }
-
-            // Validazione della classe di volume del cocktail
-            var volumeError = UtilsCocktail.ValidateVolumeClassCocktail(newcocktail, UtilsCocktail.GlassCapacity);
-            if (volumeError != null)
-            {
-                return BadRequest(volumeError);
-            }
             try
             {
-                newcocktail.UserIdCocktail = user.Id;
                 _context.DbCocktails.Add(newcocktail);
                 await _context.SaveChangesAsync();
+                
                 return Ok(new { id = newcocktail.IdDrink, Message = "Cocktail creato con successo !!!", newcocktail });
             }
             catch (Exception ex)
