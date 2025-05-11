@@ -281,7 +281,11 @@ namespace CocktailDebacle.Server.Controllers
             var cocktails = await _context.DbCocktails
                 .Where(c => c.UserIdCocktail == user.Id)
                 .ToListAsync();
-            return Ok(cocktails);
+            var cocktailDtos = cocktails
+                .Select(c => UtilsCocktail.CocktailToDto(c))
+                .ToList();
+            
+            return Ok(cocktailDtos);
         }
 
         [Authorize]
@@ -345,6 +349,7 @@ namespace CocktailDebacle.Server.Controllers
             }
             try
             {
+                newcocktail.UserIdCocktail = user.Id;
                 _context.DbCocktails.Add(newcocktail);
                 await _context.SaveChangesAsync();
                 return Ok(new { id = newcocktail.IdDrink, Message = "Cocktail creato con successo !!!", newcocktail });
@@ -495,6 +500,22 @@ namespace CocktailDebacle.Server.Controllers
             }
         }
 
+        [AllowAnonymous]
+        [HttpGet("GetCocktailCreatorByUser/{id}")]
+        public async Task<IActionResult> GetCocktailCreatorByUser(int id)
+        {
+            var user = await _context.DbUser.FirstAsync(u => u.Id == id);
+
+            if (user == null)
+                return NotFound("User not found.");
+
+            var cocktialUser = _context.DbCocktails
+                .Where(c => c.PublicCocktail == true && c.UserIdCocktail == user.Id)
+                .ToList();
+            var cocktailDto = cocktialUser.Select(c => UtilsCocktail.CocktailToDto(c)).ToList();
+            return Ok(cocktailDto);
+        }
+
         // Cocktail Delete (User)
         [Authorize]
         [HttpDelete("CocktailDelete/{idDrink}")]
@@ -535,48 +556,19 @@ namespace CocktailDebacle.Server.Controllers
                 return Unauthorized("User not authenticated.");
 
             var user = await _context.DbUser.FirstOrDefaultAsync(u => u.UserName == username);
-            if (user == null)
-                return NotFound("User not found or does not accept cookies.");
+            if (user == null || user?.Id != id) 
+                return NotFound("User not found ");
 
-            var cocktail = await _context.DbCocktails
-                .FirstOrDefaultAsync(c => c.Id == id && c.UserIdCocktail == user.Id);
-
-            if (cocktail == null)
-                return NotFound("Cocktail not found or does not belong to you.");
 
             if (file == null || file.Length == 0)
                 return BadRequest("File not provided.");
-
-            if(!string.IsNullOrEmpty(cocktail.StrDrinkThumb))
-            {
-                try{
-                    var uri = new Uri(cocktail.StrDrinkThumb);
-                    var segments = uri.AbsolutePath.Split('/');
-                    var folder = string.Join("/", segments.Skip(Array.IndexOf(segments, "upload") + 1));
-                    var publicId = Path.Combine(Path.GetDirectoryName(folder) ?? "", Path.GetFileNameWithoutExtension(folder)).Replace("\\", "/");
-
-                    await _cloudinaryService.DeleteImageAsync(publicId);
-                }
-                catch (Exception ex)
-                {
-                    return BadRequest($"Error deleting old image: {ex.Message}");
-                }
-            }
 
             var newPublicId = $"cocktail_images/{username}_{id}_{DateTime.UtcNow.Ticks}"; // Genera un nuovo publicId unico
             var imageUrl = await _cloudinaryService.UploadImageAsync(file, newPublicId);
             if (string.IsNullOrEmpty(imageUrl))
                 return BadRequest("Error uploading image.");
             
-            cocktail.StrDrinkThumb = imageUrl;
-            await _context.SaveChangesAsync();
-            return Ok(new
-            {
-                Message = "Image uploaded successfully!",
-                ImageUrl = cocktail.StrDrinkThumb,
-                CocktailId = cocktail.Id,
-                cocktail.StrDrink
-            });
+            return Ok(new{ ImageUrl = imageUrl});
 
         }
 

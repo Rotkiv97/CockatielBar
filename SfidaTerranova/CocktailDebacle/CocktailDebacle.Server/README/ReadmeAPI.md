@@ -2,7 +2,13 @@
 
 ![Img](./src/Postman.png)
 
-# Inserise i Token su postoman 
+# Inserise i Token su postoman
+
+# Autenticazione
+## Alcune API richiedono un token JWT. Per aggiungerlo in **Postman**:
+- Vai nella sezione `Authorization`
+- Imposta `Auth Type` su **Bearer Token**
+- Inserisci il token dell’utente nel campo `Token`
 
 ![Img](./src/TokenPostman.png)
 
@@ -56,33 +62,71 @@
 
 ### Get All Cocktail
 
-#### non ha bisono di nulla in ingresso semplicemente ti rende tutti i cocktial presenti nel database in una lista di oggetti DTO quindi solo con le informazioni che mi servono sapere
+Restituisce **tutti i cocktail** presenti nel database come lista di oggetti `DTO`.
+
+---
 
 ### Cocktail By Id
 
-http://localhost:5052/api/Cocktails/cocktail/by-id?id={id} 
-in postman se vogli aggingere id token vai su Authorization -> su Auth Type = Bearer Token, prendere il token dell'user e incollarlo dentro la sezione token
-questa chiamata a bisogno dell'id del cocktail e in manira opzionale il TOKEN per controllare se sei autenticato e autorizzato, per poi tornarmi sempre un oggetto DTO del cocktail trovato nel database, altrimenti mi ritorna un NotFound( ), questa chiamata viene usata alla fine di una ricerca nel FrontEnd e se hai accetto i cockie e sei aoutorizzato dai token allora il nome del cocktail viene salavata nel UserHistorySearch dove mi salvo l'id del l'user il nome del Cocktail e la data delle ricercha.
+Restituisce un singolo cocktail, identificato da `id`.  
+Se l’utente è autenticato e ha accettato i cookie, la ricerca viene **salvata nello storico personale** (`UserHistorySearch`).
+Esempio:
+
+```
+/api/Cocktails/cocktail/by-id?id=12
+```
+
+---
 
 ### Search
 
-questa chiamata è una chiamata che tramite delle query mi permette di filtrare e cercare
+Permette la ricerca avanzata di cocktail tramite **query param**:
 
-nameCocktail: Nome del cocktail
-UserSearch: Nome dell’utente che ha creato il cocktail
-glass: Tipo di bicchiere
-ingredient: Nome dell’ingrediente contenuto
-category: Categoria del cocktail
-alcoholic: (valori accettati: Non Alcoholic, Alcoholic, Optional alcohol)
-page: Numero della pagina
-pageSize: Dimensione della pagina
+| Parametro     | Descrizione                                  |
+|---------------|----------------------------------------------|
+| nameCocktail  | Nome del cocktail                            |
+| UserSearch    | Username dell’utente creatore del cocktail   |
+| glass         | Tipo di bicchiere                            |
+| ingredient    | Ingrediente incluso                          |
+| category      | Categoria del cocktail                       |
+| alcoholic     | Alcoholic / Non Alcoholic / Optional alcohol |
+| page          | Numero della pagina                          |
+| pageSize      | Elementi per pagina                          |
 
-Questa chiamata l'ho pensata inizialmente anche per una ricerca combinata per poi essere usata con una query alla volta.
+> Può essere usata con uno o più filtri. Se viene usato solo `UserSearch`, restituisce **una lista di utenti**.
 
-esempio di chiamata :  http://localhost:5052/api/cocktails/search?ingredient=Vodka&page=1&pageSize=10
+Esempio:
+```
+/api/Cocktails/search?ingredient=vodka&page=1&pageSize=10
+```
+
+---
 
 ### My Cocktails
 
-A bisongo solo del [Token](#inserise-i-token-su-postoman) dal quale mi estrapolo username e controllo e trovo l'user nel database, dopo di che controllo nel database se esistino o travo cocktail(UserIdCocktail) che hanno il mio stesso id id.
+Restituisce tutti i cocktail creati dall'utente attualmente autenticato.
+Richiede [Token](#inserise-i-token-su-postoman).
+
+---
 
 ### Ingredient Search
+
+Suggerisce ingredienti filtrati in base alla stringa `ingredient`.  
+Il risultato dipende dall'età dell’utente (`IsOfMajorityAge`):  
+- minorenni: solo ingredienti analcolici
+- maggiorenni: tutti
+Esempio:
+```
+/api/Cocktails/IngredientSearch/SearchIngredient?id={userId}&ingredient={string}
+```
+
+---
+
+### Search Measure
+
+Suggerisce le unità di misura supportate (es: `ml`, `oz`, `dash`...).  
+Filtro opzionale con il parametro `measure`.
+
+```
+/api/Cocktails/SearchMeasureType/searchMeasure?id={userId}&measure={string}
+```

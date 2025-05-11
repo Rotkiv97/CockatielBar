@@ -40,8 +40,6 @@ namespace CocktailDebacle.Server.Controllers
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-
-
     }
     public class TranslationRequest
     {
