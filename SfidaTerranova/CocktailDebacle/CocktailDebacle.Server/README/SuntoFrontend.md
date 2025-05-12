@@ -20,8 +20,8 @@ Per facilitare le modifiche front-end in tempo reale, si consiglia di usare ques
 
 1. Avvio servizi backend e database su Docker
 -docker-compose up sqlserver backend
-✅ Questa modalità l'ho utilizzata durante lo sviluppo.
-Permette di evitare rebuild continui del frontend.
+✅ Questa modalità va utilizzata durante lo sviluppo.
+Non è possibile lavorare dinamicamente sul frontend tramite docker.
 
 2. Avvio frontend Angular in locale
 -ng serve --host 0.0.0.0 --poll
@@ -30,7 +30,7 @@ Permette di evitare rebuild continui del frontend.
 🔗 Connessione al Database
 Per garantire che il frontend Angular comunichi col database nel container SQL Server, è necessario configurare correttamente la stringa di connessione in:
 -CocktailDebacle.Server/appsettings.json
-📸 Immagine:
+📸 ![Img](./src/appsetting.png)
 
 
 🧩 Struttura del Frontend (Angular Stand-alone)
