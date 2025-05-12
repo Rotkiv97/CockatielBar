@@ -103,12 +103,13 @@ app-cocktail-modal
 
 🔌 Chiamate API e Servizi
 Le interazioni con il backend per utenti, cocktails, preferenze ecc. sono gestite da services Angular, ad esempio:
+```ts
 -user.service.ts
 export class UserService {
   private apiUrl = 'http://localhost:5052/api/Users';
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
-```ts
+
 (...)
   constructor(
     private http: HttpClient,
