@@ -215,6 +215,8 @@ Suggerimenti personalizzati (se accettati i cookies)
 
 Basati su età dell’utente
 
+![Img](./src/caro.png)
+
 Descrizioni variabili in base a:
 
 🕒 Ora del giorno: mattina / pomeriggio / sera
@@ -348,7 +350,8 @@ Visualizza il profilo
 
 Premi Segui / Smetti di seguire
 
-![Img](./src/profile-1.png)
+![Img](./src/visitor.png)
+
 
 🛠️ Altre funzionalità del Profilo
 ✨ Creazione Cocktail
