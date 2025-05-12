@@ -9,14 +9,10 @@
 È possibile **avviare l’intero progetto** dalla cartella `CocktailDebacle` tramite:
 
 ```bash
+Questo comando esegue:
 docker-compose up --build
 
-Questo comando esegue:
 
-Servizio	Descrizione
-backend	API in .NET Core
-sqlserver	Database SQL Server
-nginx	Hosting dei file Angular statici
 
 ⚙️ Modalità di Sviluppo
 Durante lo sviluppo, i file Angular sono caricati staticamente da un container NGINX.
