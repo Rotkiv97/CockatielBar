@@ -194,6 +194,9 @@ Help
 🌐 Pagina Browse Cocktails
 
 (mobile)
+
+
+
 ![Img](./src/browsermobile.png)
 
 🍹 Browse dei Cocktails
