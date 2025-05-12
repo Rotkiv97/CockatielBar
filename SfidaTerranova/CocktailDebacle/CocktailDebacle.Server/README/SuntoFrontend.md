@@ -30,7 +30,8 @@ Non è possibile lavorare dinamicamente sul frontend tramite docker.
 🔗 Connessione al Database
 Per garantire che il frontend Angular comunichi col database nel container SQL Server, è necessario configurare correttamente la stringa di connessione in:
 -CocktailDebacle.Server/appsettings.json
-📸 ![Img](./src/appsetting.png)
+
+![Img](./src/appsetting.png)
 
 
 🧩 Struttura del Frontend (Angular Stand-alone)
