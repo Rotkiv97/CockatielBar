@@ -8,25 +8,27 @@
 
 È possibile **avviare l’intero progetto** dalla cartella `CocktailDebacle` tramite:
 
-Questo comando esegue:
+Questo comando:
 ```bash
 docker-compose up --build
 ```
 
-
-
 ⚙️ Modalità di Sviluppo
 Durante lo sviluppo, i file Angular sono caricati staticamente da un container NGINX.
-Per facilitare le modifiche front-end in tempo reale, si consiglia di usare questa modalità:
+Per facilitare le modifiche front-end in tempo reale, si deve usare questa modalità:
 
 1. Avvio servizi backend e database su Docker
+✅ Avvio parziale dei Docker.
+```bash
 -docker-compose up sqlserver backend
-✅ Questa modalità va utilizzata durante lo sviluppo.
-Non è possibile lavorare dinamicamente sul frontend tramite docker.
+```
+Non è possibile lavorare dinamicamente sul frontend tramite docker di conseguenza:
 
-2. Avvio frontend Angular in locale
+3. Avvio frontend Angular in locale
+```bash
 -ng serve --host 0.0.0.0 --poll
- --poll è utile in ambienti dove il file watcher standard non funziona correttamente (es. WSL, Docker Volumes)
+```
+ (--poll è utile in ambienti dove il file watcher standard non funziona correttamente (es. WSL, Docker Volumes))
 
 🔗 Connessione al Database
 Per garantire che il frontend Angular comunichi col database nel container SQL Server, è necessario configurare correttamente la stringa di connessione in:
@@ -34,12 +36,16 @@ Per garantire che il frontend Angular comunichi col database nel container SQL S
 
 ![Img](./src/appsetting.png)
 
+la line di connesione corretta è:
+```bash
+Server=sqlserver;Database=CocktailDb;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=true;
+```
 
 🧩 Struttura del Frontend (Angular Stand-alone)
 Il frontend è realizzato con Angular stand-alone components (senza NgModules), e la loro comunicazione è gestita via:
 -app.routes.ts
 
-📸 Immagine:
+![Img](./src/approutes.png)
 
 🔄 Comunicazione tra componenti
 I componenti comunicano tra loro tramite:
