@@ -72,11 +72,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             OnTokenValidated = async context =>
             {
-                Console.WriteLine("🔥 OnTokenValidated CALLED");
                 var dbContext = context.HttpContext.RequestServices.GetRequiredService<AppDbContext>();
                 var rawToken = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
-
                 var user = await dbContext.DbUser.FirstOrDefaultAsync(u => u.Token == rawToken);
+                
                 if (user == null || user.TokenExpiration == null || user.TokenExpiration <= DateTime.UtcNow)
                 {
                     context.Fail("Token not valid anymore.");

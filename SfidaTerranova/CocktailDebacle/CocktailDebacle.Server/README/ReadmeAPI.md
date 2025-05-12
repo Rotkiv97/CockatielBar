@@ -64,7 +64,7 @@
 
 ## 🌍 API Translation
 
-- [POST - http://localhost:5052/api/Translation/translate](#)
+- [POST - http://localhost:5052/api/Translation/translate](#translation)
 
 
 ### Get All Cocktail
@@ -453,3 +453,27 @@ Elimina l’utente autenticato [Token](#inserise-i-token-su-postoman).
 Hai bisgno dell'`ID` dell'utente.
 
 Esempio: `http://localhost:5052/api/Users/{id}`
+
+---
+
+### Translation
+
+Traduce il testo nella lingua desiderata.
+
+```json
+{
+  "text": "hello world",
+  "toLanguage": "it",
+  "fromLanguage": "en"
+}
+```
+
+Risposta:
+
+```json
+{
+    "result": "Salve, mondo"
+}
+```
+
+Esempio: `http://localhost:5052/api/Translation/translate`
