@@ -1,48 +1,84 @@
-# CocktailDebacle
+# 🍸 CocktailDebacle
 
-## Avvio del Progetto
+🚀 **Progetto full-stack Angular + .NET + SQL Server orchestrato con Docker**
+
+---
+
+## 📦 Avvio del Progetto
+
+È possibile **avviare l’intero progetto** dalla cartella `CocktailDebacle` tramite:
+
 ```bash
-
-È possibile avviare il progetto dalla cartella `CocktailDebacle` con il comando:
-
-
 docker-compose up --build
 
-Modalità di sviluppo
-Durante la fase di sviluppo, poiché i file di Angular sono caricati staticamente su un container Docker con Nginx, si consiglia di:
+Questo comando esegue:
 
-Avviare solo i servizi backend e database con: docker-compose up sqlserver backend
+Servizio	Descrizione
+backend	API in .NET Core
+sqlserver	Database SQL Server
+nginx	Hosting dei file Angular statici
 
-Avviare il frontend localmente con:
+⚙️ Modalità di Sviluppo
+Durante lo sviluppo, i file Angular sono caricati staticamente da un container NGINX.
+Per facilitare le modifiche front-end in tempo reale, si consiglia di usare questa modalità:
+
+1. Avvio servizi backend e database su Docker
+-docker-compose up sqlserver backend
+✅ Questa modalità l'ho utilizzata durante lo sviluppo.
+Permette di evitare rebuild continui del frontend.
+
+2. Avvio frontend Angular in locale
+-ng serve --host 0.0.0.0 --poll
+ --poll è utile in ambienti dove il file watcher standard non funziona correttamente (es. WSL, Docker Volumes)
+
+🔗 Connessione al Database
+Per garantire che il frontend Angular comunichi col database nel container SQL Server, è necessario configurare correttamente la stringa di connessione in:
+-CocktailDebacle.Server/appsettings.json
+📸 Immagine:
 
 
-ng serve --host 0.0.0.0 --poll
-🔥 In questa configurazione, i file Angular vengono serviti direttamente da locale, rendendo più semplice lo sviluppo.
+🧩 Struttura del Frontend (Angular Stand-alone)
+Il frontend è realizzato con Angular stand-alone components (senza NgModules), e la loro comunicazione è gestita via:
+-app.routes.ts
 
-Per far sì che l'app Angular si colleghi al database all'interno di Docker, è necessario modificare la stringa di connessione nel file:
+📸 Immagine:
 
-backend/appsettings.json
-Struttura del Frontend
-Il progetto frontend è realizzato con Angular e utilizza componenti stand-alone, che comunicano tra loro tramite il file:
+🔄 Comunicazione tra componenti
+I componenti comunicano tra loro tramite:
 
-ts
-app.routes.ts
+Input/Output
 
-Alcuni componenti, come il modale che mostra i cocktails, sono integrati all'interno di altri:
+Servizi condivisi
 
+Router con dati
 
-Backend Communication
-Le chiamate API al backend (per utenti, cocktails, ecc.) sono gestite attraverso dei service, come ad esempio:
+📸 Immagine:
 
+🔌 Chiamate API e Servizi
+Le interazioni con il backend per utenti, cocktails, preferenze ecc. sono gestite da services Angular, ad esempio:
+-user.service.ts
+📸 Immagine:
 
-user.service.ts
+📝 Validazione Sign-Up
+La fase di registrazione utilizza Validators personalizzati per controllare:
 
-Funzionalità Sign-Up
-Nel form di registrazione sono utilizzati dei Validators per assicurarsi che i dati rispettino criteri specifici.
+Lunghezza minima/massima
 
-Traduzioni
-Il sistema di traduzione è gestito tramite Azure Translation Services, con un limite di 2 milioni di caratteri.
-È accessibile dalle impostazioni della Home, nella sezione inferiore, attraverso elementi del footer:
+Email valida
+
+Password sicura
+
+Username univoco
+
+🌍 Traduzioni
+Il servizio di traduzione utilizzato è Azure Translator
+Limite gratuito: 2 milioni di caratteri/mese
+
+Le traduzioni sono accessibili da:
+
+⚙️ Impostazioni (dalla pagina Home)
+
+📌 Footer:
 
 WhoAreWe
 
@@ -50,96 +86,111 @@ Privacy
 
 Help
 
-Accessibili:
+🔐 Pagina Profilo (se loggati)
 
-Solo da loggati: nella pagina Profilo
+🌐 Pagina Browse Cocktails
 
-Sempre accessibili: nella pagina Browse Cocktails
+📸 Immagine:
 
+🍹 Browse dei Cocktails
+🔍 Funzionalità di ricerca
+| Ricerca per         | Disponibile per |
+| ------------------- | --------------- |
+| Cocktail alcolici   | Utenti loggati  |
+| Cocktail analcolici | Tutti           |
+| Ingredienti         | Loggati         |
+| Persone             | Loggati         |
+
+
+🎠 Caroselli dinamici
+Suggerimenti personalizzati (se accettati i cookies)
+
+Basati su età dell’utente
+
+Descrizioni variabili in base a:
+
+🕒 Ora del giorno: mattina / pomeriggio / sera
+
+❄️☀️ Stagione
+
+
+📸 Immagine:
+
+🌗 È possibile switchare tra modalità giorno/notte cliccando sull’icona 🌞 / 🌙
+
+
+📚 Sidebar di navigazione
+Accessibile da:
 
 Pagina Browse Cocktails
-La pagina permette di:
-
-Cercare cocktails alcolici e non
-
-Filtrare per ingredienti o persone
-
-⚠️ Se l’utente non è loggato, può cercare solo cocktails analcolici.
-
-Include 3 caroselli:
-
-Mostrano suggerimenti personalizzati (se accettati i cookies)
-
-Si adattano all’età dell’utente
-
-Descrizioni dinamiche in base all’ora del giorno (mattina/pomeriggio/sera) e alla stagione
-
-
-È possibile passare da modalità giorno/notte cliccando l'icona sole/luna.
-
-Sidebar
-Presente nella pagina Browse Cocktails e nella pagina Profilo, la sidebar permette di:
-
-Cercare
-
-Navigare tra:
-
-Home
-
-Browse
-
-Profilo
-
 
 Pagina Profilo
-Include:
 
-Utenti seguiti / follower
+Contiene:
 
-Numero di like ai cocktails
+🔍 Barra di ricerca
 
-Cocktails creati (se pubblici)
+📄 Home
 
-Cocktails piaciuti
+🍸 Browse
 
+👤 Profilo
 
-Per seguire un utente:
+📸 Immagine:
 
-Imposta il filtro di ricerca su "Utenti"
+👤 Pagina Profilo
+Mostra:
+
+👥 Persone seguite e follower
+
+❤️ Like ai cocktails
+
+📤 Cocktail creati (se pubblici)
+
+📌 Cocktail piaciuti
+
+📸 Immagine:
+
+➕ Seguire un utente
+Filtra ricerca per Utenti
 
 Cerca il nome
 
-Apri il profilo
+Visualizza il profilo
 
-Visualizza:
+Premi Segui / Smetti di seguire
 
-Cocktails creati
+📸 Immagine:
 
-Possibilità di seguirlo/smettere di seguirlo
+🛠️ Altre funzionalità del Profilo
+✨ Creazione Cocktail
+📸 Immagine:
 
-Funzionalità Profilo
-Creazione nuovi cocktails
+❤️ Visualizzazione cocktail piaciuti
+📸 Immagine:
 
-Visualizzazione cocktail piaciuti
+🔧 Impostazioni
+Modificabili:
 
-Accesso alle Impostazioni
+🧑 Nome
 
-Qui si possono modificare:
+📧 Email
 
-Nome
+🔐 Password
 
-Email
+🆔 Username
 
-Username (unico)
+⚠️ Username e password devono essere unici: in caso contrario viene restituito un errore.
 
-Password (unica)
 
-⚠️ Inserire uno username o password già esistenti genera errore.
+| Componente | Stack                              |
+| ---------- | ---------------------------------- |
+| Frontend   | Angular 17, Stand-alone components |
+| Backend    | .NET Core 7 API                    |
+| DB         | SQL Server                         |
+| Traduzioni | Azure Translator                   |
+| Hosting    | Docker + NGINX                     |
+-docker-compose up sqlserver backend
+-ng serve --host 0.0.0.0 --poll
 
-Conclusione
-Il progetto CocktailDebacle integra un frontend Angular modulare, un backend API in .NET e un database SQL Server, tutto orchestrato via Docker.
-In fase di sviluppo, si consiglia di usare i container solo per backend e database, mantenendo il frontend su Angular CLI in locale per rapidità.
-
-yaml
-Copia
-Modifica
+🔗 Controlla la stringa di connessione in appsettings.json
