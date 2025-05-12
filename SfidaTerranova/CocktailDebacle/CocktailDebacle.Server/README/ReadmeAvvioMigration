@@ -1,0 +1,128 @@
+# Comandi per (Database & Avvio)
+
+Questa guida contiene **i comandi essenziali** da eseguire via terminale per:
+
+- Avviare il progetto
+- Effettuare migrazioni
+- Pulire ed eliminare tabelle
+- Accedere direttamente al database tramite SQLCMD o EF CLI
+
+---
+
+## Avvio del Progetto
+
+```powershell
+cd .\CocktailDebacle.Server
+```
+
+```powershell
+dotnet run
+```
+
+```powershell
+dotnet watch run
+```
+
+---
+
+## Connessione al Database (SQL Server)
+
+### Connessione locale
+
+```powershell
+sqlcmd -S MSI -d CocktailDebacle -E
+```
+
+> ⚠️ Richiede che `sqlcmd` sia disponibile nel sistema (incluso con SSMS o installabile via `SqlServer` PowerShell module).
+
+- `-S`: nome del server
+- `-d`: nome del database
+- `-E`: autenticazione Windows
+
+> ❗ Richiede che `sqlcmd` sia installato.
+
+---
+
+## Entity Framework Core – Migrazioni
+
+### Creare una nuova migrazione
+
+```powershell
+dotnet ef migrations add NomeMigrazione
+```
+
+### Applicare le migrazioni
+
+```powershell
+dotnet ef migrations remove
+```
+
+### Eliminare l’ultima migrazione
+
+```powershell
+dotnet ef migrations remove
+```
+
+> ⚠️ Attenzione: non rimuove le modifiche già applicate al DB!
+
+---
+
+## Eliminare il Database
+
+```powershell
+dotnet ef database drop
+```
+
+Conferma con `y` quando richiesto:
+
+```text
+Are you sure you want to drop the database? (y/N)
+```
+
+---
+
+## Strumenti EF Core
+
+Installa se non già presente:
+
+```powershell
+dotnet tool install --global dotnet-ef
+```
+
+Verifica installazione:
+
+```powershell
+dotnet ef --version
+```
+
+---
+
+## Ricreazione Completa del DB
+
+```powershell
+dotnet ef database drop -f
+dotnet ef migrations add Reinit
+dotnet ef database update
+```
+
+---
+
+## Accesso con SQL Server Management Studio (SSMS)
+
+Esempio:
+
+- **Server:** `MSI`
+- **Database:** `CocktailDebacle`
+- **Autenticazione:** Windows Authentication
+
+---
+
+## Connessione da `appsettings.json`
+
+Esempio:
+
+```json
+"ConnectionStrings": {
+  "DefaultConnection": "Server=MSI; Database=CocktailDebacle; Trusted_Connection=True; TrustServerCertificate=True;"
+}
+```
