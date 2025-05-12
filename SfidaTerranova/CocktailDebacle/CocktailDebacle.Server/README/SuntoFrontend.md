@@ -8,7 +8,6 @@
 
 È possibile **avviare l’intero progetto** dalla cartella `CocktailDebacle` tramite:
 
-```bash
 Questo comando esegue:
 docker-compose up --build
 
