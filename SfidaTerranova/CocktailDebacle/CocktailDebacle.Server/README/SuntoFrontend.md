@@ -1,10 +1,11 @@
 # CocktailDebacle
 
 ## Avvio del Progetto
+```bash
 
 È possibile avviare il progetto dalla cartella `CocktailDebacle` con il comando:
 
-```bash
+
 docker-compose up --build
 
 Modalità di sviluppo
@@ -14,24 +15,17 @@ Avviare solo i servizi backend e database con: docker-compose up sqlserver backe
 
 Avviare il frontend localmente con:
 
-bash
-Copia
-Modifica
+
 ng serve --host 0.0.0.0 --poll
 🔥 In questa configurazione, i file Angular vengono serviti direttamente da locale, rendendo più semplice lo sviluppo.
 
 Per far sì che l'app Angular si colleghi al database all'interno di Docker, è necessario modificare la stringa di connessione nel file:
 
-bash
-Copia
-Modifica
 backend/appsettings.json
 Struttura del Frontend
 Il progetto frontend è realizzato con Angular e utilizza componenti stand-alone, che comunicano tra loro tramite il file:
 
 ts
-Copia
-Modifica
 app.routes.ts
 
 Alcuni componenti, come il modale che mostra i cocktails, sono integrati all'interno di altri:
@@ -40,9 +34,7 @@ Alcuni componenti, come il modale che mostra i cocktails, sono integrati all'int
 Backend Communication
 Le chiamate API al backend (per utenti, cocktails, ecc.) sono gestite attraverso dei service, come ad esempio:
 
-ts
-Copia
-Modifica
+
 user.service.ts
 
 Funzionalità Sign-Up
