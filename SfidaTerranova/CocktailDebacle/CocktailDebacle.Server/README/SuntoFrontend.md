@@ -389,4 +389,15 @@ Modificabili:
 -docker-compose up sqlserver backend
 -ng serve --host 0.0.0.0 --poll
 
-🔗 Controlla la stringa di connessione in appsettings.json
+------
+
+
+
+
+![Img](./src/modal.png)
+
+
+![Img](./src/profile-3.png)
+
+![Img](./src/editcock.png)
+
