@@ -393,11 +393,15 @@ Modificabili:
 
 
 
+i cocktails:
 
 ![Img](./src/modal.png)
 
+qualche funzionalità profilo:
 
-![Img](./src/profile-3.png)
+![Img](./src/profile3.png)
+
+edit del cocktail creato:
 
 ![Img](./src/editcock.png)
 
