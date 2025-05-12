@@ -39,8 +39,6 @@ sqlcmd -S MSI -d CocktailDebacle -E
 - `-d`: nome del database
 - `-E`: autenticazione Windows
 
-> ❗ Richiede che `sqlcmd` sia installato.
-
 ---
 
 ## Entity Framework Core – Migrazioni
