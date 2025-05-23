@@ -78,7 +78,7 @@ namespace CocktailDebacle.Server.Models
             user.Token = tokenString;
             user.TokenExpiration = expiration;
             
-            // Registra per invalidazione automatica
+            // Registrazione per invalidazione automatica
             await _cleanTokenHostedService.TrackToken(user, expiration);
 
             return tokenString;
