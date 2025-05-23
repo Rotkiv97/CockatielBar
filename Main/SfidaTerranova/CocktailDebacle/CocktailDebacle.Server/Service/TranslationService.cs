@@ -32,82 +32,75 @@ namespace CocktailDebacle.Server.Service
             _logger = logger;
             _config = config;
             
-            // Configura timeout più breve per evitare attese infinite
+            // Configuro timeout più breve per evitare attese prolungate
             _httpClient.Timeout = TimeSpan.FromSeconds(30);
         }
 
-        public async Task<string> TranslateTextAsync(
-            string text, 
-            string toLanguage, 
-            string? fromLanguage = null)
+        public async Task<string> TranslateTextAsync(string text, string toLanguage, string? fromLanguage = null)
         {
             try
             {
                 // Validazione input
                 ValidateInput(text, toLanguage, fromLanguage);
 
-                // Recupera configurazione
+                // Recupero configurazione
                 var endpoint = GetConfiguredEndpoint();
                 var key = GetSubscriptionKey();
                 var region = _config["TranslatorService:Region"];
 
-                // Configura headers
+                if (region == null)
+                {
+                    return string.Empty;
+                }
+
+                // Configuro headers
                 ConfigureRequestHeaders(key, region);
 
-                // Prepara richiesta
+                // Preparo la richiesta
                 var requestBody = new object[] { new { Text = text } };
                 var content = PrepareRequestContent(requestBody);
 
-                // Costruisci URL
+                // Costruisco URL
                 var url = BuildTranslationUrl(endpoint, toLanguage, fromLanguage);
 
-                // Log dettagliato
-                _logger.LogInformation("🔍 Invio richiesta di traduzione a {Url}", url);
-                _logger.LogDebug("Testo da tradurre: {Text}", text);
-
-                // Invia richiesta
+                // Invio richiesta
                 var response = await _httpClient.PostAsync(url, content);
                 
-                // Gestisci risposta
+                // Gestisco risposta
                 return await HandleResponse(response);
             }
-            catch (Exception ex)
+            catch
             {
-                _logger.LogError(ex, "Errore durante la traduzione");
-                throw; // Rilancia per gestione nell'API controller
+                throw;
             }
         }
 
         private void ValidateInput(string text, string toLanguage, string? fromLanguage)
         {
             if (string.IsNullOrWhiteSpace(text))
-                throw new ArgumentException("Il testo da tradurre è obbligatorio");
+                throw new ArgumentException("The text to be translated is mandatory");
             if (string.IsNullOrWhiteSpace(toLanguage))
-                throw new ArgumentException("La lingua di destinazione è obbligatoria");
+                throw new ArgumentException("The target language is mandatory");
             if (!_supportedLanguages.Contains(toLanguage.ToLower()))
-                throw new ArgumentException($"Lingua di destinazione non supportata: {toLanguage}");
-            if (!string.IsNullOrWhiteSpace(fromLanguage) && 
-                !_supportedLanguages.Contains(fromLanguage.ToLower()))
-            {
-                throw new ArgumentException($"Lingua di origine non supportata: {fromLanguage}");
-            }
+                throw new ArgumentException($"Target language not supported: {toLanguage}");
+            if (!string.IsNullOrWhiteSpace(fromLanguage) && !_supportedLanguages.Contains(fromLanguage.ToLower()))
+                throw new ArgumentException($"Source language not supported: {fromLanguage}");
         }
 
         private string GetConfiguredEndpoint()
         {
             var endpoint = _config["TranslatorService:Endpoint"]?.TrimEnd('/');
             if (string.IsNullOrWhiteSpace(endpoint))
-                throw new InvalidOperationException("Endpoint di traduzione non configurato");
+                throw new InvalidOperationException("Translation endpoint not configured");
 
             return endpoint;
         }
 
         private string GetSubscriptionKey()
         {
-            var key = Environment.GetEnvironmentVariable("TRANSLATOR_SUBSCRIPTION_KEY") 
-                   ?? _config["TranslatorService:SubscriptionKey"];
+            var key = Environment.GetEnvironmentVariable("TRANSLATOR_SUBSCRIPTION_KEY") ?? _config["TranslatorService:SubscriptionKey"];
             if (string.IsNullOrWhiteSpace(key))
-                throw new InvalidOperationException("Chiave di sottoscrizione non configurata");
+                throw new InvalidOperationException("Subscription key not configured");
             return key;
         }
 
@@ -133,9 +126,7 @@ namespace CocktailDebacle.Server.Service
 
         private string BuildTranslationUrl(string endpoint, string toLanguage, string? fromLanguage)
         {
-            var fromParam = string.IsNullOrWhiteSpace(fromLanguage) 
-                ? "" 
-                : $"&from={fromLanguage.ToLower()}";
+            var fromParam = string.IsNullOrWhiteSpace(fromLanguage) ? "" : $"&from={fromLanguage.ToLower()}";
 
             return $"{endpoint}/translator/text/v3.0/translate?api-version=3.0{fromParam}&to={toLanguage.ToLower()}";
         }
@@ -146,32 +137,27 @@ namespace CocktailDebacle.Server.Service
             if (!response.IsSuccessStatusCode)
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
-                _logger.LogError("Errore nella risposta: {StatusCode} - {Content}", 
-                    response.StatusCode, errorContent);
-                
-                throw new HttpRequestException(
-                    $"Errore nella richiesta di traduzione: {response.StatusCode} - {errorContent}");
+
+                throw new HttpRequestException( $"Error in translation request: {response.StatusCode} - {errorContent}");
             }
 
             var result = await response.Content.ReadAsStringAsync();
             var parsed = JsonSerializer.Deserialize<List<TranslationResult>>(result);
 
             if (parsed == null || !parsed.Any())
-                throw new InvalidOperationException("Nessun risultato di traduzione ricevuto");
+                throw new InvalidOperationException("No translation results received");
 
             if (parsed != null && parsed.FirstOrDefault()?.Translations?.FirstOrDefault()?.Text != null)
             {
                 var firstTranslation = parsed.FirstOrDefault()?.Translations?.FirstOrDefault()?.Text;
                 if (string.IsNullOrEmpty(firstTranslation))
                 {
-                    _logger.LogWarning("Traduzione non trovata nella risposta JSON.");
                     return string.Empty;
                 }
                 return firstTranslation;
             }
             else
             {
-                _logger.LogWarning("Traduzione non trovata nella risposta JSON.");
                 return string.Empty;
             }
         }

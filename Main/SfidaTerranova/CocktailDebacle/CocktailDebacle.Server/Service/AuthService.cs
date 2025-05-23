@@ -57,7 +57,6 @@ namespace CocktailDebacle.Server.Models
                 new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
             };
 
-            // Aggiungi altri claim se presenti
             if (!string.IsNullOrEmpty(user.Email))
                 claims.Add(new Claim(JwtRegisteredClaimNames.Email, user.Email));
 

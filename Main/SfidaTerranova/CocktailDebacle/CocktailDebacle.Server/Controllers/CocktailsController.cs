@@ -28,7 +28,7 @@
             private readonly AppDbContext _context;
             private readonly HttpClient _httpClient;
 
-            private readonly CloudinaryService _cloudinaryService; // Aggiungi questa riga per il servizio Cloudinary
+            private readonly CloudinaryService _cloudinaryService;
             public CocktailsController(AppDbContext context, HttpClient httpClient, CloudinaryService cloudinaryService)
             {
                 _context = context;
@@ -36,8 +36,6 @@
                 _httpClient = httpClient;
             }
 
-
-            // http://localhost:5052/api/Cocktails/cocktails
             [HttpGet("cocktails")]
             public async Task<ActionResult<IEnumerable<CocktailDto>>> GetCocktailsList()
             {
@@ -46,8 +44,6 @@
                 return Ok(cocktails);
             }
 
-
-            //http://localhost:5052/api/Cocktails/cocktail/by-id?id=5
             [HttpGet("cocktail/by-id")]
             [AllowAnonymous]
             public async Task<IActionResult> GetCocktailById(int id)
@@ -92,11 +88,6 @@
                 return Ok(cocktail);
             }
 
-
-
-
-            // chiamata ipa e come impostarla 
-            // http://localhost:5052/api/cocktails/search?ingredient=vodka&glass=Martini glass&alcoholic=Alcoholic&page=1&pageSize=10
             [AllowAnonymous]
             [HttpGet("search")]
             public async Task<ActionResult<IEnumerable<CocktailDto>>> SearchCoctktail(
@@ -163,18 +154,14 @@
 
                 if (!isAdult && string.IsNullOrEmpty(UserSearch) && string.IsNullOrEmpty(alcoholic))
                 {
-                query = query.Where(c => c.StrAlcoholic != null && c.StrAlcoholic.ToLower().Contains("Non alcoholic"));
+                    query = query.Where(c => c.StrAlcoholic != null && c.StrAlcoholic.ToLower().Contains("Non alcoholic"));
                 }
-                // Verifica se ci sono filtri applicati
                 bool noFilter = string.IsNullOrEmpty(nameCocktail) &&
                     string.IsNullOrEmpty(glass) &&
                     string.IsNullOrEmpty(ingredient) &&
                     string.IsNullOrEmpty(category) &&
                     string.IsNullOrEmpty(alcoholic);
 
-            
-                
-                // Solo cocktail pubblici
                 query = query.Where(c => c.PublicCocktail == true || c.PublicCocktail == null);
                 
                 if (!string.IsNullOrEmpty(glass))
@@ -228,7 +215,6 @@
                 totalItems = await query.CountAsync();
                 totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
 
-                // Ordinamento per nome, con precedenza se inizia con il testo cercato
                 if (!string.IsNullOrEmpty(nameCocktail))
                 {
                     string name = nameCocktail.ToLower();
@@ -258,9 +244,6 @@
                     Cocktails = cocktailDto
                 });
             }
-
-
-            // Cocktail Create o Modificati (User)
 
             [Authorize]
             [HttpGet("MyCocktails")]
@@ -328,7 +311,7 @@
                     _context.DbCocktails.Add(newcocktail);
                     await _context.SaveChangesAsync();
                     
-                    return Ok(new { id = newcocktail.IdDrink, Message = "Cocktail creato con successo !!!", newcocktail });
+                    return Ok(new { id = newcocktail.IdDrink, Message = "Cocktail created successfully!!!", newcocktail });
                 }
                 catch (Exception ex)
                 {
@@ -451,15 +434,13 @@
                 if (cocktail == null)
                     return NotFound("Cocktail not found or does not belong to you.");
 
-            UtilsCocktail.UpdateCocktail(cocktail, updatedCocktail);
+                UtilsCocktail.UpdateCocktail(cocktail, updatedCocktail);
 
-                // Validazione della coerenza tra ingredienti e misure
                 var validationError = UtilsCocktail.ValidateIngredientMeasureConsistency(cocktail);
                 if (validationError != null)
                 {
                     return BadRequest(validationError);
                 }
-                // Validazione della classe di volume del cocktail
                 var volumeError = UtilsCocktail.ValidateVolumeClassCocktail(cocktail, UtilsCocktail.GlassCapacity);
                 if (volumeError != null)
                 {
@@ -467,7 +448,7 @@
                 }
                 try{
                     await _context.SaveChangesAsync();
-                    return Ok(new { Message = "Cocktail aggiornato con successo!" });
+                    return Ok(new { Message = "Cocktail updated successfully!" });
                 }
                 catch (Exception ex)
                 {
@@ -491,7 +472,6 @@
                 return Ok(cocktailDto);
             }
 
-            // Cocktail Delete (User)
             [Authorize]
             [HttpDelete("CocktailDelete/{idDrink}")]
             public async Task<IActionResult> DeleteCocktail(int idDrink)
@@ -513,7 +493,7 @@
                     _context.DbCocktails.Remove(cocktail);
                     await _context.SaveChangesAsync();
 
-                    return Ok(new { Message = "Cocktail eliminato con successo!" });
+                    return Ok(new { Message = "Cocktail successfully cleared!" });
                 }
                 catch (Exception ex)
                 {
@@ -521,7 +501,6 @@
                 }
             }
 
-            // getione delle immagini dei cocktail creati o modificati dall'utente
             [Authorize]
             [HttpPost("{id}/UploadImageCocktail-local")]
             public async Task<IActionResult> UploadImageCocktailLocal(int id, IFormFile file)
@@ -538,7 +517,7 @@
                 if (file == null || file.Length == 0)
                     return BadRequest("File not provided.");
 
-                var newPublicId = $"cocktail_images/{username}_{id}_{DateTime.UtcNow.Ticks}"; // Genera un nuovo publicId unico
+                var newPublicId = $"cocktail_images/{username}_{id}_{DateTime.UtcNow.Ticks}";
                 var imageUrl = await _cloudinaryService.UploadImageAsync(file, newPublicId);
                 if (string.IsNullOrEmpty(imageUrl))
                     return BadRequest("Error uploading image.");
@@ -599,7 +578,6 @@
                 });
             }
 
-
             [Authorize]
             [HttpPost("like/{Id}")]
             public async Task<IActionResult> CocktailLicke(int Id){
@@ -632,7 +610,6 @@
                 return Ok(new { Message = $"Cocktail like status updated successfully! NameCocktail {cocktail.StrDrink} = {cocktail.Likes} "});
             }
 
-
             [HttpGet("GetUserCocktailLikes")]
             public async Task<IActionResult> GetUserCocktailLikes(int id)
             {
@@ -663,7 +640,7 @@
             [HttpGet("ingredients")]
             public async Task<IActionResult> GetUniqueIngredients()
             {
-                var cocktails = await _context.DbCocktails.ToListAsync(); // carica in memoria
+                var cocktails = await _context.DbCocktails.ToListAsync();
 
                 var ingredienti = cocktails
                     .SelectMany(c =>

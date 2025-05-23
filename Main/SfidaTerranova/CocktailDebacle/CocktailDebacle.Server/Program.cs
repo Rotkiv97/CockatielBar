@@ -29,7 +29,7 @@ builder.Services.AddCors(options =>
         });
 });
 
-// Aggiungi servizi al container
+// servizi al container
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -48,7 +48,6 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 });
 
 var token = builder.Configuration["Jwt:Key"];
-Console.WriteLine("👇------JWT key usata dal server: " + token);
 if (string.IsNullOrEmpty(token))
 {
     throw new ArgumentNullException("JWT key is not configured.");
@@ -69,17 +68,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true,
             ClockSkew = TimeSpan.Zero
         };
-
-        // 👇 Aggiungi questa parte per gestire token scaduti o rimossi
+        // getione dei tocken scaduti
         options.Events = new JwtBearerEvents
         {
             OnTokenValidated = async context =>
             {
-                Console.WriteLine("🔥 OnTokenValidated CALLED");
                 var dbContext = context.HttpContext.RequestServices.GetRequiredService<AppDbContext>();
                 var rawToken = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
-
                 var user = await dbContext.DbUser.FirstOrDefaultAsync(u => u.Token == rawToken);
+
                 if (user == null || user.TokenExpiration == null || user.TokenExpiration <= DateTime.UtcNow)
                 {
                     context.Fail("Token not valid anymore.");
@@ -88,7 +85,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.Configure<CloudinarySettings>(
+    builder.Services.Configure<CloudinarySettings>(
     builder.Configuration.GetSection("CloudinarySettings")
 );
 
@@ -119,7 +116,6 @@ using (var scope = app.Services.CreateScope())
         }
         
         dbContext.Database.Migrate();
-        Console.WriteLine("Database migrated successfully.");
 
         var cocktailImportService = services.GetRequiredService<CocktailImportService>();
         await cocktailImportService.ImportCocktailsAsync();
@@ -185,16 +181,14 @@ async Task WaitForSqlServer(AppDbContext dbContext, int maxAttempts = 10, int de
     {
         try
         {
-            Console.WriteLine($"Attempting to connect to SQL Server (attempt {attempt}/{maxAttempts})...");
             if (await dbContext.Database.CanConnectAsync())
             {
-                Console.WriteLine("Successfully connected to SQL Server.");
+                Console.WriteLine("Successfully connected to SQL Server. 💡");
                 return;
             }
         }
-        catch (Exception ex)
+        catch 
         {
-            Console.WriteLine($"Attempt {attempt} failed: {ex.Message}");
             if (attempt == maxAttempts)
                 throw;
         }

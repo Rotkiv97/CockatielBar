@@ -36,7 +36,6 @@ namespace CocktailDebacle.Server.Controllers
             _authService = authService;
             _context = context;
             _logger = logger;
-            _logger.LogInformation("CloudinaryService initialized.✅");
         }
 
         [Authorize]
@@ -46,35 +45,32 @@ namespace CocktailDebacle.Server.Controllers
             var userName = User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(userName))
             {
-                return Unauthorized("Utente non autenticato.");
+                return Unauthorized("Unauthenticated user.");
             }
             var user = await _context.DbUser.FirstOrDefaultAsync(u => u.UserName == username);
             if (user == null)
             {
-                return NotFound("Utente non trovato.");
+                return NotFound("User not found.");
             }
 
             var userDto = UtilsUserController.UserToDto(user); 
             return Ok(userDto);
         }
 
-
-        // http://localhost:5052/api/Users/login + body -> row {"userNameRequest": ="" "passwordRequest": ""}
         [HttpPost("login")]
         [EnableRateLimiting("fixed")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            // Trova l'utente corrispondente
             var user = await _context.DbUser
                 .Where(u => u.UserName == request.UserNameRequest)
-                .FirstOrDefaultAsync(); // Recupera l'utente completo, inclusa la password hashata
+                .FirstOrDefaultAsync();
 
             if (user == null)
             {
-                return NotFound("User not found");
+                return NotFound("User not found.");
             }
 
-            // Verifica la password hashata con BCrypt
+            // Verifico la password hashata con BCrypt
             bool passwordMatch = BCrypt.Net.BCrypt.Verify(request.PasswordRequest, user.PasswordHash);
             if (!passwordMatch)
             {
@@ -86,11 +82,7 @@ namespace CocktailDebacle.Server.Controllers
             {
                 return Unauthorized($"Invalid token = {token}");
             }
-            _logger.LogDebug($"Token = {token}");
-            //user.Token = token;
-            //user.TokenExpiration = DateTime.UtcNow; // Imposta la scadenza del token a 1 ora
             await _context.SaveChangesAsync();
-            // Se la password è corretta, restituisci i dati utente
             return Ok(new
             {
                 user.Id,
@@ -107,22 +99,19 @@ namespace CocktailDebacle.Server.Controllers
             });
         }
 
-        // http://localhost:5052/api/Users/logout + body -> row {"userName": =""}
         [HttpPost("logout")]
         public async Task<IActionResult> Logout([FromBody] LogoutRequest request)
         {
             var user = await _context.DbUser.FirstOrDefaultAsync(u => u.UserName == request.UserName);
             if (user == null)
-                return NotFound($"Utente non trovato{request.UserName} = {user?.UserName}");
+                return NotFound($"User not found{request.UserName} = {user?.UserName}");
 
             user.Token = string.Empty;
             await _context.SaveChangesAsync();
 
-            return new JsonResult(new { message = "Logout effettuato con successo." });
+            return new JsonResult(new { message = "Logged out successfully." });
         }
 
-
-        // http://localhost:5052/api/Users/check-token
         [HttpGet("check-token")]
         public async Task<IActionResult> CheckToken(string userName)
         {
@@ -130,7 +119,7 @@ namespace CocktailDebacle.Server.Controllers
 
             if (user == null)
             {
-                return Unauthorized("Utente non trovato");
+                return Unauthorized("Unauthenticated user.");
             }
             // Token mancante o TokenExpiration nullo => scaduto
             if (string.IsNullOrEmpty(user.Token) || user.TokenExpiration == null)
@@ -138,7 +127,7 @@ namespace CocktailDebacle.Server.Controllers
                 user.Token = string.Empty;
                 user.TokenExpiration = null;
                 await _context.SaveChangesAsync();
-                return Unauthorized("Token assente o scaduto");
+                return Unauthorized("Token missing or expired");
             }
 
             // Token presente ma scaduto nel tempo
@@ -147,40 +136,38 @@ namespace CocktailDebacle.Server.Controllers
                 user.Token = string.Empty;
                 user.TokenExpiration = null;
                 await _context.SaveChangesAsync();
-                return Unauthorized("Token scaduto");
+                return Unauthorized("Token expired");
             }
 
             return Ok(new
             {
-                Message = "Token valido",
+                Message = "Valid token",
                 UserName = userName,
             });
         }
 
-        // http://localhost:5052/api/Users/GetToken?userName=...
         [HttpGet("GetToken")]
         public async Task<IActionResult> GetToken(string userName)
         {
             var user = await _context.DbUser.FirstOrDefaultAsync(u => u.UserName == userName);
             if (user == null)
-                return NotFound($"Utente non trovato{userName} = {user?.UserName}");
+                return NotFound($"Utente not found {userName} = {user?.UserName}");
             return Ok( new {token = user.Token.ToString()});
         }
 
-        // http://localhost:5052/api/Users + body -> row {"userName": ="" "name": ="" "lastName": ="" "email": ="" "passwordHash": ="" "acceptCookies": =""}
         [HttpPost("register")]
         public async Task<ActionResult<User>> Register([FromBody] RegisterUserDto userDto)
         {
-            // Controlla se esiste già un utente con la stessa email
             bool emailExists = await _context.DbUser.AnyAsync(u => u.Email == userDto.Email);
             bool userNameExists = await _context.DbUser.AnyAsync(u => u.UserName == userDto.UserName);
+
             if (userNameExists)
             {
-                return BadRequest("Questo Nome Utente è già in uso.");
+                return BadRequest("This Username is already in use.");
             }
             if (emailExists)
             {
-                return BadRequest("Questa Email è già in uso?.");
+                return BadRequest("Is this email already in use?.");
             }
 
             // Mappa il DTO al modello User
@@ -195,36 +182,31 @@ namespace CocktailDebacle.Server.Controllers
                 AcceptCookies = userDto.AcceptCookies
             };
 
-            // Aggiungi l'utente al database
             _context.DbUser.Add(user);
+
             await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(Login), new { id = user.Id }, user);
         }
 
-
-
-
-        // PUT: api/Users/{id} - Modifica un utente esistente
-        // http://localhost:5052/api/Users/1 + body -> row {"userName": ="" "name": ="" "lastName": ="" "email": ="" "passwordHash": ="" "acceptCookies": =""}
         [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutUser(int id, User updatedUser)
         {
             var userName = User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(userName))
-                return Unauthorized("Utente non autenticato.");
+                return Unauthorized("Unauthenticated user.");
             var user = await _context.DbUser.FirstOrDefaultAsync(u => u.Id == id);
             if (user == null)
-                return NotFound("Utente non trovato.");
+                return NotFound("User not found.");
             if (user.UserName != userName)
-                return Forbid("Non puoi modificare altri utenti.");
+                return Forbid("You cannot edit other users.");
 
             if (user.UserName != updatedUser.UserName)
             {
                 var userNameExists = await _context.DbUser.AnyAsync(u => u.UserName == updatedUser.UserName && u.Id != id);
                 if (userNameExists)
-                    return BadRequest("Questo Nome Utente è già in uso.");
+                    return BadRequest("This Username is already in use.");
                 user.UserName = updatedUser.UserName ?? string.Empty;
             }
             if (user.Name != updatedUser.Name)
@@ -237,13 +219,12 @@ namespace CocktailDebacle.Server.Controllers
             {
                 var emailExists = await _context.DbUser.AnyAsync(u => u.Email == updatedUser.Email && u.Id != id);
                 if (emailExists)
-                    return BadRequest("Questa email è già in uso.");
+                    return BadRequest("This email is already in use.");
                 user.Email = updatedUser.Email ?? string.Empty;
             }
             if (user.AcceptCookies != updatedUser.AcceptCookies)
             {
                 user.AcceptCookies = updatedUser.AcceptCookies;
-
                 if (user.AcceptCookies == false)
                 {
                     var history = await _context.DbUserHistorySearch
@@ -265,7 +246,7 @@ namespace CocktailDebacle.Server.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                return StatusCode(500, "Errore durante l'aggiornamento dell'utente.");
+                return StatusCode(500, "Error updating user.");
             }
             var userDto = UtilsUserController.UserToDto(user);
             var newUser = new 
@@ -288,16 +269,16 @@ namespace CocktailDebacle.Server.Controllers
         {
             var userName = User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(userName))
-                return Unauthorized("Utente non autenticato.");
+                return Unauthorized("Unauthenticated user.");
             var user = await _context.DbUser.FindAsync(id);
             if (user == null)
-                return NotFound("Utente non trovato.");
+                return NotFound("User not found.");
             var password = user.PasswordHash;
             if (string.IsNullOrEmpty(password))
-                return NotFound("Password non trovata.");
+                return NotFound("Password not found.");
             return Ok(new { Password = password });
         }
-        // http://localhost:5052/api/Users/{id} - Elimina un utente
+
         [Authorize]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
@@ -305,7 +286,7 @@ namespace CocktailDebacle.Server.Controllers
             var userName = User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(userName))
             {
-                return Unauthorized("Utente non autenticato.");
+                return Unauthorized("Unauthenticated user.");
             }
             var user = await _context.DbUser.FindAsync(id);
             if (user == null)
@@ -317,40 +298,11 @@ namespace CocktailDebacle.Server.Controllers
             return NoContent();
         }
 
-            // Metodo per l'hashing della password
         private string HashPassword(string password)
         {
             return BCrypt.Net.BCrypt.HashPassword(password);
         }
 
-        /// IMG Profile ///
-
-        // per qunado fai riferimento al Url della immagine dell'user guarda ache questo video per capire come personalizzarlo
-        // https://www.youtube.com/watch?v=P4FhRuttCgY
-
-        /// <summary>
-        /// ✅ Upload di un'immagine profilo da file locale per un determinato utente.
-        /// 🔒 L'immagine sarà caricata su Cloudinary (autenticata) nella cartella `profile_images/`.
-        /// 🧼 Se l'utente ha già un'immagine, verrà eliminata.
-        /// </summary>
-        /// <remarks>
-        /// 📥 Chiamata HTTP:
-        ///     POST http://localhost:5052/api/Users/{UserName}/upload-profile-image-local
-        ///
-        /// 📦 Content-Type:
-        ///     multipart/form-data
-        ///
-        /// 🔑 Parametri nel Body (form-data):
-        ///     Key:    file
-        ///     Value:  (il file immagine .png, .jpg, ecc...)
-        ///
-        /// 📤 Esempio Postman:
-        ///     - Metodo: POST
-        ///     - URL:    http://localhost:5052/api/Users/Vik8/upload-profile-image-local
-        ///     - Body: form-data
-        ///         ▸ Key: file (tipo = File)
-        ///         ▸ Value: selezionare immagine dal disco
-        /// </remarks>
         [Authorize]
         [HttpPost("upload-profile-image-local/{id}")]
         public async Task<IActionResult> UploadProfileImageLocal(int id, IFormFile file)
@@ -358,18 +310,18 @@ namespace CocktailDebacle.Server.Controllers
             var userName = User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(userName))
             {
-                return Unauthorized("Utente non autenticato.");
+                return Unauthorized("Unauthenticated user.");
             }
             if (file == null || file.Length == 0)
             {
-                return BadRequest("Nessun file caricato.");
+                return BadRequest("No files loaded.");
             }
 
             var user = await _context.DbUser.FirstOrDefaultAsync(u => u.Id == id);
             
             if (user == null)
             {
-                return NotFound("Utente non trovato.");
+                return NotFound("User not found.");
             }
             
             if (!string.IsNullOrEmpty(user.ImgProfileUrl))
@@ -382,11 +334,10 @@ namespace CocktailDebacle.Server.Controllers
                     var publicId = Path.Combine(Path.GetDirectoryName(folder) ?? "", Path.GetFileNameWithoutExtension(folder)).Replace("\\", "/");
 
                     var result = await _cloudinaryService.DeleteImageAsync(publicId);
-                    Console.WriteLine($"[Cloudinary] Eliminata: {publicId} → {result}");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Errore durante l'eliminazione dell'immagine precedente: {ex.Message}");
+                    Console.WriteLine($"Error deleting previous image: {ex.Message}");
                 }
             }
 
@@ -394,7 +345,7 @@ namespace CocktailDebacle.Server.Controllers
             var uploadedUrl = await _cloudinaryService.UploadImageAsync(file, publicIdNew);
 
             if (uploadedUrl == null)
-                return BadRequest("Errore nel caricamento dell'immagine.");
+                return BadRequest("Error loading image.");
 
             user.ImgProfileUrl = uploadedUrl;
             await _context.SaveChangesAsync();
@@ -402,29 +353,6 @@ namespace CocktailDebacle.Server.Controllers
             return Ok(new { Url = uploadedUrl });
         }
 
-        /// <summary>
-        /// ✅ Caricamento immagine profilo da URL per un determinato utente.
-        /// 📤 L'immagine sarà scaricata dal link fornito e ricaricata su Cloudinary nella cartella `profile_images/`.
-        /// 🧼 Se l'utente ha già un'immagine, verrà eliminata automaticamente.
-        /// </summary>
-        /// <remarks>
-        /// 📥 Chiamata HTTP:
-        ///     POST http://localhost:5052/api/Users/{UserName}/upload-profile-image-Url
-        ///
-        /// 📦 Content-Type:
-        ///     application/json
-        ///
-        /// 🧾 Body (raw, JSON):
-        ///     "https://example.com/image.jpg"
-        ///
-        /// 📤 Esempio Postman:
-        ///     - Metodo: POST  
-        ///     - URL:    http://localhost:5052/api/Users/Vik8/upload-profile-image-Url  
-        ///     - Headers:  
-        ///         ▸ Content-Type: application/json  
-        ///     - Body: raw → JSON  
-        ///         "https://images.miosito.com/profile.jpg"
-        /// </remarks>
         [Authorize]
         [HttpPost("upload-profile-image-Url/{id}")]
         public async Task<IActionResult> UploadProfileImageUrl(int id, [FromBody] string ImgProfileUrl)
@@ -432,17 +360,17 @@ namespace CocktailDebacle.Server.Controllers
             var userName = User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(userName))
             {
-                return Unauthorized("Utente non autenticato.");
+                return Unauthorized("Unauthenticated user.");
             }
             if (string.IsNullOrEmpty(ImgProfileUrl))
             {
-                return BadRequest("Nessun URL fornito.");
+                return BadRequest("No URL provided.");
             }
            var user = await _context.DbUser.FirstOrDefaultAsync(u => u.Id== id);
             
             if (user == null)
             {
-                return NotFound("Utente non trovato.");
+                return NotFound("User not found.");
             }
 
             if (!string.IsNullOrEmpty(user?.ImgProfileUrl))
@@ -457,15 +385,14 @@ namespace CocktailDebacle.Server.Controllers
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Errore durante l'eliminazione dell'immagine precedente: {ex.Message}");
-                    // Non bloccare il flusso
+                    Console.WriteLine($"Error deleting previous image: {ex.Message}");
                 }
             }
             
             var newPublicId = $"profile_images/{id}";
             var uploadedUrl = await _cloudinaryService.UploadImageAsyncUrl(ImgProfileUrl, newPublicId);
             if (uploadedUrl == null)
-                return BadRequest("Errore nel caricamento dell'immagine.");
+                return BadRequest("Error loading image.");
             if(user?.ImgProfileUrl != null)
                 user.ImgProfileUrl = uploadedUrl;
             
@@ -481,13 +408,13 @@ namespace CocktailDebacle.Server.Controllers
             var userName = User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(userName))
             {
-                return Unauthorized("Utente non autenticato.");
+                return Unauthorized("Unauthenticated user.");
             }
 
             var user = await _context.DbUser.FirstAsync(u => u.Id == id);
             if (user == null)
             {
-                return NotFound("Utente non trovato.");
+                return NotFound("User not found.");
             }
 
             var cocktailLike = await _context.DbCocktails
@@ -495,13 +422,13 @@ namespace CocktailDebacle.Server.Controllers
                 .ToListAsync();
             if (cocktailLike == null || cocktailLike.Count == 0)
             {
-                return NotFound("Nessun cocktail trovato.");
+                return NotFound("No cocktails found.");
             }
             var cocktailDtos = cocktailLike.Select(c => UtilsCocktail.CocktailToDto(c)).ToList();
 
             if(!cocktailDtos.Any())
             {
-                return NotFound("Nessun cocktail trovato.");
+                return NotFound("No cocktails found.");
             }
             return Ok(cocktailDtos);
         }
@@ -512,38 +439,38 @@ namespace CocktailDebacle.Server.Controllers
         {
             var userName = User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(userName))
-                return Unauthorized("Utente non autenticato.");
+                return Unauthorized("Unauthenticated user.");
 
             var user = await _context.DbUser
                 .Include(u => u.Followed_Users)
                 .FirstOrDefaultAsync(u => u.UserName == userName);
             if (user == null)
-                return NotFound("Utente non trovato.");
+                return NotFound("User not found.");
 
             var followedUser = await _context.DbUser
                 .Include(u => u.Followers_Users)
                 .FirstOrDefaultAsync(u => u.Id == followedUserId);
             if (followedUser == null)
-                return NotFound("Utente seguito non trovato.");
+                return NotFound("Followed user not found.");
             
             bool FollowingUser = user.Followed_Users.Any(u => u.Id == followedUser.Id);
             if(followedUserId == user.Id)
             {
-                return BadRequest("Non puoi seguire te stesso.");
+                return BadRequest("You can't follow yourself.");
             }
             else if (FollowingUser)
             {
                 user.Followed_Users.Remove(followedUser);
                 followedUser.Followers_Users.Remove(user);
                 await _context.SaveChangesAsync();
-                return Ok(new { Message = $"Non segui più questo utente = {followedUserId}" });
+                return Ok(new { Message = $"You no longer follow this user = {followedUserId}" });
             }
             else
             {
                 user.Followed_Users.Add(followedUser);
                 followedUser.Followers_Users.Add(user);
                 await _context.SaveChangesAsync();
-                return Ok(new { Message = $"Ora segui questo utente = {followedUserId}" });
+                return Ok(new { Message = $"Now follow this user = {followedUserId}" });
             }
         }
 
@@ -553,11 +480,11 @@ namespace CocktailDebacle.Server.Controllers
         public async Task<IActionResult> GetFollowedUsers(int id)
         {
             if(id <= 0)
-                return BadRequest("ID non valido.");
+                return BadRequest("Invalid ID.");
             var userName = User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(userName))
             {
-                return Unauthorized("Utente non autenticato.");
+                return Unauthorized("Unauthenticated user.");
             }
 
             var user = await _context.DbUser
@@ -565,7 +492,7 @@ namespace CocktailDebacle.Server.Controllers
 
             if (user == null)
             {
-                return NotFound("Utente non trovato.");
+                return NotFound("User not found.");
             }
 
             var followedUsers = user?.Followed_Users.Select(UtilsUserController.UserToDto).ToList();
@@ -578,13 +505,13 @@ namespace CocktailDebacle.Server.Controllers
         public async Task<IActionResult> GetFollowersUsers(int id)
         {
             if (id <= 0)
-                return BadRequest("ID non valido.");
+                return BadRequest("Invalid ID.");
 
             var userName = User.FindFirst(ClaimTypes.Name)?.Value;
 
             if (string.IsNullOrEmpty(userName))
             {
-                return Unauthorized("Utente non autenticato.");
+                return Unauthorized("Unauthenticated user.");
             }
 
             var user = await _context.DbUser
@@ -593,7 +520,7 @@ namespace CocktailDebacle.Server.Controllers
 
             if (user == null)
             {
-                return NotFound("Utente non trovato.");
+                return NotFound("User not found.");
             }
 
             var followersUsers = user.Followers_Users.Select(UtilsUserController.UserToDto).ToList();
@@ -601,13 +528,13 @@ namespace CocktailDebacle.Server.Controllers
         }
 
         [Authorize]
-        [HttpGet("Get_Cocktail_for_Followed_Users")] // api per ottenere i cocktail degli utenti seguiti
+        [HttpGet("Get_Cocktail_for_Followed_Users")]
         public async Task<IActionResult> GetCocktailForFollowedUsers()
         {
             var userName = User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(userName))
             {
-                return Unauthorized("Utente non autenticato.");
+                return Unauthorized("Unauthenticated user.");
             }
 
             var user = await _context.DbUser
@@ -617,38 +544,37 @@ namespace CocktailDebacle.Server.Controllers
 
             if (user == null)
             {
-                return NotFound("Utente non trovato.");
+                return NotFound("User not found.");
             }
 
             var cocktailDtos = user.Followed_Users.SelectMany(f => f.CocktailsLike).Select(c => UtilsCocktail.CocktailToDto(c)).ToList();
             if (!cocktailDtos.Any())
             {
-                return NotFound("Nessun cocktail trovato.");
+                return NotFound("No cocktails found.");
             }
             return Ok(cocktailDtos);
         }
 
-        // http://localhost:5052/api/Users/ThisYourCocktailLike/{id}
         [HttpGet("ThisYourCocktailLike/{id}")]
         public async Task<IActionResult> ThisYourCocktailLike(int id)
         {
             var userName = User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(userName))
             {
-                return Unauthorized("Utente non autenticato.");
+                return Unauthorized("Unauthenticated user.");
             }
 
             var user = await _context.DbUser.FirstAsync(u => u.UserName == userName);
             if (user == null)
             {
-                return NotFound("Utente non trovato.");
+                return NotFound("User not found.");
             }
             var cocktail = await _context.DbCocktails
                 .Include(c => c.UserLikes)
                 .FirstOrDefaultAsync(c => c.Id == id);
             if (cocktail == null)
             {
-                return NotFound("Cocktail non trovato.");
+                return NotFound("Cocktail not found.");
             }
             var isLiked = cocktail.UserLikes.Any(u => u.UserName == userName);
             return Ok(isLiked);
@@ -744,7 +670,6 @@ namespace CocktailDebacle.Server.Controllers
                 }
             }
 
-            // Fallback o completamento se i risultati sono insufficienti
             if (results.Count < pageSize)
             {
                 var additional = await query

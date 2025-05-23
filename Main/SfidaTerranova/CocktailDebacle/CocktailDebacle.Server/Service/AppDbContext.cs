@@ -23,6 +23,7 @@ namespace CocktailDebacle.Server.Service
                 entity.Property(u => u.PasswordHash).IsRequired();
             });
 
+            // configurazione della tabella Cocktail
             modelBuilder.Entity<Cocktail>(entity =>
             {
                 entity.HasKey(c => c.Id); 
@@ -40,14 +41,17 @@ namespace CocktailDebacle.Server.Service
                 entity.HasOne(u => u.User)
                     .WithMany()
                     .HasForeignKey(u => u.UserId)
-                    .OnDelete(DeleteBehavior.Cascade); // Se vuoi che le ricerche vengano eliminate con l'utente
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
+
+            // configurazione della tabella UserCocktailsLike
             modelBuilder.Entity<User>()
                 .HasMany(u => u.CocktailsLike)
                 .WithMany(c => c.UserLikes)
-                .UsingEntity(j => j.ToTable("UserCocktailsLike")); // Tabella di join per la relazione molti-a-molti
+                .UsingEntity(j => j.ToTable("UserCocktailsLike"));
 
+            // configurazione della tabella UserUser
             modelBuilder.Entity<User>()
                 .HasMany(u => u.Followed_Users)
                 .WithMany(u => u.Followers_Users)

@@ -181,7 +181,7 @@ namespace CocktailDebacle.Server.Utils
 
         public static void AddToListType(AppDbContext context, string type, List<string> list)
         {
-            var cocktails = context.DbCocktails.AsEnumerable(); // Carica tutti i cocktail in memoria
+            var cocktails = context.DbCocktails.AsEnumerable();
 
             if (type == "StrIngredient")
             {
@@ -433,7 +433,6 @@ namespace CocktailDebacle.Server.Utils
                 StrInstructionsZH_HANT = cocktailCreate.StrInstructionsZH_HANT,
                 StrDrinkThumb = cocktailCreate.StrDrinkThumb,
 
-                // Aggiungi gli ingredienti e le misure
                 StrIngredient1 = cocktailCreate.StrIngredient1,
                 StrIngredient2 = cocktailCreate.StrIngredient2,
                 StrIngredient3 = cocktailCreate.StrIngredient3,
@@ -449,6 +448,7 @@ namespace CocktailDebacle.Server.Utils
                 StrIngredient13 = cocktailCreate.StrIngredient13,
                 StrIngredient14 = cocktailCreate.StrIngredient14,
                 StrIngredient15 = cocktailCreate.StrIngredient15,
+
                 StrMeasure1 = cocktailCreate.StrMeasure1,
                 StrMeasure2 = cocktailCreate.StrMeasure2,
                 StrMeasure3 = cocktailCreate.StrMeasure3,
@@ -484,22 +484,38 @@ namespace CocktailDebacle.Server.Utils
 
 public static void UpdateCocktail(Cocktail cocktail, CocktailCreate dto)
         {
-            if (HasValue(dto.StrDrink ?? string.Empty)) cocktail.StrDrink = dto.StrDrink;
-            if (HasValue(dto.StrCategory ?? string.Empty)) cocktail.StrCategory = dto.StrCategory;
-            if (HasValue(dto.StrAlcoholic ?? string.Empty)) cocktail.StrAlcoholic = dto.StrAlcoholic;
-            if (HasValue(dto.StrGlass ?? string.Empty)) cocktail.StrGlass = dto.StrGlass;
-            if (HasValue(dto.StrInstructions ?? string.Empty)) cocktail.StrInstructions = dto.StrInstructions;
-            if (HasValue(dto.StrDrinkThumb ?? string.Empty)) cocktail.StrDrinkThumb = dto.StrDrinkThumb;
-            if (HasValue(dto.StrTags ?? string.Empty)) cocktail.StrTags = dto.StrTags;
-            if (HasValue(dto.StrVideo ?? string.Empty)) cocktail.StrVideo = dto.StrVideo;
-            if (HasValue(dto.StrIBA ?? string.Empty)) cocktail.StrIBA = dto.StrIBA;
-            if (HasValue(dto.StrDrinkAlternate ?? string.Empty)) cocktail.StrDrinkAlternate = dto.StrDrinkAlternate;
-            if (HasValue(dto.StrInstructionsES ?? string.Empty)) cocktail.StrInstructionsES = dto.StrInstructionsES;
-            if (HasValue(dto.StrInstructionsDE ?? string.Empty)) cocktail.StrInstructionsDE = dto.StrInstructionsDE;
-            if (HasValue(dto.StrInstructionsFR ?? string.Empty)) cocktail.StrInstructionsFR = dto.StrInstructionsFR;
-            if (HasValue(dto.StrInstructionsIT ?? string.Empty)) cocktail.StrInstructionsIT = dto.StrInstructionsIT;
-            if (HasValue(dto.StrInstructionsZH_HANS ?? string.Empty)) cocktail.StrInstructionsZH_HANS = dto.StrInstructionsZH_HANS;
-            if (HasValue(dto.StrInstructionsZH_HANT ?? string.Empty)) cocktail.StrInstructionsZH_HANT = dto.StrInstructionsZH_HANT;
+            if (HasValue(dto.StrDrink ?? string.Empty))
+                cocktail.StrDrink = dto.StrDrink;
+            if (HasValue(dto.StrCategory ?? string.Empty))
+                cocktail.StrCategory = dto.StrCategory;
+            if (HasValue(dto.StrAlcoholic ?? string.Empty))
+                cocktail.StrAlcoholic = dto.StrAlcoholic;
+            if (HasValue(dto.StrGlass ?? string.Empty))
+                cocktail.StrGlass = dto.StrGlass;
+            if (HasValue(dto.StrInstructions ?? string.Empty))
+                cocktail.StrInstructions = dto.StrInstructions;
+            if (HasValue(dto.StrDrinkThumb ?? string.Empty))
+                cocktail.StrDrinkThumb = dto.StrDrinkThumb;
+            if (HasValue(dto.StrTags ?? string.Empty))
+                cocktail.StrTags = dto.StrTags;
+            if (HasValue(dto.StrVideo ?? string.Empty))
+                cocktail.StrVideo = dto.StrVideo;
+            if (HasValue(dto.StrIBA ?? string.Empty))
+                cocktail.StrIBA = dto.StrIBA;
+            if (HasValue(dto.StrDrinkAlternate ?? string.Empty))
+                cocktail.StrDrinkAlternate = dto.StrDrinkAlternate;
+            if (HasValue(dto.StrInstructionsES ?? string.Empty))
+                cocktail.StrInstructionsES = dto.StrInstructionsES;
+            if (HasValue(dto.StrInstructionsDE ?? string.Empty))
+                cocktail.StrInstructionsDE = dto.StrInstructionsDE;
+            if (HasValue(dto.StrInstructionsFR ?? string.Empty))
+                cocktail.StrInstructionsFR = dto.StrInstructionsFR;
+            if (HasValue(dto.StrInstructionsIT ?? string.Empty))
+                cocktail.StrInstructionsIT = dto.StrInstructionsIT;
+            if (HasValue(dto.StrInstructionsZH_HANS ?? string.Empty))
+                cocktail.StrInstructionsZH_HANS = dto.StrInstructionsZH_HANS;
+            if (HasValue(dto.StrInstructionsZH_HANT ?? string.Empty))
+                cocktail.StrInstructionsZH_HANT = dto.StrInstructionsZH_HANT;
 
             cocktail.DateModified = DateTime.UtcNow.ToString("yyyy-MM-dd");
             cocktail.PublicCocktail = dto.PublicCocktail;
@@ -519,7 +535,6 @@ public static void UpdateCocktail(Cocktail cocktail, CocktailCreate dto)
             }
         }
 
-        // Support function
         private static bool HasValue(string value) => !string.IsNullOrWhiteSpace(value);
 
         public static double ConvertToMilliliters(string? measure)
@@ -534,7 +549,6 @@ public static void UpdateCocktail(Cocktail cocktail, CocktailCreate dto)
             
             if (parts.Length >= 1)
             {
-                // Parse quantity (supporta frazioni e decimali)
                 if (double.TryParse(parts[0], NumberStyles.Any, CultureInfo.InvariantCulture, out double parsed))
                 {
                     value = parsed;
@@ -551,13 +565,11 @@ public static void UpdateCocktail(Cocktail cocktail, CocktailCreate dto)
                     }
                 }
 
-                // Se non c'è unità, assumiamo ml
                 if (parts.Length == 1)
                 {
                     return value;
                 }
 
-                // Convert unit (cerca l'unità nelle parti rimanenti)
                 string unit = string.Join(" ", parts.Skip(1)).ToLower();
 
                 if (unit.Contains("ml")) return value;
@@ -571,7 +583,7 @@ public static void UpdateCocktail(Cocktail cocktail, CocktailCreate dto)
                 if (unit.Contains("part")) return value * 30; // 1 part ≈ 30ml (standard in mixology)
             }
 
-            return 0; // Formato non riconosciuto
+            return 0;
         }
 
         public static string? ValidateVolumeClassCocktail(Cocktail cocktail, Dictionary<string, int> glassCapacity)
@@ -592,7 +604,8 @@ public static void UpdateCocktail(Cocktail cocktail, CocktailCreate dto)
             var glass = cocktail.StrGlass ?? "Cocktail glass";
             int maxCapacity = glassCapacity.TryGetValue(glass, out var capacity) ? capacity : 250;
             
-            if (totalMl > maxCapacity * 1.1) // 10% di tolleranza
+            // +10% di tolleranza
+            if (totalMl > maxCapacity * 1.1)
             {
                 return $"The cocktail exceeds the maximum glass capacity ({maxCapacity} ml). Total: {totalMl:F1} ml";
             }
@@ -609,84 +622,11 @@ public static void UpdateCocktail(Cocktail cocktail, CocktailCreate dto)
 
                 if (string.IsNullOrWhiteSpace(ingredient) && !string.IsNullOrWhiteSpace(measure))
                 {
-                    return $"Errore: la misura {i} è impostata ma manca l'ingrediente corrispondente.";
+                    return $"Error: Measurement {i} is set but the corresponding ingredient is missing.";
                 }
             }
 
             return null;
         }
-
-
-        // public static int GetSuggestionScore(Cocktail c, User user, List<string> searchHistory, List<Cocktail> likedCocktails)
-        // {
-        //     int score = 0;
-
-        //     var filterWeight = new Dictionary<SuggestionUser, int>{
-        //         { SuggestionUser.NameMatch, 4 },
-        //         { SuggestionUser.IngredientMatch, 2 },
-        //         { SuggestionUser.CategoryMatch, 2 },
-        //         { SuggestionUser.GlassMatch, 3 },
-        //         { SuggestionUser.DescriptionMatch, 2 },
-        //         { SuggestionUser.SearchHistoryMatch, 6 },
-        //         { SuggestionUser.likeCocktail, 7 }
-        //     };
-
-
-        //     var ingredients = Enumerable.Range(1, 15)
-        //         .Select(i => typeof(Cocktail).GetProperty($"StrIngredient{i}")?.GetValue(c)?.ToString()?.ToLower())
-        //         .Where(i => !string.IsNullOrWhiteSpace(i))
-        //         .ToList();
-
-
-        //     // Ingredienti più presenti nei like
-        //     var topIngredientLikes = likedCocktails
-        //         .SelectMany(l => Enumerable.Range(1, 15)
-        //             .Select(i => typeof(Cocktail).GetProperty($"StrIngredient{i}")?.GetValue(l)?.ToString()?.ToLower())
-        //             .Where(i => !string.IsNullOrWhiteSpace(i)))
-        //         .GroupBy(i => i)
-        //         .OrderByDescending(g => g.Count())
-        //         .Take(5) // Prendi i primi 3 ingredienti più comuni
-        //         .Select(g => g.Key)
-        //         .ToList();
-
-        //     if(ingredients.Any(i => topIngredientLikes.Contains(i))) 
-        //         score += filterWeight[SuggestionUser.IngredientMatch];
-        //     // MATCH con LIKE
-        //     foreach (var liked in likedCocktails)
-        //     {
-        //         if (liked.Id == c.Id) {
-        //             score += filterWeight[SuggestionUser.likeCocktail];
-        //             continue; 
-        //         }
-        //         // Ingredient match
-        //         var likedIngredients = Enumerable.Range(1, 15)
-        //             .Select(i => typeof(Cocktail).GetProperty($"StrIngredient{i}")?.GetValue(liked)?.ToString()?.ToLower())
-        //             .Where(i => !string.IsNullOrWhiteSpace(i))
-        //             .ToList();
-
-        //         if (ingredients.Any(i => likedIngredients.Contains(i))) 
-        //             score +=  filterWeight[SuggestionUser.IngredientMatch];
-
-        //         // Categoria, bicchiere
-        //         if (!string.IsNullOrEmpty(c.StrCategory) && c.StrCategory == liked.StrCategory)
-        //             score +=  filterWeight[SuggestionUser.CategoryMatch];;
-        //         if (!string.IsNullOrEmpty(c.StrGlass) && c.StrGlass == liked.StrGlass)
-        //             score +=  filterWeight[SuggestionUser.GlassMatch];
-        //     }
-
-        //     // MATCH con ricerche recenti
-        //     if (searchHistory.Any(s => !string.IsNullOrEmpty(c.StrDrink) && c.StrDrink.ToLower().Contains(s)))
-        //         score +=  filterWeight[SuggestionUser.NameMatch];
-        //     if (searchHistory.Any(s => ingredients.Any(i => i != null && i.Contains(s))))
-        //         score +=  filterWeight[SuggestionUser.IngredientMatch];
-        //     if (searchHistory.Any(s => c.StrCategory?.ToLower().Contains(s) == true))
-        //         score +=  filterWeight[SuggestionUser.CategoryMatch];
-        //     if (searchHistory.Any(s => c.StrGlass?.ToLower().Contains(s) == true))
-        //         score +=  filterWeight[SuggestionUser.GlassMatch];
-        //     if (searchHistory.Any(s => c.StrInstructions?.ToLower().Contains(s) == true))
-        //         score +=  filterWeight[SuggestionUser.DescriptionMatch];
-        //     return score;
-        // }
-
     }
 }

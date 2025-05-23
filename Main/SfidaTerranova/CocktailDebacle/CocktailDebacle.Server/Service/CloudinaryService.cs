@@ -40,7 +40,7 @@ namespace CocktailDebacle.Server.Service
             {
                 File = new FileDescription(file.FileName, stream),
                 PublicId = publicId,
-                Type = "authenticated", // immagine privata
+                Type = "authenticated",
                 Overwrite = true,
                 Invalidate = true
             };
@@ -55,7 +55,7 @@ namespace CocktailDebacle.Server.Service
             {
                 File = new FileDescription(url),
                 PublicId = publicId,
-                Type = "authenticated", // immagine privata
+                Type = "authenticated",
                 Overwrite = true,
                 Invalidate = true
             };
@@ -83,11 +83,8 @@ namespace CocktailDebacle.Server.Service
             };
 
             var result = await _cloudinary.DestroyAsync(deleteParams);
-            Console.WriteLine($"[Cloudinary] Eliminazione {publicId} → {result.Result}");
-
             return result.Result;
         }
-        // Implementa i metodi per caricare, eliminare e gestire le immagini su Cloudinary qui
     }
 
 

@@ -23,8 +23,9 @@ namespace CocktailDebacle.Server.Service
             if(_context.DbCocktails.Any())
             {
                 Console.WriteLine("Cocktails already imported, skipping import. ❌");
-                return; // Se ci sono già cocktail nel database, non fare nulla
+                return;
             }
+
             var letters = "abcdefghijklmnopqrstuvwxyz0123456789";
             foreach (var letter in letters)
             {
@@ -35,26 +36,25 @@ namespace CocktailDebacle.Server.Service
                     Console.WriteLine($"Error fetching cocktails for letter {letter}: {response.StatusCode} ❌");
                     continue;
                 }
+
                 var content = await response.Content.ReadAsStringAsync();
                 var result = JsonConvert.DeserializeObject<CocktailResponse>(content);
 
-                if (result?.Drinks == null) continue;
+                if (result?.Drinks == null)
+                    continue;
 
                 foreach (var drink in result.Drinks)
                 {
-                    // Optional: evitare duplicati (in base a idDrink)
                     if (!_context.DbCocktails.Any(d => d.IdDrink == drink.IdDrink))
                     {
-                        CheckCocktails(drink); // Controlla i campi nulli e assegna valori predefiniti
+                        CheckCocktails(drink);
                         _context.DbCocktails.Add(drink);
-                        Console.WriteLine($"Cocktail {drink.StrDrink} added to the database! 🍹");
                     }
                 }
 
-                await _context.SaveChangesAsync(); // salva dopo ogni lettera
-                await Task.Delay(1000); // Aspetta 1 secondo tra le richieste per evitare di sovraccaricare l'API
+                await _context.SaveChangesAsync();
+                await Task.Delay(1000);
             }
-            Console.WriteLine("Cocktails imported successfully! ✅");
         }
 
         private void CheckCocktails(Cocktail drink)
