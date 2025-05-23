@@ -201,6 +201,7 @@ export class ProfilePageComponent implements OnInit {
         this.isLoggedIn = true;
         if ((this.username === currentUser.userName) || (currentUser.userName && this.username === null)) {
           this.isCurrentUser = true;
+          await this.GetFollowingCount(currentUser!.id as number);
         } else {
           this.isCurrentUser = false;
         }
@@ -256,7 +257,6 @@ export class ProfilePageComponent implements OnInit {
       try {
         this.followerList = await this.userService.getFollowers(this.preUser.id);
         await this.GetFollowingCount(this.preUser.id);
-        
       } catch (error) {
         console.error('Errore nel recupero dei followers:', error);
         this.followerList = [];
@@ -301,9 +301,11 @@ export class ProfilePageComponent implements OnInit {
   {
     const user = this.userService.getUser()
     const Followers = await this.userService.getFollowing(userName_id);
+    console.log("user : ", user, userName_id);
     if (this.isCurrentUser)
     {
       this.followingCount = Followers.length
+      console.log("WEEEE : following =", this.followingCount, "| followers =", this.followersCount);
       return ;
       
     }
