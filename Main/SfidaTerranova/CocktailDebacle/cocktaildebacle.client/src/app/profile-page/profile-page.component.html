@@ -1,0 +1,555 @@
+<app-cocktail-modal 
+  *ngIf="selectedCocktail" 
+  [cocktail]="selectedCocktail" 
+  (close)="selectedCocktail = null"
+  (deleted)="loadCocktails(userProfile?.id)"
+  (deleted)="selectedCocktail = null">
+</app-cocktail-modal>
+
+<app-cocktail-modal-create
+  *ngIf="creation"
+  [userId]="userProfile?.id"
+  (close)="creation = false"
+  (created)="loadCocktails(userProfile?.id)"
+
+>
+</app-cocktail-modal-create>
+
+<div id="bg-overlay" class="background-overlay"></div>
+
+<div class="sidebar full-sidebar">
+  <app-search [showArrow]="true"></app-search>
+  <a href="/home"> <div class="menu-item" style="margin-left: -20px;">
+    <i class="fas fa-home"></i> Home</div>
+  </a>
+
+<a href="/cocktails">
+<div class="menu-item" style="margin-left: -16px;">
+  <i class="fas fa-compass"></i> Explore
+</div>
+</a>
+
+  <a href="/profile-page">
+  <div class="menu-item" style="margin-left: -20px;"><i class="fas fa-user"></i> Profile</div>
+  </a>
+</div>
+
+<!-- Sidebar mobile -->
+<div class="sidebar icon-sidebar">
+  <a href="/home" class="menu-item icon-link">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"/>
+    </svg>
+  </a>
+  <a href="/cocktails" class="menu-item icon-link">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" d="m20.893 13.393-1.135-1.135a2.252 2.252 0 0 1-.421-.585l-1.08-2.16a.414.414 0 0 0-.663-.107.827.827 0 0 1-.812.21l-1.273-.363a.89.89 0 0 0-.738 1.595l.587.39c.59.395.674 1.23.172 1.732l-.2.2c-.212.212-.33.498-.33.796v.41c0 .409-.11.809-.32 1.158l-1.315 2.191a2.11 2.11 0 0 1-1.81 1.025 1.055 1.055 0 0 1-1.055-1.055v-1.172c0-.92-.56-1.747-1.414-2.089l-.655-.261a2.25 2.25 0 0 1-1.383-2.46l.007-.042a2.25 2.25 0 0 1 .29-.787l.09-.15a2.25 2.25 0 0 1 2.37-1.048l1.178.236a1.125 1.125 0 0 0 1.302-.795l.208-.73a1.125 1.125 0 0 0-.578-1.315l-.665-.332-.091.091a2.25 2.25 0 0 1-1.591.659h-.18c-.249 0-.487.1-.662.274a.931.931 0 0 1-1.458-1.137l1.411-2.353a2.25 2.25 0 0 0 .286-.76m11.928 9.869A9 9 0 0 0 8.965 3.525m11.928 9.868A9 9 0 1 1 8.965 3.525"/>
+    </svg>
+  </a>
+  <a [routerLink]="['/profile-page', getCurrentUserName()]" class="menu-item icon-link">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/>
+    </svg>
+  </a>
+</div>
+
+
+
+<!-- modale-->
+
+<div *ngIf="isModalOpen" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h4 class="modal-title">Profile Image</h4>
+    </div>
+
+    <div class="modal-body text-center">
+      <div class="image-container">
+        <img [src]="(isCurrentUser ? profileImage : userProfile?.profileImage) || 'userProfile?.profileImage ? userProfile?.profileImage : assets/default-profile.png'"
+             class="img-fluid" alt="Immagine attuale" />
+      </div>
+    </div>
+
+    <div class="modal-footer" >
+      <button *ngIf="isCurrentUser" class="btn btn-primary" (click)="onModifyImage()">Upload image</button>
+
+      <button type="button" class="btn btn-secondary" (click)="onClose()"><i class="fas fa-times"></i></button>
+    </div>
+  </div>
+</div>
+
+
+<div class="container">
+  <button *ngIf="isCurrentUser" mat-icon-button [matMenuTriggerFor]="menu" style="float: right;">
+    <mat-icon style="color:rgb(0, 0, 0)">more_vert</mat-icon>
+  </button>
+  
+  <div class="profile-bio" 
+  [style.background-color]="'rgba(95, 1, 1, 0.459)'" 
+  (mouseenter)="showGear = true" 
+  (mouseleave)="showGear = false">
+    
+    <h2>{{ isCurrentUser ? Bio : (userProfile?.bio || 'Cocktail enthusiast 🍹 | Creating delicious drinks') }}</h2>
+    
+      <div style="display: flex; flex-direction: column; align-items: center;">
+        <a *ngIf="isCurrentUser || userProfile?.bioLink" 
+          href="#" 
+          [style.color]="'white'" 
+          style="text-decoration: none; margin-bottom: 8px;">
+          {{ isCurrentUser ? Bio_link : userProfile?.bioLink }}
+        </a>
+
+        <div style="position: relative;">
+          <i *ngIf="isCurrentUser && isMobile" 
+            class="bi bi-gear-wide" 
+            (click)="toggleEditForm()"
+            style="font-size: 1.5rem; color: white; cursor: pointer;"></i>
+
+            <div *ngIf="showEditForm"
+                style="
+                  position: fixed;
+                  top: 50%;
+                  left: 52%;
+                  transform: translate(-50%, -50%);
+                  background: rgba(0, 0, 0, 0.95);
+                  padding: 20px;
+                  border-radius: 10px;
+                  z-index: 1000;
+                  width: 90%;
+                  max-width: 400px;
+                  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+                  display: flex;
+                  flex-direction: column;
+                  gap: 12px;
+                ">
+              <input [(ngModel)]="bio" placeholder="edit bio"
+                    style="width: 100%; padding: 10px; border-radius: 4px; border: none;" />
+              <input [(ngModel)]="bioLink" placeholder="edit bio-link"
+                    style="width: 100%; padding: 10px; border-radius: 4px; border: none;" />
+
+              <i class="bi bi-send"
+                (click)="editBio()"
+                style="
+                  align-self: flex-end;
+                  font-size: 1.5rem;
+                  color: white;
+                  cursor: pointer;
+                  margin-top: 10px;
+                "></i>
+            </div>
+
+
+
+        </div>
+      </div>
+
+
+    <!-- Icona gear -->
+    <i *ngIf="isCurrentUser && showGear && !isMobile" 
+        class="bi bi-gear-wide gear-icon" 
+        (click)="toggleEditForm()"  ></i>
+
+              <div *ngIf="showEditForm"
+                style="
+                  position: fixed;
+                  top: 50%;
+                    left: 52%;
+                  transform: translate(-50%, -50%);
+                  background: rgba(0, 0, 0, 0.95);
+                  padding: 20px;
+                  border-radius: 10px;
+                  z-index: 1000;
+                  width: 90%;
+                  max-width: 400px;
+                  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+                  display: flex;
+                  flex-direction: column;
+                  gap: 12px;
+                ">
+              <input [(ngModel)]="bio" placeholder="edit bio"
+                    style="width: 100%; padding: 10px; border-radius: 4px; border: none;" />
+              <input [(ngModel)]="bioLink" placeholder="edit bio-link"
+                    style="width: 100%; padding: 10px; border-radius: 4px; border: none;" />
+
+              <i class="bi bi-send"
+                (click)="editBio()"
+                style="
+                  align-self: flex-end;
+                  font-size: 1.5rem;
+                  color: white;
+                  cursor: pointer;
+                  margin-top: 10px;
+                "></i>
+            </div>
+
+  </div>
+  
+  
+  
+  
+  
+  <div class="tiktok-container">
+    <!-- Header -->
+    <div class="tiktok-header" [style.background-color]="'rgba(172, 7, 7, 0.781)'">
+      <header class="instagram-header">
+        <div class="center-content">
+          <figure>
+            <img src="assets/logo.png" alt="Cockatiels Bar" class="profile-pic-ig">
+            <figcaption>
+              <h4>Cockatiels Bar</h4>
+              <span>Profile Page</span>
+            </figcaption>
+          </figure>
+        </div>
+
+      </header>
+      
+      <div class="header-left"></div>
+      <div class="header-right">
+        <button class="theme-toggle" (click)="toggleTheme()">
+          <i class="fas" [class.fa-moon]="isLightMode" [class.fa-sun]="!isLightMode"></i>
+        </button>
+        <mat-menu #menu="matMenu">
+          <a mat-menu-item href="/home">
+            <mat-icon>home</mat-icon>
+            <span style="font-size: 16px;">Home</span>
+          </a>
+          <a mat-menu-item href="/cocktails">
+            <mat-icon>public</mat-icon>
+            <span style="font-size: 16px;">Browse</span>
+          </a>
+          <a mat-menu-item href="/settings">
+            <mat-icon>settings</mat-icon>
+            <span style="font-size: 16px;">Settings</span>
+          </a>
+          <button mat-menu-item (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            <span style="font-size: 16px;">Logout</span>
+          </button>
+        </mat-menu>
+        
+      </div>
+    </div>
+    <div *ngIf="isLoading" class="loading-spinner">
+      <!-- Inserisci qui il tuo componente di caricamento -->
+      <mat-spinner></mat-spinner>
+      <p>Caricamento in corso...</p>
+    </div>
+  
+    <!-- Main Content -->
+    <div *ngIf="!isLoading" class="main-content">
+      <div class="main-content">
+
+    
+        <!-- Profile Content -->
+        <div class="profile-transparent-content" [style.background-color]="'rgba(15, 0, 0, 0.4)'">
+          <div *ngIf="isLoggedIn" class="profile-section">
+            <!-- Profile Info -->
+            <div class="profile-info" [style.background-color]="'rgba(0, 0, 0, 0.7)'">
+              <div class="profile-pic-container"
+              (mouseenter)="showPlus = true" 
+              (mouseleave)="showPlus = false" (click)="openEditModal(profileModal)">
+              <!-- icona plus-->
+              <i class="plus-icon" *ngIf="isCurrentUser && showPlus" 
+              class="bi bi-plus plus-icon"></i>
+
+                <img [src]="(isCurrentUser ? profileImage : userProfile?.profileImage) || 'userProfile?.profileImage ? userProfile?.profileImage : assets/default-profile.png'" 
+                    alt="Profile" 
+                    class="profile-pic"
+                    [style.border]="'2px solid #fe2c55'">
+                <div  class="profile-verify">
+                  <mat-icon>verified</mat-icon>
+                </div>
+              </div>
+              <div class="profile-name" (touchstart)="handleTouch()" (click)="handleTouch()">
+                <h3>{{ '@' + (isCurrentUser ? username : (userProfile?.userName || 'Unknown User')) }}</h3>
+                <p *ngIf="!isCurrentUser" class="profile-visitor-text">Viewing profile</p>
+              </div>
+              
+              <div class="stats-container">
+                <div class="stat">
+                  <div class="stat-number">{{isCurrentUser ? followingCount : (userProfile?.followingCount || 0)}}</div>
+                  <div class="stat-label">Following</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-number">{{isCurrentUser ? followersCount : (userProfile?.followersCount || 0)}}</div>
+                  <div class="stat-label">Followers</div>
+                </div>
+                <div class="stat">
+                  <div class="stat-number">{{isCurrentUser ? likedCocktails.length : (userProfile?.likesCount || 0)}}</div>
+                  <div class="stat-label">Liked</div>
+                </div>
+              </div>
+            </div>  
+
+            <div class="profile-page">
+              <app-search [showArrow]="false" [showSideBarIcon]="false"></app-search>
+            </div>
+
+            <!-- Bio -->
+
+            
+            <!-- Modale -->
+            <div class="modal-backdrop" *ngIf="isModalOpen">
+              <div class="modal">
+                <h3>Modifica la bio</h3>
+                <textarea [(ngModel)]="editedBio"></textarea>
+                <button (click)="saveBio()">Salva</button>
+                <button (click)="closeModal()">Annulla</button>
+              </div>
+            </div>
+       
+          <mat-tab-group (selectedTabChange)="onTabChange($event)" 
+                        [selectedIndex]="getSelectedTabIndex()"
+                        [style.margin]="'32px auto'"
+                        [style.max-width]="'700px'">
+            
+            <!-- Tab "Cocktails" -->
+            <mat-tab label="Cocktails">
+              <!-- Sezione per quando non ci sono cocktail creati -->
+              <div *ngIf="(isCurrentUser && myCocktails.length === 0) || (!isCurrentUser && (!userProfile?.cocktails || userProfile.cocktails.length === 0))" 
+                  class="cocktails-empty-state"
+                  [style.background-color]="'rgba(0, 0, 0, 0.5)'">
+                <mat-icon class="empty-icon">local_bar</mat-icon>
+                <h3>No cocktails yet</h3>
+                <p *ngIf="isCurrentUser">Create your first cocktail to get started!</p>
+                <p *ngIf="!isCurrentUser">This user hasn't created any cocktails yet</p>
+
+                <div *ngIf="!isFollowing">
+                  <button *ngIf="!isCurrentUser" class="follow-button" (click)="manageFollow(userProfile?.userName)">
+                    <i class="bi bi-plus-circle"></i> 
+                  </button>
+                </div>
+
+                <div *ngIf="isFollowing">
+                  <button *ngIf="!isCurrentUser" class="follow-button" (click)="manageFollow(userProfile?.userName)">
+                    <i class="bi bi-dash-circle"></i>
+                  </button>
+                </div>
+
+              </div>
+
+              <!-- Sezione per quando ci sono cocktail creati -->
+              <div *ngIf="(isCurrentUser && myCocktails.length > 0) || (!isCurrentUser && userProfile?.cocktails?.length > 0)" 
+                  class="liked-grid"
+                  [style.grid-template-columns]="'repeat(2, 1fr)'"
+                  [style.gap]="'2px'">
+                <div class="liked-grid-item" 
+                    *ngFor="let cocktail of isCurrentUser ? myCocktails : userProfile?.cocktails"
+                    (click)="navigateToCocktail(cocktail.id)">
+                  <!-- Contenitore per cubo rotante -->
+                  <div class="cube-container">
+                    <div class="box-card">
+                      <div class="face front">
+                        <img [src]="cocktail.strDrinkThumb || 'assets/logo.png'" [alt]="cocktail.strDrink" class="liked-img">
+                      </div>
+                      <div class="face back">
+                        <h4>{{ cocktail.strDrink }}</h4>
+                        <mat-icon style="color:red !important">favorite</mat-icon>
+                        <span>{{ cocktail.likes || 0 }}</span>
+                      </div>
+                      <div class="face right">
+                        <div class="cocktail-content">
+                          <img [src]="CocktailIcon" class="cube-cocktail-img">
+                          <span class="cube-cocktail-title">{{ cocktail?.strGlass }}</span>
+                        </div>
+                      </div>
+                      <div class="face left">
+                        <ul>
+                          <li *ngFor="let ingredient of getIngredients(cocktail)" class="ingredient-item">
+                            <span class="ingredient-name">{{ ingredient.name }}</span>
+                            <span class="ingredient-measure">{{ ingredient.measure }}</span>
+                          </li>
+                        </ul>
+                      </div>
+                      <div class="face top">
+                        <img [src]="cocktail.strAlcoholic === 'Alcoholic' ? 'assets/alcoholic-bird.png' : 'assets/non-alcoholic-bird.png'" alt="Cocktail Type">
+                      </div>
+                      <div class="face bottom">Click Me!</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+                    <div *ngIf="!isFollowing">
+                  <button *ngIf="!isCurrentUser && userProfile?.cocktails?.length > 0" class="follow-button" (click)="manageFollow(userProfile?.userName)">
+                    <i class="bi bi-plus-circle"></i> 
+                  </button>
+                </div>
+
+                <div *ngIf="isFollowing">
+                  <button *ngIf="!isCurrentUser && userProfile?.cocktails?.length > 0" class="follow-button" (click)="manageFollow(userProfile?.userName)">
+                    <i class="bi bi-dash-circle"></i>
+                  </button>
+                </div>
+                <button *ngIf="isCurrentUser &&  myCocktails.length > 0" 
+                        mat-raised-button 
+                        color="warn" 
+                        class="create-btn"
+                        (click)="navigateToCreate()">
+                  Create Cocktail
+                </button>
+
+
+              <!-- Bottone per creare un cocktail -->
+              <div *ngIf="isCurrentUser && myCocktails.length === 0" class="create-cocktail-btn-wrapper" style="display: flex; justify-content: center; margin-top: 20px;">
+                <button mat-raised-button color="warn" class="create-btn" (click)="navigateToCreate()">
+                  Create Cocktail
+                </button>
+              </div>
+            </mat-tab>
+
+            <!-- Tab "Liked" -->
+            <mat-tab *ngIf="isCurrentUser" label="Liked">
+              <!-- Sezione per quando non ci sono cocktail piaciuti -->
+              <div *ngIf="likedCocktails.length === 0" class="liked-empty-state">
+                <mat-icon class="liked-empty-icon">favorite_border</mat-icon>
+                <h3>No liked cocktails yet</h3>
+                <p>Like some cocktails to see them here!</p>
+                <button mat-raised-button 
+                        color="warn" 
+                        class="liked-browse-btn"
+                        (click)="navigateToExplore()">
+                  Browse Cocktails
+                </button>
+              </div>
+
+              <!-- Sezione per quando ci sono cocktail piaciuti -->
+              <div *ngIf="likedCocktails.length > 0" class="liked-grid">
+                <div class="liked-grid-item" *ngFor="let cocktail of likedCocktails"
+                  [style.grid-template-columns]="'repeat(3, 1fr)'"
+                  [style.gap]="'2px'">
+                  <div class="liked-grid-item" (click)="navigateToCocktail(cocktail.id)">
+                    
+                    <!-- Contenitore per cubo rotante -->
+                    <div class="cube-container">
+                      <div class="box-card">
+                        <div class="face front">
+                          <img [src]="cocktail.strDrinkThumb || 'assets/logo.png'" [alt]="cocktail.strDrink" class="liked-img">
+                        </div>
+                        <div class="face back">
+                          <h4>{{ cocktail.strDrink }}</h4>
+                          <mat-icon style="color:red !important">favorite</mat-icon>
+                          <span>{{ cocktail.likes || 0 }}</span>
+                        </div>
+                        <div class="face right">
+                          <div class="cocktail-content">
+                            <img [src]="CocktailIcon" class="cube-cocktail-img">
+                            <span class="cube-cocktail-title">{{ cocktail?.strGlass }}</span>
+                          </div>
+                        </div>
+                        <div class="face left">
+                          <ul>
+                            <li *ngFor="let ingredient of getIngredients(cocktail)" class="ingredient-item">
+                              <span class="ingredient-name">{{ ingredient.name }}</span>
+                              <span class="ingredient-measure">{{ ingredient.measure }}</span>
+                            </li>
+                          </ul>
+                        </div>
+                        <div class="face top">
+                          <img [src]="cocktail.strAlcoholic === 'Alcoholic' ? 'assets/alcoholic-bird.png' : 'assets/non-alcoholic-bird.png'" alt="Cocktail Type">
+                        </div>
+                        <div class="face bottom">Click Me!</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </mat-tab>
+
+              <mat-tab *ngIf="!isCurrentUser" label="Liked">
+              <!-- Sezione per quando non ci sono cocktail piaciuti -->
+
+
+              <!-- Sezione per quando ci sono cocktail piaciuti -->
+              <div *ngIf="userProfile?.liked.length > 0" class="liked-grid">
+                <div class="liked-grid-item" *ngFor="let cocktail of userProfile?.liked"
+                  [style.grid-template-columns]="'repeat(3, 1fr)'"
+                  [style.gap]="'2px'">
+                  <div class="liked-grid-item" (click)="navigateToCocktail(cocktail.id)">
+                      <div *ngIf="userProfile?.liked.length === 0" class="liked-empty-state">
+                        <mat-icon class="liked-empty-icon">favorite_border</mat-icon>
+                        <h3>No liked cocktails yet</h3>
+                        <p>Like some cocktails to see them here!</p>
+                      </div>
+                    <!-- Contenitore per cubo rotante -->
+                    <div class="cube-container">
+                      <div class="box-card">
+                        <div class="face front">
+                          <img [src]="cocktail.strDrinkThumb || 'assets/logo.png'" [alt]="cocktail.strDrink" class="liked-img">
+                        </div>
+                        <div class="face back">
+                          <h4>{{ cocktail.strDrink }}</h4>
+                          <mat-icon style="color:red !important">favorite</mat-icon>
+                          <span>{{ cocktail.likes || 0 }}</span>
+                        </div>
+                        <div class="face right">
+                          <div class="cocktail-content">
+                            <img [src]="CocktailIcon" class="cube-cocktail-img">
+                            <span class="cube-cocktail-title">{{ cocktail?.strGlass }}</span>
+                          </div>
+                        </div>
+                        <div class="face left">
+                          <ul>
+                            <li *ngFor="let ingredient of getIngredients(cocktail)" class="ingredient-item">
+                              <span class="ingredient-name">{{ ingredient.name }}</span>
+                              <span class="ingredient-measure">{{ ingredient.measure }}</span>
+                            </li>
+                          </ul>
+                        </div>
+                        <div class="face top">
+                          <img [src]="cocktail.strAlcoholic === 'Alcoholic' ? 'assets/alcoholic-bird.png' : 'assets/non-alcoholic-bird.png'" alt="Cocktail Type">
+                        </div>
+                        <div class="face bottom">Click Me!</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </mat-tab>
+
+            
+
+          </mat-tab-group>
+
+
+        
+
+          </div>
+    
+          <!-- Not Logged In State -->
+          <div *ngIf="!isLoggedIn" class="not-logged">
+            <div class="not-logged-content"
+                [style.background-color]="'rgba(0, 0, 0, 0.7)'">
+              <mat-icon class="error-icon">lock</mat-icon>
+              <h2>Private Account</h2>
+              <p>Log in to view this profile</p>
+              <button mat-raised-button 
+                      class="login-btn"
+                      [style.background-color]="'#fe2c55'"
+                      (click)="navigateToLogin()">
+                Log In
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Footer -->
+
+    </div>
+    <div class="profile-footer" [style.background-color]="'rgba(172, 7, 7, 0.781)'">
+      <div class="footer-content">
+        <p>© {{currentYear}} CocktailApp</p>
+        <div class="footer-links">
+          <a href="/privacy-policy" [style.color]="'rgba(255, 255, 255, 0.7)'">Privacy</a>
+          <a href="/whaw" [style.color]="'rgba(255, 255, 255, 0.7)'">WhaW</a>
+          <a href="/help" [style.color]="'rgba(255, 255, 255, 0.7)'">Help</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+

@@ -1,0 +1,29 @@
+<div class="container">
+    <button id="helpBtn" (click)="onHelpClick()">ASK FOR HELP!</button>
+    <a href="javascript:void(0)" class="back-arrow" (click)="goBack()">
+        <i class="material-icons">arrow_back</i>
+      </a>
+    <!-- Modal -->
+    <div id="modal" class="modal">
+      <div class="modal-content">
+        <!-- Polaroid con l'ombrello in cima al contenuto del modale -->
+        <div class="polaroid-frame">
+          <div class="polaroid-inner">
+            <div class="polaroid-umbrella">🐦</div>
+          </div>
+        </div>
+  
+        <!-- X per chiudere il modale -->
+        <span class="close-btn" (click)="closeModal()">×</span>
+  
+        <!-- Messaggio del modale -->
+        <div class="modal-body">
+          <p class="classy">{{ message }}</p>
+        </div>
+  
+        <!-- Bottone per cambiare il messaggio -->
+        <button id="helpBtn" (click)="onHelpClick()">HELP!!</button>
+      </div>
+    </div>
+  </div>
+  

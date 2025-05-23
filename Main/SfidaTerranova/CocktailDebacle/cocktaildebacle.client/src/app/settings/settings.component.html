@@ -1,0 +1,135 @@
+<div container>
+
+    <div class="d-flex justify-content-center align-items-center vh-100 bg-light"
+    style="background-image: url('/assets/cockatiels_bg_2.png'); background-size: cover; background-position: center center; background-repeat: no-repeat;">
+      <div class="profile-container p-4 shadow-lg rounded bg-white" style="width: 100%; max-width: 600px;">
+      <button mat-icon-button (click)="goBack()" class="mb-3">
+          <mat-icon>arrow_back</mat-icon>
+      </button>
+  
+      <h2 class="text-center mb-4">User Profile</h2>
+      
+      <div class="text-center mb-4">
+          <img [src]="'assets/cockatiel-settings.png'" 
+              class="profile-image" 
+              alt="Profile Image">
+      </div>
+  
+      <div class="user-info mb-4">
+          <div class="info-row">
+          <span class="info-label">Username:</span>
+          <span class="info-value">{{ userProfile?.userName || 'Not set' }}</span>
+          </div>
+          <div class="info-row">
+          <span class="info-label">First Name:</span>
+          <span class="info-value">{{ userProfile?.name || 'Not set' }}</span>
+          </div>
+          <div class="info-row">
+          <span class="info-label">Last Name:</span>
+          <span class="info-value">{{ userProfile?.lastName || 'Not set' }}</span>
+          </div>
+          <div class="info-row">
+          <span class="info-label">Email:</span>
+          <span class="info-value">{{ userProfile?.email || 'Not set' }}</span>
+          </div>
+          <div class="info-row">
+          <span class="info-label">Accepts Cookies:</span>
+          <span class="info-value">{{ userProfile?.acceptCookies ? 'Yes' : 'No' }}</span>
+          </div>
+      </div>
+  
+      <button mat-raised-button 
+              color="primary" 
+              class="w-100 py-2"
+              (click)="openEditModal()">
+          Edit Information
+      </button>
+      </div>
+  </div>
+  
+  <!-- Modal Edit Form -->
+  <ng-template #editModal>
+      <div class="modal-header">
+      <h4 class="modal-title">Edit User Information</h4>
+      <button type="button" class="close" (click)="closeModal()">
+          <span>&times;</span>
+      </button>
+      </div>
+      <div class="modal-body">
+      <form [formGroup]="editForm" (ngSubmit)="onSave()" (keydown.enter)="onSave()">
+          <table class="table table-borderless">
+          <tbody>
+              <!-- First Name -->
+              <mat-form-field appearance="outline" class="w-100 mb-3">
+                  <mat-label>First Name</mat-label>
+                  <input matInput formControlName="FirstName" required>
+                  <mat-error *ngIf="editForm.get('FirstName')?.hasError('required')">
+                  Required field
+                  </mat-error>
+                  <mat-error *ngIf="editForm.get('FirstName')?.hasError('minlength')">
+                  Minimum 2 characters
+                  </mat-error>
+              </mat-form-field>
+              
+              <!-- Last Name -->
+              <mat-form-field appearance="outline" class="w-100 mb-3">
+                  <mat-label>Last Name</mat-label>
+                  <input matInput formControlName="LastName" required>
+                  <mat-error *ngIf="editForm.get('lastName')?.hasError('minlength')">
+                  Required field
+                  </mat-error>
+              </mat-form-field>
+              
+              <!-- Username -->
+              <mat-form-field appearance="outline" class="w-100 mb-3">
+                  <mat-label>Username</mat-label>
+                  <input matInput formControlName="userName" required>
+                  <mat-error *ngIf="editForm.get('userName')?.hasError('required')">
+                  Required field
+                  </mat-error>
+              </mat-form-field>
+              
+              <!-- Email -->
+              <mat-form-field appearance="outline" class="w-100 mb-3">
+                  <mat-label>Email</mat-label>
+                  <input matInput type="email" formControlName="Email" required>
+                  <mat-error *ngIf="editForm.get('Email')?.hasError('required')">
+                  Required field
+                  </mat-error>
+                  <mat-error *ngIf="editForm.get('Email')?.hasError('email')">
+                  Invalid email
+                  </mat-error>
+              </mat-form-field>
+              
+              <!-- Password -->
+              <mat-form-field appearance="outline" class="w-100 mb-3">
+                  <mat-label>Password</mat-label>
+                  <input matInput type="password" formControlName="Password">
+                  <mat-hint>At least 8 characters, with uppercase and number</mat-hint>
+                  <mat-error *ngIf="editForm.get('Password')?.hasError('pattern')">
+                  Weak password
+                  </mat-error>
+              </mat-form-field>
+              
+              
+              <!-- Accept Cookies -->
+              <mat-checkbox formControlName="AcceptCookies" class="mb-3">
+                  I accept cookies for a personalized experience
+                  <a href="/privacy-policy" class="text-primary text-decoration-none">(Privacy Policy)</a>
+              </mat-checkbox>
+              <mat-error *ngIf="formError">
+                  Invalid field(s).
+              </mat-error>
+          </tbody>
+          </table>
+          
+          <div class="modal-footer">
+          <button mat-button (click)="closeModal()">Cancel</button>
+          <button mat-raised-button color="primary" type="submit">Save Changes</button>
+
+          
+          </div>
+      </form>
+      </div>
+  </ng-template>
+</div>

@@ -1,0 +1,88 @@
+
+.privacy-policy-container {
+  max-width: 800px; 
+  margin: 0 auto; 
+  padding: 20px; 
+  font-family: "Segoe UI", sans-serif;
+  line-height: 1.6; 
+}
+
+
+h1 {
+  font-size: 2.5rem; 
+  color: #333; 
+  margin-bottom: 20px; 
+}
+
+
+h2 {
+  font-size: 2rem; 
+  color: #444; 
+  margin-top: 30px; 
+  margin-bottom: 15px; 
+}
+
+h3 {
+  font-size: 1.5rem; 
+  color: #555; 
+  margin-top: 20px; 
+  margin-bottom: 10px; 
+}
+
+p {
+  font-size: 1rem; 
+  color: #666; 
+  margin-bottom: 15px; 
+}
+
+
+ul {
+  margin-bottom: 15px; 
+  padding-left: 20px; 
+}
+
+  ul li {
+    margin-bottom: 10px; 
+  }
+
+
+a {
+  color: #007bff; 
+  text-decoration: none; 
+}
+
+  a:hover {
+    text-decoration: underline; 
+  }
+
+
+strong {
+  font-weight: bold; 
+}
+body {
+  background-image: url('/assets/cockatiels_bg.png'); 
+  background-size: cover; 
+  background-position: center center; 
+  background-repeat: no-repeat;
+  font-family: "Segoe UI", sans-serif;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  position: relative;
+}
+
+.container {
+  background-color: #ffffff; 
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  margin: 2rem auto; 
+  max-width: 800px; 
+  height: 80vh; 
+  overflow-y: auto; 
+}
+
+

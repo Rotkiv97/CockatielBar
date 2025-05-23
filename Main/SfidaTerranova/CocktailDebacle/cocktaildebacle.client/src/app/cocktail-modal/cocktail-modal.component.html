@@ -1,0 +1,294 @@
+<!-- cocktail-modal.component.html -->
+<div class="modal-backdrop" (click)="onClose()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <button type="button" class="close-button" (click)="onClose()">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="polaroid-wrapper">
+      <div class="polaroid-frame">
+        <div class="polaroid-inner">
+          <div class="cocktail-image">
+            <img [src]="cocktail?.strDrinkThumb || '/assets/cocktails-bg-slide-3.png'" alt="{{ cocktail?.strDrink }}" class="cocktail-img">
+            <div class="polaroid-umbrella">🐦</div>
+
+            <div class="cocktail-details">
+              <!-- TITLE SECTION -->
+              <div class="cocktail-header">
+                <ng-container *ngIf="!editing; else editTitle">
+                  <h3 class="cocktail-title">
+                    {{ cocktail?.strDrink }}
+                  </h3>
+                </ng-container>
+                <ng-template #editTitle>
+                  <div class="title-section">
+                    <h3 class="cocktail-title" *ngIf="!showTitleInput">
+                      {{ cocktailTitle === '' ? 'Add title' : 'Title: ' + cocktailTitle }}
+                    </h3>
+                    <div *ngIf="showTitleInput" style="display: flex; align-items: center; gap: 8px;">
+                      <input type="text" [(ngModel)]="cocktailTitle"
+                            (blur)="showTitleInput = false"
+                            (keyup.enter)="saveTitle(cocktailTitle)"
+                            placeholder="Enter title" />
+                      <button (click)="saveTitle(cocktailTitle)" style="background: none; border: none; cursor: pointer;">
+                        <i class="fa-solid fa-circle-check" style="color: green;"></i>
+                      </button>
+                    </div>
+                    <span *ngIf="!showTitleInput" class="plus" (click)="addTitle()">
+                      <i class="fa-solid fa-plus"></i>
+                    </span>
+                  </div>
+                </ng-template>
+
+                <!-- CATEGORY SECTION -->
+                <ng-container *ngIf="!editing; else editCategory">
+                  <span class="cocktail-badge">
+                    {{ cocktail?.strCategory }}
+                  </span>
+                </ng-container>
+                <ng-template #editCategory>
+                  <div class="category-section">
+                    <h3 class="cocktail-title">
+                      {{ cocktailCat === '' ? 'Add category' : 'Category: ' + cocktailCat }}
+                    </h3>
+                    <span *ngIf="!showCategoryInput" class="plus" (click)="showCategoryInput = true">
+                      <i class="fa-solid fa-plus"></i>
+                    </span>
+                    <div *ngIf="showCategoryInput" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; max-width: 400px; margin: 0 auto;">
+                      <input type="text" placeholder="Enter category" [(ngModel)]="categoryQuery" (input)="onCategoryInput()" />
+                      <button (click)="addCat(categoryQuery)" style="background: none; border: none; cursor: pointer;">
+                        <i class="fa-solid fa-circle-check" style="color: green;"></i>
+                      </button>
+                    </div>
+                    <ul *ngIf="categoryResults.length > 0" class="dropdown" style="left: 50%; transform: translateX(-50%);">
+                      <li *ngFor="let cat of categoryResults" (click)="selectCategory(cat)">
+                        {{ cat }}
+                      </li>
+                    </ul>
+                  </div>
+                </ng-template>
+              </div>
+
+              <!-- INSTRUCTIONS SECTION -->
+              <ng-container *ngIf="!editing; else editInstructions">
+                <ul class="cocktail-instructions">
+                  <li *ngFor="let step of getInstructionSteps()">
+                    {{ step }}
+                  </li>
+                </ul>
+              </ng-container>
+              <ng-template #editInstructions>
+                <ul class="cocktail-instructions">
+                  <ng-container *ngIf="instructions?.trim(); else noInstructions">
+                    <li *ngFor="let step of getInstructionSteps(); let i = index">
+                      {{ 'Instruction ' + (i + 1) + ': ' + step }}
+                    </li>
+
+                    <ng-container *ngIf="!showInstructionsForm">
+                      <span style="margin-left: -30px;" class="plus" (click)="addInstructions()">
+                        <i class="fa-solid fa-plus"></i>
+                      </span>
+                    </ng-container>
+
+                    <ng-template [ngIf]="showInstructionsForm">
+                      <div style="display: flex; align-items: center; gap: 8px; margin-left: -30px; margin-top: 5px; justify-content: center; width: 100%;">
+                        <textarea [(ngModel)]="newInstructions"
+                                  placeholder="Use '.' (dot) to start a new instruction"
+                                  rows="3"
+                                  style="width: 80%;"></textarea>
+                        <button (click)="saveInstructions()" style="background: none; border: none; cursor: pointer;">
+                          <i class="fa-solid fa-circle-check" style="color: green;"></i>
+                        </button>
+                      </div>
+                    </ng-template>
+                  </ng-container>
+
+                  <ng-template #noInstructions>
+                    <ng-container *ngIf="!showInstructionsForm; else instructionForm">
+                      <p style="margin-left: -5px; font-size: 2rem; margin: 0; font-weight: 700; color: white; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); font-family: 'Segoe UI', sans-serif; text-align: center;">
+                        Add instructions</p>
+                      <span style="margin-left: -30px;" class="plus" (click)="addInstructions()">
+                        <i class="fa-solid fa-plus"></i>
+                      </span>
+                    </ng-container>
+                  </ng-template>
+
+                  <ng-template #instructionForm>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-left: -30px; justify-content: center; width: 100%;">
+                      <textarea [(ngModel)]="newInstructions"
+                                placeholder="Use '.' (dot) to start a new instruction"
+                                rows="4"
+                                style="width: 80%;"></textarea>
+                      <button (click)="saveInstructions()" style="background: none; border: none; cursor: pointer;">
+                        <i class="fa-solid fa-circle-check" style="color: green;"></i>
+                      </button>
+                    </div>
+                  </ng-template>
+                </ul>
+              </ng-template>
+
+              <!-- INGREDIENTS SECTION -->
+              <ng-container *ngIf="!editing; else editIngredients">
+                <div class="ingredients-list">
+                  <h4 class="ingredients-title">Ingredients:</h4>
+                  <ul class="ingredients-grid">
+                    <li *ngFor="let ingredient of getIngredients()" class="ingredient-item">
+                      <span class="ingredient-name">{{ ingredient.name }}</span>
+                      <span class="ingredient-measure">{{ ingredient.measure }}</span>
+                    </li>
+                  </ul>
+                </div>
+              </ng-container>
+              <ng-template #editIngredients>
+                <div class="ingredient-section">
+                  <label style="font-size: 2rem; margin: 0; font-weight: 700; color: white; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); font-family: 'Segoe UI', sans-serif; text-align: center;">Add Ingredients</label>
+                  <div style="display: flex; align-items: center; gap: 8px; width: 100%; justify-content: center;">
+                    <input type="text"
+                      placeholder="(max 15)"
+                      [(ngModel)]="ingredientQuery"
+                      (input)="onIngredientInput()" />
+                  </div>
+                </div>
+
+                <ul *ngIf="ingredientResults.length > 0" class="dropdown">
+                  <li *ngFor="let result of ingredientResults" (click)="addIngredient(result)">
+                    {{ result }}
+                  </li>
+                </ul>
+                <br><br>
+
+                <div class="ingredients-container">
+                  <!-- Quantity and Measure Panel -->
+                  <div *ngIf="isAddingDetails" class="quantity-measure-panel">
+                    <div class="quantity-measure-content">
+                      <label>Quantity</label>
+                      <select [(ngModel)]="selectedQuantities[pendingIngredientIndex]" class="custom-select">
+                        <option *ngFor="let q of quantities" [value]="q">{{ q }}</option>
+                      </select>
+
+                      <label>Measure</label>
+                      <select [(ngModel)]="selectedMeasures[pendingIngredientIndex]" class="custom-select">
+                        <option *ngFor="let m of measureResults" [value]="m">{{ m }}</option>
+                      </select>
+
+                      <div class="checkmark-container">
+                        <button (click)="saveIngredientDetails()" class="button-53">
+                          <i class="fa-solid fa-circle-check" style="color: green;"></i>
+                        </button>
+                        <button (click)="cancelIngredientDetails()" class="button-53">
+                         x
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Ingredients Grid -->
+                  <ul class="ingredients-grid" [class.with-panel]="isAddingDetails">
+                    <li *ngFor="let ing of selectedIngredients; let i = index" class="ingredient-item">
+                      <span class="ingredient-name">{{ ing }}</span>
+                      <span class="ingredient-measure" *ngIf="selectedQuantities[i] && selectedMeasures[i]">
+                        {{ selectedQuantities[i] }} {{ selectedMeasures[i] }}
+                      </span>
+                      <div>
+                        <button *ngIf="!selectedQuantities[i] || !selectedMeasures[i]" (click)="addDetails(i)" class="button-53">
+                          Add
+                        </button>
+                        <button *ngIf="!selectedQuantities[i] || !selectedMeasures[i]" (click)="removeIngredient(i)" class="button-53">
+                          x
+                        </button>
+                        <button *ngIf="selectedQuantities[i] && selectedMeasures[i]" (click)="removeIngredient(i)" class="button-53">
+                          Remove
+                        </button>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+              </ng-template>
+
+              <!-- GLASS SECTION -->
+              <div class="CocktailGlass" style="display: flex; flex-direction: column; align-items: center; position: relative;">
+                <ng-container *ngIf="!editing; else editGlass">
+                  <img [src]="CocktailIcon" style="width: 80px; height: 80px; object-fit: contain; margin-right: 12px;">
+                  <span class="cocktail-title" style="font-style: italic; font-weight: 300;">
+                    {{ cocktail?.strGlass }}
+                  </span>
+                </ng-container>
+                <ng-template #editGlass>
+                  <div style="display: flex; flex-direction: column; align-items: center; position: relative;">
+                    <img [src]="CocktailIcon" style="width: 80px; height: 80px; object-fit: contain; margin-bottom: 8px;">
+                    <span class="cocktail-title">
+                      {{ cocktailGlass === '' ? 'Add cocktail glass' : cocktailGlass }}
+                    </span>
+                    <span class="plus" (click)="toggleGlassList()" style="margin-top: 8px; text-align: center;">
+                      <i  class="fa-solid fa-plus"></i>
+                    </span>
+                    <ul *ngIf="showGlassList && (glass | keyvalue).length > 0" class="dropdown" style="position: absolute; top: 100%; margin-top: -20px; overflow-y: auto;">
+                      <li *ngFor="let glass of glass | keyvalue" (click)="selectGlass(glass.key)">
+                        {{ glass.key }} - {{ glass.value }} ml
+                      </li>
+                    </ul>
+                  </div>
+                </ng-template>
+              </div>
+
+
+              <!-- PRIVACY SECTION (only in edit mode) -->
+              <ng-container *ngIf="editing">
+                <div class="form-group privacy-form-group">
+                  <label class="privacy-label">Privacy:</label>
+                  <div class="button-options">
+                    <button
+                      type="button"
+                      [class.selected]="isPublic === true"
+                      (click)="isPublic = true"
+                    >
+                      Public
+                    </button>
+                    <button
+                      type="button"
+                      [class.selected]="isPublic === false"
+                      (click)="isPublic = false"
+                    >
+                      Private
+                    </button>
+                  </div>
+                </div>
+
+                <!-- ERROR MESSAGE -->
+                <div *ngIf="isExceededCapacity" class="error-message" style="color: red; font-size: 14px;">
+                  Exceeded glass capacity
+                </div>  
+
+              </ng-container>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INTERACTION BUTTONS -->
+    <div class="image-interactions">
+      <span class="like-counter" (click)="handleLike()">
+        <i class="fas fa-heart" [class.liked]="isLiked"></i>
+        {{ likeCount }}
+      </span>
+      <button class="interaction-btn save-btn" (click)="handleShare($event)">
+        <i class="fas fa-share-alt"></i>
+        <span class="tooltip">Share</span>
+      </button>
+      <button *ngIf="isCreatedCocktail" class="interaction-btn delete-btn" (click)="handleDelete(cocktail?.id)">
+        <i style="margin-left: 5px; font-size: 24px;" class="bi bi-trash"></i>
+        <span class="tooltip">Delete</span>
+      </button>
+      <button *ngIf="isCreatedCocktail" class="interaction-btn edit-btn" (click)="handleEdit(cocktail?.id)">
+        <i style="margin-left: 5px; font-size: 24px;" class="bi bi-pencil-square"></i>
+        <span class="tooltip">Edit</span>
+      </button>
+      <button *ngIf="isCreatedCocktail && editing" class="interaction-btn save-btn" (click)="saveCocktail(cocktail?.id)">
+        <i style="margin-left: 5px; font-size: 24px;" class="fas fa-save"></i>
+        <span class="tooltip">Save</span>
+      </button>
+    </div>
+  </div>
+</div>
