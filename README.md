@@ -15,6 +15,7 @@ IN ALTERNATIVA (con i giusti servizi installati -- dotnet, angular, sqlserver et
 andare su [CocktailDebacle.Server](./Main/SfidaTerranova/CocktailDebacle/CocktailDebacle.Server/) 
 e avviare il back-end con dotnet watch run (è possibile che sia necessario prima eseguire migrazione e update del database -- è possibile farlo tramite)
 
+### !!! Attenzione che la stringa di connessione sia [locale](#local-connection-immetti-il-nome-del-tuo-server) !!!
 ```powershell
 # Eseguire una nuova migrazione
 dotnet ef migrations add NOME_MIGRAZIONE

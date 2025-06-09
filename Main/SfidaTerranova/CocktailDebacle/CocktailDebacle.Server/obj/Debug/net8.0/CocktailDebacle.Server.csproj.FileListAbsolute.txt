@@ -901,3 +901,6 @@ C:\Users\matti\OneDrive\Desktop\CockatielBarV1.0\terranova-main\SfidaTerranova-m
 C:\Users\matti\OneDrive\Desktop\CockatielBarV1.0\terranova-main\SfidaTerranova-main\SfidaTerranova\CocktailDebacle\CocktailDebacle.Server\obj\Debug\net8.0\Cocktail.D04472D6.Up2Date
 C:\Users\matti\OneDrive\Desktop\CockatielBarV1.0\terranova-main\SfidaTerranova-main\SfidaTerranova\CocktailDebacle\CocktailDebacle.Server\obj\Debug\net8.0\CocktailDebacle.Server.genruntimeconfig.cache
 C:\Users\matti\OneDrive\Desktop\CockatielBarV1.0\terranova-main\SfidaTerranova-main\SfidaTerranova\CocktailDebacle\CocktailDebacle.Server\obj\Debug\net8.0\ref\CocktailDebacle.Server.dll
+C:\Users\Utente\Documents\GitHub\SfidaTerranova\Main\SfidaTerranova\CocktailDebacle\CocktailDebacle.Server\obj\Debug\net8.0\CocktailDebacle.Server.dll
+C:\Users\Utente\Documents\GitHub\SfidaTerranova\Main\SfidaTerranova\CocktailDebacle\CocktailDebacle.Server\obj\Debug\net8.0\refint\CocktailDebacle.Server.dll
+C:\Users\Utente\Documents\GitHub\SfidaTerranova\Main\SfidaTerranova\CocktailDebacle\CocktailDebacle.Server\obj\Debug\net8.0\CocktailDebacle.Server.pdb

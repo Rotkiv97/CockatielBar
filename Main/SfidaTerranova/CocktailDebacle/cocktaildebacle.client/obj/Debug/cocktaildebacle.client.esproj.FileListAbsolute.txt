@@ -9,3 +9,4 @@ C:\Users\matti\OneDrive\Desktop\NEWterranova\SfidaTerranova-main\SfidaTerranova\
 C:\Users\matti\OneDrive\Desktop\Terranova\terranova-main\SfidaTerranova-main\SfidaTerranova\CocktailDebacle\cocktaildebacle.client\obj\Debug\cocktaildebacle.client.esproj.CoreCompileInputs.cache
 C:\Users\matti\OneDrive\Desktop\bkup\terranova-main\SfidaTerranova-main\SfidaTerranova\CocktailDebacle\cocktaildebacle.client\obj\Debug\cocktaildebacle.client.esproj.CoreCompileInputs.cache
 C:\Users\matti\OneDrive\Desktop\CockatielBarV1.0\terranova-main\SfidaTerranova-main\SfidaTerranova\CocktailDebacle\cocktaildebacle.client\obj\Debug\cocktaildebacle.client.esproj.CoreCompileInputs.cache
+C:\Users\Utente\Documents\GitHub\SfidaTerranova\Main\SfidaTerranova\CocktailDebacle\cocktaildebacle.client\obj\Debug\cocktaildebacle.client.esproj.CoreCompileInputs.cache
