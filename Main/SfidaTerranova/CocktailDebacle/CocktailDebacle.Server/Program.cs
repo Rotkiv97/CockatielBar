@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 
 /*
-local => Server=MSI; Database=CocktailDebacle; Trusted_Connection=True; TrustServerCertificate=True; MultipleActiveResultSets=True;
+local => Server=localhost\\SQLEXPRESS; Database=CocktailDebacle; Trusted_Connection=True; TrustServerCertificate=True; MultipleActiveResultSets=True;
 Docket => Server=sqlserver;Database=CocktailDb;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=true;
 */
 var builder = WebApplication.CreateBuilder(args);

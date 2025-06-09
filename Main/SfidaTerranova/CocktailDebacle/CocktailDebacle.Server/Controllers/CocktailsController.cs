@@ -670,8 +670,7 @@
 
                 if (string.IsNullOrEmpty(username))
                     return BadRequest("Username cannot be empty.");
-                
-                // 
+
                 var users = await _context.DbUser
                 .Where(u => u.UserName.ToLower().StartsWith(username.ToLower()) && u.UserName != userNameFromToken)
                 .Select(u => UtilsUserController.UserToDto(u)).ToListAsync();
